@@ -1,140 +1,129 @@
-//
-//  ServicesView.swift
-//  ClinicQueue
-//
-//  Created by Keshana Liyanaarachchi on 2026-02-11.
-//
-
 import SwiftUI
 
 struct ServicesView: View {
-    @State private var navigateToDoctorList = false
-    
-    let specialties = [
-        "Doctor",
-        "Image",
-        "Lab",
-        "Pharmacy",
-       
-    ]
-    let doctorCards: [DoctorCardData] = [
-        DoctorCardData(
-            icon: "SearchIcon",
-            iconSize: 32,
-            title: "Dr. Marcus Horizon",
-            subTitle: "Cardiologist",
-            description1: "12 patients in queue",
-            description2: "",
-            label1: " ",
-            label1Text: "",
-            label2: "Location: ",
-            label2Text: "Room 02 – Consultation Wing",
-            buttonText: "Fee $25"
+
+    private let services: [Service] = [
+        Service(
+            icon: "stethoscope",
+            title: "Consultation Today",
+            subtitle: "Complete clinic visit and treatment process.",
+            background: Color(red: 247/255, green: 246/255, blue: 255/255)
         ),
-       
-//        DoctorCardData(
-//            icon: "SearchIcon",
-//            iconSize: 32,
-//            title: "Dr. James Wilson",
-//            subTitle: "Neurologist",
-//            description1: "9 patients in queue",
-//            description2: "",
-//            label1: "Estimated wait: ",
-//            label1Text: "~40 min",
-//            label2: "Location: ",
-//            label2Text: "Room 08 – Neuro Wing",
-//            buttonText: "  Fee $30"
-//        )
-    ]
-    @State private var selectedDoctor: DoctorCardData?
-    @State private var navigate = false
-    let columns = [
-        GridItem(.flexible(), spacing: 12),
-        GridItem(.flexible(), spacing: 12),
-        GridItem(.flexible(), spacing: 12),
-        GridItem(.flexible(), spacing: 12)
+        Service(
+            icon: "testtube.2",
+            title: "Laboratory",
+            subtitle: "Blood tests and diagnostic services.",
+            background: Color(red: 232/255, green: 243/255, blue: 232/255)
+        ),
+        Service(
+            icon: "hand.raised",
+            title: "Imaging",
+            subtitle: "X-ray and medical imaging services.",
+            background: Color(red: 255/255, green: 249/255, blue: 232/255)
+        ),
+        Service(
+            icon: "pills",
+            title: "Pharmacy",
+            subtitle: "Collect prescribed medicines and supplies.",
+            background: Color(red: 240/255, green: 242/255, blue: 246/255)
+        )
     ]
     
+    private let doctorAppointmentService = Service(
+          icon: "calendar",
+          title: "Doctor Appointment",
+          subtitle: "Book and manage doctor appointments.",
+          background: Color(red: 247/255, green: 246/255, blue: 255/255)
+      )
+
     var body: some View {
-        VStack(spacing: 0) {
-            HStack(spacing: 12) {
-                Text("Find your desire health solution")
-                    .font(.title)
-                    .bold()
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                
-                Image(systemName: "bell")
-                    .font(.system(size: 35))
-                
-                Image(systemName: "person.crop.circle")
-                    .font(.system(size: 50))
-            }
-            .padding(0)
-            
+        ZStack {
+            Color(.white)
+                .ignoresSafeArea()
+
             ScrollView {
-                VStack(alignment: .center, spacing: 20) {
-                    Spacer()
-                    IconInputField(
-                        placeholder: "Find a Doctor",
-                        defaultValue: "",
-                        iconName: "SearchIcon",
-                        action: { print("Input changed") }
+                VStack(alignment: .leading, spacing: 24) {
+
+             
+                    HStack(alignment: .top) {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Find your desire")
+                                .font(.system(size: 26, weight: .bold))
+
+                            Text("health solution")
+                                .font(.system(size: 26, weight: .bold))
+                        }
+
+                        Spacer()
+
+                        HStack(spacing: 16) {
+                            Image(systemName: "bell")
+                                .font(.system(size: 20))
+
+                            Circle()
+                                .fill(Color.gray.opacity(0.3))
+                                .frame(width: 36, height: 36)
+                                .overlay(
+                                    Text("KL")
+                                        .font(.caption)
+                                )
+                        }
+                    }
+
+             
+                    LazyVGrid(
+                        columns: [
+                            GridItem(.flexible(), spacing: 16),
+                            GridItem(.flexible(), spacing: 16)
+                        ],
+                        spacing: 16
+                    ) {
+                        ForEach(services) { service in
+                            ServiceCard(service: service)
+                                .frame(height: 190)
+                        }
+                    }
+
+                    
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Doctor Channeling")
+                            .font(.title2.weight(.bold))
+
+                        Text("Reserve your appointment with a doctor at your preferred date and time.")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .padding(.top, 8)
+
+               
+                    CenteredServiceCard(
+                        service: Service(
+                            icon: "calendar",
+                            title: "Doctor Appointment",
+                            subtitle: "Book and manage doctor appointments.",
+                            background: Color(red: 247/255, green: 246/255, blue: 255/255)
+                        )
                     )
-                    Spacer()
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 140)
                 }
-                
-                HStack(alignment: .center, spacing: 20) {
-                    Text("Upcoming Schedule")
-                        .font(.headline)
-                        .bold()
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    Text("See all")
-                        .font(.footnote)
-                        .bold()
-                    
-                    
-                }
-                ZStack {
-                    ForEach(doctorCards) { card in
-                        DisplayCard(props: card) {
-                            selectedDoctor = card
-                            navigate = true
-                                
-                        }
-                        
-                    }
-                    
-                }
-                Spacer()
-                
-                HStack(alignment: .center,) {
-              
-                    Text("Servies")
-                    
-                        .font(.headline)
-                        .bold()
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                   
-                  
-                }
-                
-                LazyVGrid(columns: columns, spacing: 18) {
-                    ForEach(specialties, id: \.self) { specialty in
-                        CategoryButton(title: specialty, icon: "SearchIcon", iconWidth: 38) {
-                            print("category clicked: \(specialty)")
-                        }
-                        .frame(maxHeight: .infinity, alignment: .top)
-                    }
-                }
-                
-                
-                
+                .padding(.horizontal, 20)
+                .padding(.top, 4)
+                .padding(.bottom, 32)
+            }
+            
+       
+            FloatingActionButton(icon: "plus", color: .green) {
+                print("Floating button tapped")
             }
         }
-        .padding(10)
     }
 }
 
-#Preview {
-    ServicesView()
+
+struct ServicesView_Previews: PreviewProvider {
+    static var previews: some View {
+        ServicesView()
+    }
 }
