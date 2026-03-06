@@ -10,7 +10,7 @@ struct LandingView: View {
                 ZStack {
                     Image("welcome_bg")
                         .scaledToFill()
-                        .frame(height: 450)
+                        .frame(height:430)
                         .overlay(
                             Image("LogoappLogo")
                                 .resizable()
@@ -43,7 +43,7 @@ struct LandingView: View {
                                 Image(systemName: "arrow.right")
                                     .foregroundColor(.white)
                                     .padding()
-                                    .background(Color.pink)
+                                    .background(Color.green)
                                     .clipShape(Circle())
                             }
                         }
@@ -54,7 +54,8 @@ struct LandingView: View {
             }
             
             .navigationDestination(isPresented: $navigateToDoctorList) {
-                ServicesView()
+                LoginView()
+                    .navigationBarBackButtonHidden(true)
             }
         }
     }
