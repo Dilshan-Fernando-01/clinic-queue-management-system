@@ -11,7 +11,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		7B30D9552F5AD38200134E56 /* Exceptions for "ClinicQueue" folder in "ClinicQueue" target */ = {
+		7B30DA6E2F5C832200134E56 /* Exceptions for "ClinicQueue" folder in "ClinicQueue" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -24,7 +24,7 @@
 		7B0C6D6E2F37AAC70056D51E /* ClinicQueue */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				7B30D9552F5AD38200134E56 /* Exceptions for "ClinicQueue" folder in "ClinicQueue" target */,
+				7B30DA6E2F5C832200134E56 /* Exceptions for "ClinicQueue" folder in "ClinicQueue" target */,
 			);
 			path = ClinicQueue;
 			sourceTree = "<group>";

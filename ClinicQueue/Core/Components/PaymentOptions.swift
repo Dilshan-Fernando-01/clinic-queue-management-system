@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+
 struct PaymentOptions: View {
     let items: [CheckboxItem]
     @Binding var selectedKey: String?
@@ -17,17 +18,30 @@ struct PaymentOptions: View {
                 .font(.system(size: 20, weight: .bold))
             
             ForEach(items) { item in
-                Button(action: {
+                Button {
                     selectedKey = item.key
-                }) {
+                } label: {
                     HStack {
-                        Text(item.label)
-                            .foregroundColor(selectedKey == item.key ? .white : .black)
+
+                        HStack(spacing: 8) {
+                            if let icon = item.icon {
+                                icon
+                                    .resizable()
+                                    .frame(width: 32, height: 32)
+                            }
+                            Text(item.label)
+                                .foregroundColor(selectedKey == item.key ? .white : .black)
+                                .font(.system(size: 16, weight: selectedKey == item.key ? .semibold : .regular))
+                        }
+                        .frame(minWidth: 120, alignment: .leading)
+                        
                         Spacer()
+                        
                         ZStack {
                             Circle()
-                                .stroke(selectedKey == item.key ? Color("157979") : Color.black, lineWidth: 2)
+                                .stroke(selectedKey == item.key ? Color(hex: "E6F0F0") : Color.black, lineWidth: 2)
                                 .frame(width: 18, height: 18)
+                            
                             if selectedKey == item.key {
                                 Circle()
                                     .fill(Color.white)
@@ -35,11 +49,18 @@ struct PaymentOptions: View {
                             }
                         }
                     }
-                    .padding(12)
-                    .background(selectedKey == item.key ? Color("169A8F") : Color.white)
+                    .padding(.vertical, 12)
+                    .padding(.horizontal, 20)
+                    .frame(maxWidth: .infinity)
+                    .background(selectedKey == item.key ? Color(hex: "169A8F") : Color.white)
                     .cornerRadius(10)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10)
+                            .stroke(selectedKey == item.key ? Color(hex: "157979") : Color(hex: "EDF6F5"), lineWidth: 2)
+                    )
                 }
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }

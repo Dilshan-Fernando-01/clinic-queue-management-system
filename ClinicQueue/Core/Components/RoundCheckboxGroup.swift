@@ -7,11 +7,6 @@
 
 import SwiftUI
 
-struct CheckboxItem: Identifiable, Hashable {
-    let id = UUID()
-    let key: String
-    let label: String
-}
 
 struct RoundCheckboxGroup: View {
 

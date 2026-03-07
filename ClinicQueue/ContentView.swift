@@ -10,9 +10,9 @@ import SwiftUI
 struct ContentView: View {
     var body: some View {
         NavigationStack {
-                   HomeView()
-                   .padding(.horizontal, 16)
-               }
+                          HomeView()
+                          .padding(.horizontal, 16)
+                      }
     }
 }
 
