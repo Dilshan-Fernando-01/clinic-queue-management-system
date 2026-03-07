@@ -21,6 +21,7 @@ struct SymptomsSelection: View {
     ]
 
     @State private var selectedSymptoms: Set<String> = []
+    @State private var navigateToAppitmentStarter = false
 
     var body: some View {
 
@@ -45,13 +46,16 @@ struct SymptomsSelection: View {
             Spacer()
 
             PrimaryButton(title: "Proceed to Queue") {
-
+                navigateToAppitmentStarter = true
                 print("Selected symptoms:", selectedSymptoms)
 
             }
 
         }
         .padding(20)
+        .navigationDestination(isPresented: $navigateToAppitmentStarter) {
+            AppointmentStarterView()
+        }
     }
 }
 
