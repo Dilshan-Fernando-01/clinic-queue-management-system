@@ -16,36 +16,43 @@ struct QueueOption: Identifiable {
 struct QueueButtonGroup: View {
     let queues: [QueueOption]
     @Binding var selectedId: UUID?
-    
+
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 10) {
             ForEach(queues) { queue in
                 let isSelected = selectedId == queue.id
-                let bgColor = isSelected ? Color("169A8F") : Color.white
-                let textColor = isSelected ? Color.white : Color("000000")
-                let subTextColor = isSelected ? Color.white : Color("9E9E9E")
-                let borderColor = isSelected ? Color("157979") : Color("ECF5F5")
-                
-                Button(action: {
+
+                Button {
                     selectedId = queue.id
-                }) {
-                    VStack(spacing: 8) {
+                } label: {
+                    VStack(spacing: 6) {
                         Text(queue.heading)
                             .font(.system(size: 20, weight: .bold))
-                            .foregroundColor(textColor)
+                            .foregroundColor(isSelected ? .white : .black)
+
                         Text(queue.subText)
-                            .font(.system(size: 12))
-                            .foregroundColor(subTextColor)
+                            .font(.system(size: 8))
+                            .foregroundColor(isSelected ? .white : AppColors.text)
                     }
-                    .frame(width: 96)
-                    .frame(minHeight: 76)
-                    .background(bgColor)
+                    .frame(minWidth: 96, minHeight: 76)
+                    .background(
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(isSelected ? AppColors.primary : .white)
+                    )
                     .overlay(
                         RoundedRectangle(cornerRadius: 10)
-                            .stroke(borderColor, lineWidth: 2)
+                            .stroke(
+                                isSelected ? Color(hex: "157979") : Color(hex: "ECF5F5"),
+                                lineWidth: 2
+                            )
                     )
-                    .cornerRadius(10)
                 }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: queues.count == 1 ? .center : .leading)
+        .onAppear {
+            if queues.count == 1 {
+                selectedId = queues.first?.id
             }
         }
     }
