@@ -10,9 +10,22 @@
 		7B0C6D6C2F37AAC70056D51E /* ClinicQueue.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ClinicQueue.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		7B30D9552F5AD38200134E56 /* Exceptions for "ClinicQueue" folder in "ClinicQueue" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 7B0C6D6B2F37AAC70056D51E /* ClinicQueue */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		7B0C6D6E2F37AAC70056D51E /* ClinicQueue */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				7B30D9552F5AD38200134E56 /* Exceptions for "ClinicQueue" folder in "ClinicQueue" target */,
+			);
 			path = ClinicQueue;
 			sourceTree = "<group>";
 		};

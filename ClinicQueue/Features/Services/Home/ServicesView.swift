@@ -7,33 +7,57 @@ struct ServicesView: View {
             icon: "stethoscope",
             title: "Consultation Today",
             subtitle: "Complete clinic visit and treatment process.",
-            background: Color(red: 247/255, green: 246/255, blue: 255/255)
+            background: Color(red: 247/255, green: 246/255, blue: 255/255),
+            destination: .consultation
         ),
         Service(
             icon: "testtube.2",
             title: "Laboratory",
             subtitle: "Blood tests and diagnostic services.",
-            background: Color(red: 232/255, green: 243/255, blue: 232/255)
+            background: Color(red: 232/255, green: 243/255, blue: 232/255),
+            destination: .laboratory
         ),
         Service(
             icon: "hand.raised",
             title: "Imaging",
             subtitle: "X-ray and medical imaging services.",
-            background: Color(red: 255/255, green: 249/255, blue: 232/255)
+            background: Color(red: 255/255, green: 249/255, blue: 232/255),
+            destination: .imaging
         ),
         Service(
             icon: "pills",
             title: "Pharmacy",
             subtitle: "Collect prescribed medicines and supplies.",
-            background: Color(red: 240/255, green: 242/255, blue: 246/255)
+            background: Color(red: 240/255, green: 242/255, blue: 246/255),
+            destination: .pharmacy
         )
     ]
+    
+    @ViewBuilder
+    private func destinationView(for service: Service) -> some View {
+        switch service.destination {
+        case .consultation:
+            PatientDetailsFormView()
+
+        case .laboratory:
+            Text("Laboratory View")
+
+        case .imaging:
+            Text("Imaging View")
+
+        case .pharmacy:
+            Text("Pharmacy View")
+        case .appointment:
+            Text("Appointment View")
+        }
+    }
     
     private let doctorAppointmentService = Service(
           icon: "calendar",
           title: "Doctor Appointment",
           subtitle: "Book and manage doctor appointments.",
-          background: Color(red: 247/255, green: 246/255, blue: 255/255)
+          background: Color(red: 247/255, green: 246/255, blue: 255/255),
+          destination: .appointment
       )
 
     var body: some View {
@@ -81,8 +105,10 @@ struct ServicesView: View {
                         spacing: 16
                     ) {
                         ForEach(services) { service in
-                            ServiceCard(service: service)
-                                .frame(height: 190)
+                            NavigationLink(destination: destinationView(for: service)) {
+                                ServiceCard(service: service)
+                                    .frame(height: 190)
+                            }
                         }
                     }
 
@@ -104,7 +130,8 @@ struct ServicesView: View {
                             icon: "calendar",
                             title: "Doctor Appointment",
                             subtitle: "Book and manage doctor appointments.",
-                            background: Color(red: 247/255, green: 246/255, blue: 255/255)
+                            background: Color(red: 247/255, green: 246/255, blue: 255/255),
+                            destination: .appointment
                         )
                     )
                     .frame(maxWidth: .infinity)
@@ -119,6 +146,7 @@ struct ServicesView: View {
             FloatingActionButton(icon: "plus", color: .green) {
                 print("Floating button tapped")
             }
+            .padding(10)
         }
     }
 }
