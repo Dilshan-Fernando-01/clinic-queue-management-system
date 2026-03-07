@@ -35,8 +35,6 @@ struct AppointmentStarterView: View {
 
     private let queueOptions: [QueueOption] = [
         QueueOption(heading: "A1", subText: "09:00 AM"),
-        QueueOption(heading: "A2", subText: "09:30 AM"),
-        QueueOption(heading: "A3", subText: "10:00 AM")
     ]
 
     private let paymentDetailsData: [PaymentDetailRow] = [
