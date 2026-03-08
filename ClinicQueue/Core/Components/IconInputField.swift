@@ -4,7 +4,9 @@ struct IconInputField: View {
     
     var iconName: String?
     var placeholder: String
-    var defaultValue: String
+    
+    @Binding var value: String 
+    
     var placeholderColor: Color = AppColors.placeholder
     var backgroundColor: Color = .clear
     var textColor: Color = AppColors.text
@@ -14,27 +16,14 @@ struct IconInputField: View {
     var padding: CGFloat = 12
     var action: () -> Void = {}
     
-    @State private var value: String
-    
-    init(placeholder: String,
-         defaultValue: String = "",
-         iconName: String? = nil,
-         action: @escaping () -> Void = {}) {
-        self.placeholder = placeholder
-        self.defaultValue = defaultValue
-        self.iconName = iconName
-        self._value = State(initialValue: defaultValue)
-        self.action = action
-    }
-    
     var body: some View {
         HStack(spacing: 8) {
+            
             if let iconName {
                 Image(iconName)
                     .resizable()
                     .scaledToFit()
                     .frame(width: 20, height: 20)
-                    .foregroundColor(AppColors.text)
             }
             
             TextField(placeholder, text: $value, onEditingChanged: { _ in
@@ -50,5 +39,3 @@ struct IconInputField: View {
         )
     }
 }
-
-
