@@ -24,6 +24,8 @@ struct SymptomsSelection: View {
     @State private var navigateToAppitmentStarter = false
 
     var body: some View {
+        
+        
 
         VStack(spacing: 24) {
 
@@ -50,13 +52,16 @@ struct SymptomsSelection: View {
                 print("Selected symptoms:", selectedSymptoms)
 
             }
-
+            
         }
         .padding(20)
         .navigationDestination(isPresented: $navigateToAppitmentStarter) {
             AppointmentStarterView()
         }
+        
+        
     }
+    
 }
 
 #Preview {

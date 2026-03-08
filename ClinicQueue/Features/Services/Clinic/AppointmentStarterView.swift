@@ -9,7 +9,8 @@ import SwiftUI
 
 struct AppointmentStarterView: View {
     @State private var selectedQueue: UUID? = nil
-//    @State private var showModal = true
+    @State private var selectedFloatingDestination: Int? = nil
+
     
     private let doctorImage = Image("doctor01")
     private let doctorHeading = "Dr. Jane Doe"
@@ -56,6 +57,7 @@ struct AppointmentStarterView: View {
     @State private var navigateToPaymentView = false
     
     var body: some View {
+        NavigationStack {
         ZStack {
             
             ScrollView {
@@ -83,6 +85,8 @@ struct AppointmentStarterView: View {
                     }
                     .padding(.horizontal)
                     .padding(.top, Spacing.section)
+                    
+                    
                     
                     PaymentDetails(rows: paymentDetailsData)
                         .padding(.horizontal)
@@ -117,8 +121,22 @@ struct AppointmentStarterView: View {
                     }
                 }
             }
-
+            
+                FloatingNav(
+                    mainIcon: "plus",
+                    items: [
+                        FloatingNavItem(icon: "house.fill", label: "Home", destination: AnyView(ServicesView())),
+                        FloatingNavItem(icon: "map.fill", label: "Map", destination: AnyView(Text("Map View"))),
+                        FloatingNavItem(icon: "gearshape.fill", label: "Settings", destination: AnyView(SettingsView()))
+                    ]
+                )
+           
+   
         }
+        
+        
+    }
+    
     }
     
 }
