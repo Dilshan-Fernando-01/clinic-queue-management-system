@@ -37,7 +37,7 @@ struct PaymentProcessingView: View {
                         .foregroundColor(AppColors.lableColor)
                         .frame(maxWidth: .infinity, alignment: .center)
                 }
-                .padding(.top, 100)
+                .padding(.vertical, 20)
             }
         }
         
