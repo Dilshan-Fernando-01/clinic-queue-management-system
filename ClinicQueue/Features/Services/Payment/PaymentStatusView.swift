@@ -19,42 +19,43 @@ struct PaymentStatusView: View {
     ]
     
     var body: some View {
-        
-        VStack(spacing: 20) {
-            
-           
-            
-            Text(isSuccess ? "Payment Successful" : "Payment Failed")
-                .font(.title2)
-                .fontWeight(.bold)
-            
-            Image(systemName: isSuccess ? "checkmark.circle.fill" : "xmark.circle.fill")
-                .font(.system(size: 70))
-                .foregroundColor(isSuccess ? .green : .red)
-            
-            Text(
-                isSuccess
-                ? "Your payment has been received."
-                : "Something went wrong while processing your payment."
-            )
-            .foregroundColor(AppColors.lableColor)
-            .multilineTextAlignment(.center)
-            .padding(.horizontal)
-            
-            
-            PaymentDetails(rows: paymentDetailsData)
-                .padding(.horizontal)
-                .padding(.top, Spacing.section)
-            
-            
-            PrimaryButton(
-                title: isSuccess ? "Continue" : "Try Again"
-            ) {
-                
+        ZStack {
+            ScrollView {
+                VStack(spacing: 20) {
+                    Text(isSuccess ? "Payment Successful" : "Payment Failed")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                    
+                    Image(systemName: isSuccess ? "checkmark.circle.fill" : "xmark.circle.fill")
+                        .font(.system(size: 70))
+                        .foregroundColor(isSuccess ? .green : .red)
+                    
+                    Text(
+                        isSuccess
+                        ? "Your payment has been received."
+                        : "Something went wrong while processing your payment."
+                    )
+                    .foregroundColor(AppColors.lableColor)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
+                   
+                    
+                    
+                    PaymentDetails(rows: paymentDetailsData)
+                        .padding(.horizontal)
+                        .padding(.top, Spacing.section)
+                    
+                    
+                    PrimaryButton(
+                        title: isSuccess ? "Continue" : "Try Again"
+                    ) {
+                        
+                    }
+                }
+                .padding()
+                .navigationBarBackButtonHidden(true)
             }
         }
-        .padding()
-        .navigationBarBackButtonHidden(true)
     }
 }
 

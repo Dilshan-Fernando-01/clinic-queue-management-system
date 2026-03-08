@@ -97,37 +97,20 @@ struct AppointmentStarterView: View {
                     
                     PrimaryButton(title: "Book Appointment") {
                         navigateToPaymentView = true
-//                        withAnimation {
-//                            showModal = true
-//                        }
                     }
                     .padding(.horizontal)
                     .padding(.top, Spacing.section)
                 }
                 .padding(.vertical, 20)
                 .navigationDestination(isPresented: $navigateToPaymentView) {
-                    PaymentView()
+                    if selectedPaymentOption == "card" {
+                        PaymentView()
+                    } else {
+                        PaymentThroughCashView()
+                    }
                 }
             }
-//            CustomModal(isPresented: $showModal) {
-//                VStack(spacing: 16) {
-//                    Text("Hello from Modal")
-//                        .font(.title2)
-//                        .bold()
-//                    
-//                    Text("child elements")
-//                        .multilineTextAlignment(.center)
-//                    
-//                    Button("Do Something") {
-//                        print("Button tapped")
-//                    }
-//                    .padding()
-//                    .background(Color.green)
-//                    .foregroundColor(.white)
-//                    .cornerRadius(12)
-//                }
-//                .padding()
-//            }
+
         }
     }
     
