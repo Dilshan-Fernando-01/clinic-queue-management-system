@@ -7,7 +7,9 @@
 
 import SwiftUI
 
-struct PaymentView: View {
+struct PaymentView<SuccessDestination: View>: View {
+    
+    let onPaymentSuccess: () -> SuccessDestination
     
     @State private var nameOnCard = ""
     @State private var cardNumber = ""
@@ -148,7 +150,7 @@ struct PaymentView: View {
             }
             
             .navigationDestination(isPresented: $isNavigateToPaymentProcess) {
-                PaymentProcessingView()
+                PaymentProcessingView(destination: onPaymentSuccess())
             }
         }
     }
@@ -202,8 +204,10 @@ struct PaymentView: View {
 }
 
 #Preview {
-    
-    NavigationStack {
-        PaymentView()
+    PaymentView {
+        PaymentStatusView(
+            isSuccess: true,
+            onContinue: { Text("Next Page") }
+        )
     }
 }

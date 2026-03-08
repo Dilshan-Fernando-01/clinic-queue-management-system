@@ -7,9 +7,10 @@
 
 import SwiftUI
 
-struct PaymentStatusView: View {
-    
+struct PaymentStatusView<NextDestination: View>: View {
     let isSuccess: Bool
+    let onContinue: () -> NextDestination
+    @State private var navigateNext = false
     
     private let paymentDetailsData: [PaymentDetailRow] = [
         PaymentDetailRow(label: "Consultation", value: "$59.00"),
@@ -49,16 +50,22 @@ struct PaymentStatusView: View {
                     PrimaryButton(
                         title: isSuccess ? "Continue" : "Try Again"
                     ) {
-                        
+                        navigateNext = true
                     }
                 }
                 .padding()
                 .navigationBarBackButtonHidden(true)
             }
+            .navigationDestination(isPresented: $navigateNext) {
+                       onContinue()
+                   }
         }
     }
 }
 
 #Preview {
-    PaymentStatusView(isSuccess: true)
+    PaymentStatusView(
+        isSuccess: true,
+        onContinue: { Text("Next Page") }
+    )
 }
