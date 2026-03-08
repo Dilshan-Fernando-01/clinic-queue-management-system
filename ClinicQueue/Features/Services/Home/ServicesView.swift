@@ -61,92 +61,98 @@ struct ServicesView: View {
       )
 
     var body: some View {
-        ZStack {
-            Color(.white)
-                .ignoresSafeArea()
-
-            ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
-
-             
-                    HStack(alignment: .top) {
+        NavigationStack {
+            ZStack {
+                Color(.white)
+                    .ignoresSafeArea()
+                
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 24) {
+                        
+                        
+                        HStack(alignment: .top) {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("Find your desire")
+                                    .font(.system(size: 26, weight: .bold))
+                                
+                                Text("health solution")
+                                    .font(.system(size: 26, weight: .bold))
+                            }
+                            
+                            Spacer()
+                            
+                            HStack(spacing: 16) {
+                                NavigationLink(destination: NotificationView()) {
+                                    Image(systemName: "bell")
+                                        .font(.system(size: 20))
+                                        .foregroundColor(.black)
+                                }
+                                Circle()
+                                    .fill(Color.gray.opacity(0.3))
+                                    .frame(width: 36, height: 36)
+                                    .overlay(
+                                        Text("KL")
+                                            .font(.caption)
+                                    )
+                            }
+                        }
+                        
+                        
+                        LazyVGrid(
+                            columns: [
+                                GridItem(.flexible(), spacing: 16),
+                                GridItem(.flexible(), spacing: 16)
+                            ],
+                            spacing: 16
+                        ) {
+                            ForEach(services) { service in
+                                NavigationLink(destination: destinationView(for: service)) {
+                                    ServiceCard(service: service)
+                                        .frame(height: 190)
+                                }
+                            }
+                        }
+                        
+                        
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Find your desire")
-                                .font(.system(size: 26, weight: .bold))
-
-                            Text("health solution")
-                                .font(.system(size: 26, weight: .bold))
+                            Text("Doctor Channeling")
+                                .font(.title2.weight(.bold))
+                            
+                            Text("Reserve your appointment with a doctor at your preferred date and time.")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
                         }
-
-                        Spacer()
-
-                        HStack(spacing: 16) {
-                            NavigationLink(destination: NotificationView()) {
-                                Image(systemName: "bell")
-                                    .font(.system(size: 20))
-                                    .foregroundColor(.black)
-                            }
-                            Circle()
-                                .fill(Color.gray.opacity(0.3))
-                                .frame(width: 36, height: 36)
-                                .overlay(
-                                    Text("KL")
-                                        .font(.caption)
-                                )
-                        }
-                    }
-
-             
-                    LazyVGrid(
-                        columns: [
-                            GridItem(.flexible(), spacing: 16),
-                            GridItem(.flexible(), spacing: 16)
-                        ],
-                        spacing: 16
-                    ) {
-                        ForEach(services) { service in
-                            NavigationLink(destination: destinationView(for: service)) {
-                                ServiceCard(service: service)
-                                    .frame(height: 190)
-                            }
-                        }
-                    }
-
-                    
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Doctor Channeling")
-                            .font(.title2.weight(.bold))
-
-                        Text("Reserve your appointment with a doctor at your preferred date and time.")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                    .padding(.top, 8)
-
-               
-                    CenteredServiceCard(
-                        service: Service(
-                            icon: "calendar",
-                            title: "Doctor Appointment",
-                            subtitle: "Book and manage doctor appointments.",
-                            background: Color(red: 247/255, green: 246/255, blue: 255/255),
-                            destination: .appointment
+                        .padding(.top, 8)
+                        
+                        
+                        CenteredServiceCard(
+                            service: Service(
+                                icon: "calendar",
+                                title: "Doctor Appointment",
+                                subtitle: "Book and manage doctor appointments.",
+                                background: Color(red: 247/255, green: 246/255, blue: 255/255),
+                                destination: .appointment
+                            )
                         )
-                    )
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 140)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 140)
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 4)
+                    .padding(.bottom, 32)
                 }
-                .padding(.horizontal, 20)
-                .padding(.top, 4)
-                .padding(.bottom, 32)
+                
+                
+                FloatingNav(
+                    mainIcon: "plus",
+                    items: [
+                        FloatingNavItem(icon: "house.fill", label: "Home", destination: AnyView(ServicesView())),
+                        FloatingNavItem(icon: "map.fill", label: "Map", destination: AnyView(Text("Map View"))),
+                        FloatingNavItem(icon: "gearshape.fill", label: "Settings", destination: AnyView(SettingsView()))
+                    ]
+                )
             }
-            
-       
-            FloatingActionButton(icon: "plus", color: .green) {
-                print("Floating button tapped")
-            }
-            .padding(10)
         }
     }
 }
