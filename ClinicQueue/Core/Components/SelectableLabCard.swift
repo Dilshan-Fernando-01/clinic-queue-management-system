@@ -57,10 +57,12 @@ struct SelectableLabCard: View {
                 if !props.buttonText.isEmpty {
                     PrimaryButton(
                         title: props.buttonText,
-                        maxWidth: 160
+                        maxWidth: 140
+                        
                     ) {
                         onButtonTap()
                     }
+                   
                 }
             }
         }
