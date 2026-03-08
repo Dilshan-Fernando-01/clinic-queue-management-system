@@ -53,6 +53,7 @@ struct AppointmentStarterView: View {
     ]
     
     @State private var selectedPaymentOption: String? = "card"
+    @State private var navigateToPaymentView = false
     
     var body: some View {
         ZStack {
@@ -95,6 +96,7 @@ struct AppointmentStarterView: View {
                     .padding(.top, Spacing.section)
                     
                     PrimaryButton(title: "Book Appointment") {
+                        navigateToPaymentView = true
 //                        withAnimation {
 //                            showModal = true
 //                        }
@@ -103,6 +105,9 @@ struct AppointmentStarterView: View {
                     .padding(.top, Spacing.section)
                 }
                 .padding(.vertical, 20)
+                .navigationDestination(isPresented: $navigateToPaymentView) {
+                    PaymentView()
+                }
             }
 //            CustomModal(isPresented: $showModal) {
 //                VStack(spacing: 16) {
