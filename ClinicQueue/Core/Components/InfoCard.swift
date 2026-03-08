@@ -37,7 +37,7 @@ struct InfoCard: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(data.heading)
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(AppColors.heading)
+                        .foregroundColor(AppColors.dark)
                     
                     Text(data.subheading)
                         .font(.system(size: 12))
@@ -59,7 +59,7 @@ struct InfoCard: View {
                                 .foregroundColor(AppColors.text)
                             
                             Text(detail1.value)
-                                .foregroundColor(AppColors.heading)
+                                .foregroundColor(AppColors.textdark)
                         }
                         .font(.system(size: 12))
                     }
@@ -70,7 +70,7 @@ struct InfoCard: View {
                                 .foregroundColor(AppColors.text)
                             
                             Text(detail2.value)
-                                .foregroundColor(AppColors.heading)
+                                .foregroundColor(AppColors.textdark)
                         }
                         .font(.system(size: 12))
                     }
@@ -81,7 +81,7 @@ struct InfoCard: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 20)
-                .fill(AppColors.cardBackground)
+                .fill(AppColors.lightBakcground)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 20)

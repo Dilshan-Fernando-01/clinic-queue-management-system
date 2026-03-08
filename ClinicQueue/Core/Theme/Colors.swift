@@ -12,6 +12,9 @@ enum AppColors {
     static let border = Color(hex: "E8EBED")
     static let lableColor = Color(hex: "C1C0C0")
     static let cardBackground = Color(hex: "F2F9F7")
+    static let lightBakcground = Color(hex: "ffffff")
+    static let dark = Color(hex: "000000")
+    static let textdark = Color(hex: "1E1E1E")
 }
 
 

@@ -9,9 +9,9 @@ import SwiftUI
 
 struct AppointmentStarterView: View {
     @State private var selectedQueue: UUID? = nil
-    @State private var showModal = false
+//    @State private var showModal = true
     
-    private let doctorImage = Image(systemName: "person.circle.fill")
+    private let doctorImage = Image("doctor01")
     private let doctorHeading = "Dr. Jane Doe"
     private let doctorSubheading = "Cardiologist"
     private let doctorActiveQueue = "12 patients in queue"
@@ -44,83 +44,88 @@ struct AppointmentStarterView: View {
     ]
     
     private let paymentOptionsData: [CheckboxItem] = [
-        CheckboxItem(key: "card", label: "Card Payment", icon: Image(systemName: "creditcard.fill")),
-        CheckboxItem(key: "cash", label: "Cash Payment", icon: Image(systemName: "dollarsign.circle.fill"))
+        CheckboxItem(
+            key: "card",
+            label: "Card Payment",
+            icon: Image("Card")
+        ),
+        CheckboxItem(key: "cash", label: "Cash Payment", icon: Image("Cash"))
     ]
     
     @State private var selectedPaymentOption: String? = "card"
     
     var body: some View {
-        ScrollView {
+        ZStack {
             
-            
-            
-            VStack(alignment: .leading, spacing: 20) {
-            
-                Text("Your Clinic Queue")
-                    .font(.system(size: 20, weight: .bold))
-                    .padding(.horizontal)
-                
-                InfoCard(data: doctorInfo)
-                    .padding(.horizontal)
-                
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Available Queues")
-                        .font(.system(size: 16, weight: .semibold))
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    
+                    Text("Your Clinic Queue")
+                        .font(.system(size: 20, weight: .bold))
                         .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.horizontal)
+                      
                     
-                    QueueButtonGroup(
-                        queues: queueOptions,
-                        selectedId: $selectedQueue
+                    InfoCard(data: doctorInfo)
+                        .padding(.horizontal)
+                        .padding(.top, Spacing.section)
+                    
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Available Queues")
+                            .font(.system(size: 16, weight: .semibold))
+                            .frame(maxWidth: .infinity, alignment: .center)
+                        
+                        QueueButtonGroup(
+                            queues: queueOptions,
+                            selectedId: $selectedQueue
+                        )
+                    }
+                    .padding(.horizontal)
+                    .padding(.top, Spacing.section)
+                    
+                    PaymentDetails(rows: paymentDetailsData)
+                        .padding(.horizontal)
+                        .padding(.top, Spacing.section)
+                    
+                    PaymentOptions(
+                        items: paymentOptionsData,
+                        selectedKey: $selectedPaymentOption
                     )
-                    
-                }
-                .padding(.horizontal)
-                
-                PaymentDetails(rows: paymentDetailsData)
                     .padding(.horizontal)
-                
-                PaymentOptions(items: paymentOptionsData, selectedKey: $selectedPaymentOption)
-                    .padding(.horizontal)
-                
-                PrimaryButton(title: "Book Appointment") {
-                    print("Selected Queue:", selectedQueue ?? "")
-                    print("Selected Payment Option:", selectedPaymentOption ?? "")
+                    .padding(.top, Spacing.section)
                     
-                    withAnimation {
-                                       showModal = true
-                                   }
+                    PrimaryButton(title: "Book Appointment") {
+//                        withAnimation {
+//                            showModal = true
+//                        }
+                    }
+                    .padding(.horizontal)
+                    .padding(.top, Spacing.section)
                 }
-                .padding(.horizontal)
-                .padding(.top, 12)
-                
+                .padding(.vertical, 20)
             }
-            .padding(.vertical, 20)
-            
-            
-            
-        }
-        
-        CustomModal(isPresented: $showModal) {
-            VStack(spacing: 16) {
-                Text("Hello from Modal")
-                    .font(.title2)
-                    .bold()
-                
-                Text("child elements")
-                    .multilineTextAlignment(.center)
-                
-                Button("Do Something") {
-                    print("Button tapped")
-                }
-                .padding()
-                .background(Color.green)
-                .foregroundColor(.white)
-                .cornerRadius(12)
-            }
-            .padding()
+//            CustomModal(isPresented: $showModal) {
+//                VStack(spacing: 16) {
+//                    Text("Hello from Modal")
+//                        .font(.title2)
+//                        .bold()
+//                    
+//                    Text("child elements")
+//                        .multilineTextAlignment(.center)
+//                    
+//                    Button("Do Something") {
+//                        print("Button tapped")
+//                    }
+//                    .padding()
+//                    .background(Color.green)
+//                    .foregroundColor(.white)
+//                    .cornerRadius(12)
+//                }
+//                .padding()
+//            }
         }
     }
+    
 }
 
 #Preview {
