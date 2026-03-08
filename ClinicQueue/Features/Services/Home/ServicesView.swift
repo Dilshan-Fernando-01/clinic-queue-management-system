@@ -48,7 +48,7 @@ struct ServicesView: View {
         case .pharmacy:
             Text("Pharmacy View")
         case .appointment:
-            Text("Appointment View")
+            FindDoctorView()
         }
     }
     
@@ -126,15 +126,17 @@ struct ServicesView: View {
                         .padding(.top, 8)
                         
                         
-                        CenteredServiceCard(
-                            service: Service(
-                                icon: "calendar",
-                                title: "Doctor Appointment",
-                                subtitle: "Book and manage doctor appointments.",
-                                background: Color(red: 247/255, green: 246/255, blue: 255/255),
-                                destination: .appointment
+                        NavigationLink(destination: FindDoctorView()) {
+                            CenteredServiceCard(
+                                service: Service(
+                                    icon: "calendar",
+                                    title: "Doctor Appointment",
+                                    subtitle: "Book and manage doctor appointments.",
+                                    background: Color(red: 247/255, green: 246/255, blue: 255/255),
+                                    destination: .appointment
+                                )
                             )
-                        )
+                        }
                         .frame(maxWidth: .infinity)
                         .frame(height: 140)
                     }

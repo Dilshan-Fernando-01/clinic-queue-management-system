@@ -80,12 +80,12 @@ struct DoctorListView: View {
             ScrollView {
                 VStack(alignment: .center, spacing: 20){
                     
-                    IconInputField(
-                        placeholder: "Find a Doctor",
-                        defaultValue: "",
-                        iconName: "SearchIcon",
-                        action: { print("Input changed") }
-                    )
+//                    IconInputField(
+//                        placeholder: "Find a Doctor",
+//                        defaultValue: "",
+//                        iconName: "SearchIcon",
+//                        action: { print("Input changed") }
+//                    )
                 }
                 
                 Text("Category")
