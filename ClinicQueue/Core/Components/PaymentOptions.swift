@@ -42,10 +42,13 @@ struct PaymentOptions: View {
                                 .stroke(selectedKey == item.key ? Color(hex: "E6F0F0") : Color.black, lineWidth: 2)
                                 .frame(width: 18, height: 18)
                             
+                           
                             if selectedKey == item.key {
-                                Circle()
-                                    .fill(Color.white)
-                                    .frame(width: 10, height: 10)
+                                Image("Checked") 
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 12, height: 12)
+                                    .padding(0)
                             }
                         }
                     }

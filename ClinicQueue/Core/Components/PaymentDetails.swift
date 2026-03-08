@@ -19,7 +19,6 @@ struct PaymentDetails: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
 
-            // Static heading
             Text("Payment Details")
                 .font(.system(size: 20, weight: .bold))
 
@@ -36,7 +35,7 @@ struct PaymentDetails: View {
                     Spacer()
 
                     Text(row.value)
-                        .font(.system(size: 18, weight: row.label.lowercased() == "total" ? .semibold : .regular))
+                        .font(.app(size: .xl, weight: .bold))
                         .foregroundColor(.black)
                 }
                 .frame(maxWidth: .infinity)
