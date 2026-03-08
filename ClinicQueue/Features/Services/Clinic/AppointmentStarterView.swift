@@ -104,7 +104,14 @@ struct AppointmentStarterView: View {
                 .padding(.vertical, 20)
                 .navigationDestination(isPresented: $navigateToPaymentView) {
                     if selectedPaymentOption == "card" {
-                        PaymentView()
+                        PaymentView {
+                            PaymentStatusView(
+                                isSuccess: true,
+                                onContinue: {
+                                    QueueStageWaitingView()
+                                }
+                            )
+                        }
                     } else {
                         PaymentThroughCashView()
                     }
