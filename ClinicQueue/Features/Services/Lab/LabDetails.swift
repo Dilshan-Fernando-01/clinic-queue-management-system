@@ -1,13 +1,13 @@
 //
-//  LabList.swift
+//  LabDetails.swift
 //  ClinicQueue
 //
-//  Created by Keshana Liyanaarachchi on 2026-03-06.
+//  Created by Keshana Liyanaarachchi on 2026-03-08.
 //
 
 import SwiftUI
 
-struct LabList: View {
+struct LabDetails: View {
     let specialties = [
         "General Physician",
         "Cardiologist",
@@ -86,68 +86,60 @@ struct LabList: View {
     
     @State private var selectedTests: Set<UUID> = []
     @State private var showingSelectedSection = false
-    @State private var selectedCategory: String?
-    @State private var isNavigatingToDetails = false
+    @State private var searchText = ""
+    var selectedCategory: String
+    
+    init(selectedCategory: String) {
+        self.selectedCategory = selectedCategory
+    }
     
     var body: some View {
-        NavigationStack {
-            ZStack(alignment: .top) {
-                ScrollView {
-                    
-                    VStack(alignment: .center) {
-                        // Empty VStack as in original
-                    }
-                    
-                    Text("Category")
-                        .font(.app(.heading))
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.top, 32)
-                    
-                    LazyVGrid(columns: columns, spacing: 8) {
-                        ForEach(specialties, id: \.self) { specialty in
-                            LabCategoryButton(title: specialty, icon: "SearchIcon", iconWidth: 38) {
-                                print("category clicked: \(specialty)")
-                                selectedCategory = specialty
-                                isNavigatingToDetails = true
-                            }
-                            .frame(maxHeight: .infinity, alignment: .top)
+        ZStack(alignment: .top) {
+            ScrollView {
+                
+                VStack(alignment: .center) {
+                    // Search input field
+                    IconInputField(
+                        placeholder: "Find a Lab Test",
+                        defaultValue: searchText,
+                        iconName: "SearchIcon",
+                        action: { print("Input changed") }
+                    )
+                    .padding(.top, 16)
+                }
+                
+                Text("Category")
+                    .font(.app(.heading))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.top, 32)
+                
+                LazyVGrid(columns: columns, spacing: 8) {
+                    ForEach(specialties, id: \.self) { specialty in
+                        LabCategoryButton(
+                            title: specialty,
+                            icon: "SearchIcon",
+                            iconWidth: 38,
+                            backgroundColor: specialty == selectedCategory ? Color.green : Color.clear,
+                            foregroundColor: specialty == selectedCategory ? Color.white : Color.primary
+                        ) {
+                            print("category clicked: \(specialty)")
                         }
+                        .frame(maxHeight: .infinity, alignment: .top)
                     }
-                    .padding(.top, 20)
-                    
-                    if !selectedTests.isEmpty {
-                        Text("Selected Tests")
-                            .font(.app(.heading))
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.top, 32)
-                        
-                        VStack(spacing: 12) {
-                            ForEach(labTests.filter { selectedTests.contains($0.id) }) { test in
-                                SelectableLabCard(
-                                    props: test,
-                                    isSelected: true,
-                                    onTap: {
-                                        toggleSelection(test.id)
-                                    },
-                                    onButtonTap: {
-                                        print("Fee button tapped for: \(test.title)")
-                                    }
-                                )
-                            }
-                        }
-                        .padding(.top, 20)
-                    }
-                    
-                    Text("Choose Your Lab Test")
+                }
+                .padding(.top, 20)
+                
+                if !selectedTests.isEmpty {
+                    Text("Selected Tests")
                         .font(.app(.heading))
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.top, 32)
                     
                     VStack(spacing: 12) {
-                        ForEach(labTests.filter { !selectedTests.contains($0.id) }) { test in
+                        ForEach(labTests.filter { selectedTests.contains($0.id) }) { test in
                             SelectableLabCard(
                                 props: test,
-                                isSelected: false,
+                                isSelected: true,
                                 onTap: {
                                     toggleSelection(test.id)
                                 },
@@ -158,30 +150,46 @@ struct LabList: View {
                         }
                     }
                     .padding(.top, 20)
-                    
-                    HStack {
-                        PrimaryButton(title: "Next", maxWidth: 160) {
-                            print("Selected tests: \(selectedTests.count)")
-                        }
+                }
+                
+                Text("Choose Your Lab Test")
+                    .font(.app(.heading))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.top, 32)
+                
+                VStack(spacing: 12) {
+                    ForEach(labTests.filter { !selectedTests.contains($0.id) }) { test in
+                        SelectableLabCard(
+                            props: test,
+                            isSelected: false,
+                            onTap: {
+                                toggleSelection(test.id)
+                            },
+                            onButtonTap: {
+                                print("Fee button tapped for: \(test.title)")
+                            }
+                        )
                     }
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .padding(.top)
-                    .disabled(selectedTests.isEmpty)
-                    .opacity(selectedTests.isEmpty ? 0.5 : 1.0)
                 }
-                .padding(.horizontal, 20)
-                .padding(.top, 0)
-                .padding(.bottom, 32)
-                .animation(.spring(), value: selectedTests.isEmpty)
-            }
-            .safeAreaInset(edge: .top) {
-                HeaderSection(title: "Find Lab Test")
-            }
-            .navigationDestination(isPresented: $isNavigatingToDetails) {
-                if let category = selectedCategory {
-                    LabDetails(selectedCategory: category)
+                .padding(.top, 20)
+                
+                HStack {
+                    PrimaryButton(title: "Next", maxWidth: 160) {
+                        print("Selected tests: \(selectedTests.count)")
+                    }
                 }
+                .frame(maxWidth: .infinity, alignment: .center)
+                .padding(.top)
+                .disabled(selectedTests.isEmpty)
+                .opacity(selectedTests.isEmpty ? 0.5 : 1.0)
             }
+            .padding(.horizontal, 20)
+            .padding(.top, 0)
+            .padding(.bottom, 32)
+            .animation(.spring(), value: selectedTests.isEmpty)
+        }
+        .safeAreaInset(edge: .top) {
+            HeaderSection(title: "Find Lab Test")
         }
     }
     
@@ -196,8 +204,8 @@ struct LabList: View {
     }
 }
 
-struct LabListView_Previews: PreviewProvider {
+struct LabDetailsView_Previews: PreviewProvider {
     static var previews: some View {
-        LabList()
+        LabDetails(selectedCategory: "General Physician")
     }
 }

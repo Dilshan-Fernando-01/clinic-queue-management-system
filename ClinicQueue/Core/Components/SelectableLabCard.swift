@@ -57,7 +57,7 @@ struct SelectableLabCard: View {
                 if !props.buttonText.isEmpty {
                     PrimaryButton(
                         title: props.buttonText,
-                        maxWidth: 120
+                        maxWidth: 160
                     ) {
                         onButtonTap()
                     }
@@ -78,7 +78,7 @@ struct SelectableLabCard: View {
     }
 }
 
-// Data model (unchanged)
+
 struct LabCardData: Identifiable {
     let id = UUID()
     let icon: String
