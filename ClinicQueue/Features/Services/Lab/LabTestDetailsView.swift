@@ -19,7 +19,16 @@ struct LabTestDetailsView: View {
         PaymentDetailRow(label: "Additional Discount", value: "-"),
         PaymentDetailRow(label: "Total", value: "$70.00")
     ]
-    
+    private let paymentOptionsData: [CheckboxItem] = [
+        CheckboxItem(
+            key: "card",
+            label: "Card Payment",
+            icon: Image("Card")
+        ),
+        CheckboxItem(key: "cash", label: "Cash Payment", icon: Image("Cash"))
+    ]
+    @State private var navigateToPaymentView = false
+    @State private var selectedPaymentOption: String? = "card"
     var body: some View {
         ZStack(alignment: .top) {
             ScrollView {
@@ -102,6 +111,13 @@ struct LabTestDetailsView: View {
                     
                     PaymentDetails(rows: paymentDetailsData)
                         .padding(.top, Spacing.section)
+                    
+                    PaymentOptions(
+                        items: paymentOptionsData,
+                        selectedKey: $selectedPaymentOption
+                    )
+                    
+                    .padding(.top, Spacing.section)
 
                     HStack {
                         PrimaryButton(title: "Booking", maxWidth: 220) {
@@ -109,6 +125,21 @@ struct LabTestDetailsView: View {
                             navigateToNext = true
                         }
                         .frame(maxWidth: .infinity, alignment: .center)
+                    }
+                    
+                    .navigationDestination(isPresented: $navigateToPaymentView) {
+                        if selectedPaymentOption == "card" {
+                            PaymentView {
+                                PaymentStatusView(
+                                    isSuccess: true,
+                                    onContinue: {
+                                        QueueStageWaitingView()
+                                    }
+                                )
+                            }
+                        } else {
+                            PaymentThroughCashView()
+                        }
                     }
                     .padding(.top, 2)
                     .padding(.bottom, 16)

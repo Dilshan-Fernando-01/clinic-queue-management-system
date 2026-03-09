@@ -17,6 +17,7 @@ struct LandingView: View {
                                 .frame(width: 180, height: 160)
                                 .foregroundColor(.black.opacity(0.4))
                         )
+                       
                 }
 
              

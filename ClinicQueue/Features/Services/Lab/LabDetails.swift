@@ -97,16 +97,16 @@ struct LabDetails: View {
         ZStack(alignment: .top) {
             ScrollView {
                 
-                VStack(alignment: .center) {
-                    // Search input field
-                    IconInputField(
-                        placeholder: "Find a Lab Test",
-                        defaultValue: searchText,
-                        iconName: "SearchIcon",
-                        action: { print("Input changed") }
-                    )
-                    .padding(.top, 16)
-                }
+//                VStack(alignment: .center) {
+//                    // Search input field
+//                    IconInputField(
+//                        placeholder: "Find a Lab Test",
+//                        defaultValue: searchText, value: <#Binding<String>#>,
+//                        iconName: "SearchIcon",
+//                        action: { print("Input changed") }
+//                    )
+//                    .padding(.top, 16)
+//                }
                 
                 Text("Category")
                     .font(.app(.heading))
