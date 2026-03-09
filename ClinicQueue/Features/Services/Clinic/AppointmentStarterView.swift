@@ -23,7 +23,7 @@ struct AppointmentStarterView: View {
         let nextSlotIndex = currentQueue + 1
 
         return QueueOption(
-            heading: "Slot \(nextSlotIndex)",
+            heading: String(format: "%02d", nextSlotIndex),
             subText: firstAvailability.timeRange
         )
     }
@@ -136,6 +136,12 @@ struct AppointmentStarterView: View {
                     .padding(.top, Spacing.section)
                     
                     PrimaryButton(title: "Book Appointment") {
+                        if var visit = sessionManager.currentClinicVisit {
+                              visit.consultationFee = consultationFee
+                              visit.adminFee = adminFee
+                              sessionManager.currentClinicVisit = visit
+                          }
+                        
                         navigateToPaymentView = true
                     }
                     .padding(.horizontal)
@@ -162,8 +168,21 @@ struct AppointmentStarterView: View {
                     if var visit = sessionManager.currentClinicVisit, let doctor = assignedDoctor {
 
                         let cleanedPrice = doctor.price?.replacingOccurrences(of: "$", with: "") ?? "0"
-                        visit.consultationFee = Double(cleanedPrice) ?? 0
-                        visit.adminFee = PaymentConfig.adminFee
+                        let price = Double(cleanedPrice) ?? 0
+
+                        var doctorStep = ClinicStep(
+                            type: .doctor,
+                            name: doctor.heading,
+                            description: doctor.subheading,
+                            estimatedWait: "~15 min",
+                            price: price,
+                            location: nil,
+                            requirements: nil,
+                            specialty: doctor.subheading,
+                            queueNumber: nextAvailableQueue?.heading
+                        )
+
+                        visit.updateStep(doctorStep)
                         sessionManager.currentClinicVisit = visit
                     }
                 }

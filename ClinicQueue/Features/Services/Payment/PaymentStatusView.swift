@@ -17,12 +17,29 @@ struct PaymentStatusView<NextDestination: View>: View {
     
     
     
-    private let paymentDetailsData: [PaymentDetailRow] = [
-        PaymentDetailRow(label: "Consultation", value: "$59.00"),
-        PaymentDetailRow(label: "Admin Fee", value: "$01.00"),
-        PaymentDetailRow(label: "Additional Discount", value: "-"),
-        PaymentDetailRow(label: "Total", value: "$70.00")
-    ]
+    private var paymentDetailsData: [PaymentDetailRow] {
+
+        guard let visit = sessionManager.currentClinicVisit else { return [] }
+
+        return [
+            PaymentDetailRow(
+                label: "Consultation",
+                value: "$\(String(format: "%.2f", visit.consultationFee ?? 0))"
+            ),
+            PaymentDetailRow(
+                label: "Admin Fee",
+                value: "$\(String(format: "%.2f", visit.adminFee ?? 0))"
+            ),
+            PaymentDetailRow(
+                label: "Additional Discount",
+                value: "$\(String(format: "%.2f", PaymentConfig.additionalDiscount))"
+            ),
+            PaymentDetailRow(
+                label: "Total",
+                value: "$\(String(format: "%.2f", visit.totalPayment))"
+            )
+        ]
+    }
     
     @EnvironmentObject var sessionManager: SessionManager
     
@@ -58,10 +75,20 @@ struct PaymentStatusView<NextDestination: View>: View {
                         ) {
                             if isSuccess {
                                 if var currentVisit = sessionManager.currentClinicVisit {
-                                    currentVisit.doctorName = doctor?.heading
-                                    currentVisit.specialty = doctor?.subheading
-                                    currentVisit.queueNumber = queue?.heading
-                                    currentVisit.status = "In Progress"
+                                    if var visit = sessionManager.currentClinicVisit, let doctor = doctor {
+
+                                        var doctorStep = visit.doctorStep ?? ClinicStep(type: .doctor, name: doctor.heading)
+
+                                        doctorStep.name = doctor.heading
+                                        doctorStep.specialty = doctor.subheading
+                                        doctorStep.queueNumber = queue?.heading
+
+                                        let cleanedPrice = doctor.price?.replacingOccurrences(of: "$", with: "") ?? "0"
+                                        doctorStep.price = Double(cleanedPrice) ?? 0
+
+                                        visit.updateStep(doctorStep)
+                                        sessionManager.currentClinicVisit = visit
+                                    }
                                     if let priceString = doctor?.price {
                                         let cleanedPrice = priceString.replacingOccurrences(of: "$", with: "")
                                         currentVisit.consultationFee = Double(cleanedPrice) ?? 0

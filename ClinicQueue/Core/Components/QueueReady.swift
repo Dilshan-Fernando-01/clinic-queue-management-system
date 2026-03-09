@@ -15,20 +15,16 @@ struct QueueReady: View {
     
     var body: some View {
         ZStack {
-            
-        
             Image("welcome_bg")
                 .resizable()
                 .scaledToFill()
-                .frame(height: 600)
-                .frame(width: 450)
-         
+                .ignoresSafeArea()
+            
             VStack(spacing: 32) {
                 
                 Spacer()
                 
-         
-                VStack(spacing: 16) {
+                VStack(spacing: 26) {
                     Text("Your Queue Number")
                         .font(.system(size: 22, weight: .semibold))
                         .foregroundColor(.white)
@@ -37,11 +33,10 @@ struct QueueReady: View {
                         .font(.system(size: 48, weight: .bold))
                         .foregroundColor(.white)
                         .frame(width: 120, height: 120)
-                        .background(Color.black)
+                        .background(Color.black.opacity(0.8))
                         .cornerRadius(20)
                 }
                 
-      
                 VStack(spacing: 12) {
                     Text("Now Serving")
                         .font(.system(size: 18, weight: .semibold))
@@ -51,11 +46,11 @@ struct QueueReady: View {
                         .font(.system(size: 28, weight: .bold))
                         .foregroundColor(.white)
                         .frame(width: 80, height: 60)
-                        .background(Color.black)
+                        .background(Color.black.opacity(0.8))
                         .cornerRadius(12)
                 }
                 
-            
+                // Wait Time Section
                 VStack(spacing: 8) {
                     Text("Estimated Wait Time")
                         .font(.system(size: 16, weight: .medium))
@@ -66,10 +61,10 @@ struct QueueReady: View {
                         .foregroundColor(.white)
                         .padding(.horizontal, 24)
                         .padding(.vertical, 12)
-                        .background(Color.black)
+                        .background(Color.black.opacity(0.8))
                         .cornerRadius(20)
                 }
-                
+                Spacer()
                 Spacer()
                 Spacer()
                 Spacer()

@@ -36,9 +36,37 @@ struct ClinicVisit: Identifiable {
     var consultationFee: Double?
     var adminFee: Double?
     var totalPayment: Double {
+
         (consultationFee ?? 0.0) + (adminFee ?? 0.0) - PaymentConfig.additionalDiscount
     }
     
-    var status: String?
+    
+    var steps: [ClinicStep] = []
+    
+    mutating func updateStep(_ step: ClinicStep) {
+        if let index = steps.firstIndex(where: { $0.id == step.id }) {
+            steps[index] = step
+        } else {
+            steps.append(step)
+        }
+    }
+    
+    var doctorStep: ClinicStep? {
+          get { steps.first(where: { $0.type == .doctor }) }
+          set {
+              guard let newStep = newValue else { return }
+              updateStep(newStep)
+          }
+      }
+    
+    var currentStepIndex: Int = 0
+     var currentStep: ClinicStep? {
+         guard steps.indices.contains(currentStepIndex) else { return nil }
+         return steps[currentStepIndex]
+     }
+    
+    var status: StepStatus {
+           steps.last?.status ?? .pending
+       }
 
 }
