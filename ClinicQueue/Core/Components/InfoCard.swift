@@ -15,6 +15,9 @@ struct InfoCardData {
     let detail1: (label: String, value: String)?
     let detail2: (label: String, value: String)?
     let price: String?
+
+    let availableDates: [DoctorAvailability]?  
+    let maxPatientsPerDay: Int?
     
     init(
         image: Image,
@@ -23,7 +26,9 @@ struct InfoCardData {
         activeQueueCount: String? = nil,
         detail1: (label: String, value: String)? = nil,
         detail2: (label: String, value: String)? = nil,
-        price: String? = nil
+        price: String? = nil,
+        availableDates: [DoctorAvailability]? = nil,
+        maxPatientsPerDay: Int? = nil
     ) {
         self.image = image
         self.heading = heading
@@ -32,11 +37,14 @@ struct InfoCardData {
         self.detail1 = detail1
         self.detail2 = detail2
         self.price = price
+        self.availableDates = availableDates
+        self.maxPatientsPerDay = maxPatientsPerDay
     }
 }
 
 struct InfoCard: View {
     let data: InfoCardData
+    var onPriceTap: (() -> Void)? = nil
     
     var body: some View {
         HStack(alignment: .center, spacing: 20) {
@@ -93,14 +101,19 @@ struct InfoCard: View {
                     
 
                     if let price = data.price {
-                        Text(price)
-                            .font(.system(size: 13, weight: .semibold))
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(AppColors.primary)
-                            .clipShape(Capsule())
-                            .padding(.top, 6)
+                        Button(action: {
+                            onPriceTap?()
+                        }) {
+                            Text(price)
+                                .font(.system(size: 13, weight: .semibold))
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(AppColors.primary)
+                                .clipShape(Capsule())
+                        }
+                        .padding(.top, 6)
+                        .buttonStyle(.plain)
                     }
                 }
             }
