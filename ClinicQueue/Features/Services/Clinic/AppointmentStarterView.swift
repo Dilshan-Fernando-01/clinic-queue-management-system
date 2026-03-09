@@ -30,6 +30,7 @@ struct AppointmentStarterView: View {
             activeQueueCount: doctorActiveQueue,
             detail1: doctorDetail1,
             detail2: doctorDetail2
+            
         )
     }
     
