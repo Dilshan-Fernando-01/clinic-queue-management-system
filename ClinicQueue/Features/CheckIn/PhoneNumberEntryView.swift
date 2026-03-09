@@ -3,6 +3,7 @@ import SwiftUI
 
 struct PhoneNumberEntryView: View {
     @Environment(\.presentationMode) var presentationMode
+    @EnvironmentObject var sessionManager: SessionManager
     @State private var phoneNumber = ""
     @State private var navigateToOTP = false
     
@@ -66,7 +67,7 @@ struct PhoneNumberEntryView: View {
                 backgroundColor: phoneNumber.count >= 9 ? AppColors.primary : AppColors.primary.opacity(0.5)
             ) {
                 if phoneNumber.count >= 9 {
-                    // Navigate to OTP verification
+                    sessionManager.startPhoneSession(phoneNumber: phoneNumber)
                     navigateToOTP = true
                 }
             }

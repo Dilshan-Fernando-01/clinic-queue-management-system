@@ -8,62 +8,62 @@
 import SwiftUI
 
 struct SymptomsSelection: View {
+    
+    @EnvironmentObject var sessionManager: SessionManager
 
-    private let symptoms: [CheckboxItem] = [
-        CheckboxItem(key: "fever", label: "Fever"),
-        CheckboxItem(key: "headache", label: "Headache"),
-        CheckboxItem(key: "cough", label: "Cough / Cold"),
-        CheckboxItem(key: "stomach", label: "Stomach Pain"),
-        CheckboxItem(key: "skin", label: "Skin Rash / Allergy"),
-        CheckboxItem(key: "body", label: "Body Pain / Joint Pain"),
-        CheckboxItem(key: "vomiting", label: "Vomiting / Diarrhea"),
-        CheckboxItem(key: "general", label: "General Check-up")
-    ]
+    private let symptoms: [CheckboxItem] = SymptomData.symptoms.map {
+        CheckboxItem(key: $0.key, label: $0.label)
+    }
 
     @State private var selectedSymptoms: Set<String> = []
     @State private var navigateToAppitmentStarter = false
 
     var body: some View {
-        
-        
+        VStack(spacing: 0) {
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 24) {
+ 
+                    VStack(spacing: 12) {
+                        Text("Select Your Symptoms")
+                            .font(.system(size: 20, weight: .bold))
 
-        VStack(spacing: 24) {
+                        Text("Choose the symptoms you’re experiencing. We’ll assign the most suitable available doctor and place you in the queue.")
+                            .font(.system(size: 14))
+                            .multilineTextAlignment(.center)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(.top, 10)
 
-            VStack(spacing: 12) {
-
-                Text("Select Your Symptoms")
-                    .font(.system(size: 20, weight: .bold))
-
-                Text("Choose the symptoms you’re experiencing. We’ll assign the most suitable available doctor and place you in the queue.")
-                    .font(.system(size: 14))
-                    .multilineTextAlignment(.center)
-                    .foregroundColor(.secondary)
+                   
+                    RoundCheckboxGroup(
+                        items: symptoms,
+                        selectedKeys: $selectedSymptoms
+                    )
+                }
+                .padding(20)
             }
 
-            RoundCheckboxGroup(
-                items: symptoms,
-                selectedKeys: $selectedSymptoms
-            )
 
-            Spacer()
+            VStack {
+                PrimaryButton(title: "Proceed to Queue") {
+                    let selectedKeysArray = Array(selectedSymptoms)
+                    if let firstSymptomKey = selectedKeysArray.first,
+                       let symptomObj = SymptomData.symptoms.first(where: { $0.key == firstSymptomKey }) {
+                        sessionManager.currentClinicVisit?.selectedSymptom = symptomObj
+                    }
+                    sessionManager.currentClinicVisit?.symptomStrings = selectedKeysArray
 
-            PrimaryButton(title: "Proceed to Queue") {
-                navigateToAppitmentStarter = true
-                print("Selected symptoms:", selectedSymptoms)
-
+                    navigateToAppitmentStarter = true
+                    print("Selected symptoms:", selectedSymptoms)
+                }
+                .disabled(selectedSymptoms.isEmpty)
             }
-            
+            .padding(20)
+            .background(Color(UIColor.systemBackground))
+            .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: -5) 
         }
-        .padding(20)
         .navigationDestination(isPresented: $navigateToAppitmentStarter) {
-            AppointmentStarterView()
+            AppointmentStarterView().environmentObject(sessionManager)
         }
-        
-        
     }
-    
-}
-
-#Preview {
-    SymptomsSelection()
 }

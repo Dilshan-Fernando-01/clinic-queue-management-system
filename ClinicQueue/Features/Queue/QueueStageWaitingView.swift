@@ -16,3 +16,6 @@ struct QueueStageWaitingView: View{
         }
     }
 }
+#Preview {
+    QueueStageWaitingView()
+}

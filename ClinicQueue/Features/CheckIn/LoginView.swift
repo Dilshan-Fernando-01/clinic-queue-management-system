@@ -3,6 +3,8 @@ import SwiftUI
 
 struct LoginView: View {
     @State private var navigateToPhoneEntry = false
+    @EnvironmentObject var sessionManager: SessionManager
+    @State private var navigateToHome = false
     
     var body: some View {
         NavigationView {
@@ -31,7 +33,7 @@ struct LoginView: View {
                     .padding(.top, 20)
                     .padding(.bottom, 20)
                     
-                    // Or continue with
+
                     HStack {
                         Rectangle()
                             .fill(Color.gray.opacity(0.2))
@@ -46,12 +48,12 @@ struct LoginView: View {
                             .frame(height: 1)
                     }
                     
-                    // Social Login Buttons
+
                     SocialLoginButton(
                         iconName: "applelogo",
                         text: "Sign in with Apple"
                     ) {
-                        // Handle Apple Sign In
+                        sessionManager.startSSOSession(provider: .apple)
                     }
                     
                     SocialLoginButton(
@@ -59,21 +61,25 @@ struct LoginView: View {
                         iconColor: .red,
                         text: "Sign in with Google"
                     ) {
-                        // Handle Google Sign In
+                        sessionManager.startSSOSession(provider: .google)
                     }
                     
-                    // Guest Login
+
+                    Button(action: {
+                    sessionManager.startGuestSession()
+                    navigateToHome = true
+                    }) {
                     Text("Continue as Guest")
-                        .font(.system(size: 15, weight: .semibold))
-                        .foregroundColor(AppColors.primary)
-                        .frame(maxWidth: .infinity, alignment: .center)
-                        .padding()
-                    
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundColor(AppColors.primary)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding()
+                        }
                     Spacer()
-                }
-                .padding(.horizontal, 24)
+                         }
+                   .padding(.horizontal, 24)
                 
-                // Navigation Link
+
                 NavigationLink(
                     destination: PhoneNumberEntryView(),
                     isActive: $navigateToPhoneEntry

@@ -56,11 +56,11 @@ struct PaymentProcessingView<SuccessDestination: View>: View {
     }
 }
 
-#Preview {
-    PaymentStatusView(
-        isSuccess: true,
-        onContinue: {
-            Text("Next Page")
-        }
-    )
-}
+//#Preview {
+//    PaymentStatusView(
+//        isSuccess: true,
+//        onContinue: {
+//            Text("Next Page")
+//        }
+//    )
+//}

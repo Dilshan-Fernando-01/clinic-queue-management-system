@@ -9,8 +9,13 @@ import SwiftUI
 
 struct PaymentStatusView<NextDestination: View>: View {
     let isSuccess: Bool
-    let onContinue: () -> NextDestination
-    @State private var navigateNext = false
+      let doctor: InfoCardData?
+      let queue: QueueOption?
+      let onContinue: () -> NextDestination
+      let currentVisit: ClinicVisit?
+      @State private var navigateNext = false
+    
+    
     
     private let paymentDetailsData: [PaymentDetailRow] = [
         PaymentDetailRow(label: "Consultation", value: "$59.00"),
@@ -18,6 +23,8 @@ struct PaymentStatusView<NextDestination: View>: View {
         PaymentDetailRow(label: "Additional Discount", value: "-"),
         PaymentDetailRow(label: "Total", value: "$70.00")
     ]
+    
+    @EnvironmentObject var sessionManager: SessionManager
     
     var body: some View {
         NavigationStack {
@@ -49,6 +56,27 @@ struct PaymentStatusView<NextDestination: View>: View {
                         PrimaryButton(
                             title: isSuccess ? "Continue" : "Try Again"
                         ) {
+                            if isSuccess {
+                                if var currentVisit = sessionManager.currentClinicVisit {
+                                    currentVisit.doctorName = doctor?.heading
+                                    currentVisit.specialty = doctor?.subheading
+                                    currentVisit.queueNumber = queue?.heading
+                                    currentVisit.status = "In Progress"
+                                    if let priceString = doctor?.price {
+                                        let cleanedPrice = priceString.replacingOccurrences(of: "$", with: "")
+                                        currentVisit.consultationFee = Double(cleanedPrice) ?? 0
+                                    } else {
+                                        currentVisit.consultationFee = 0
+                                    }
+                               
+                                    currentVisit.consultationFee = doctor?.price.flatMap { Double($0) } ?? 0
+                                    currentVisit.adminFee = PaymentConfig.adminFee
+                                    
+                                 
+                                    sessionManager.currentClinicVisit = currentVisit
+                                }
+                            }
+                            
                             navigateNext = true
                         }
                     }
@@ -74,9 +102,9 @@ struct PaymentStatusView<NextDestination: View>: View {
     
 }
 
-#Preview {
-    PaymentStatusView(
-        isSuccess: true,
-        onContinue: { Text("Next Page") }
-    )
-}
+//#Preview {
+//    PaymentStatusView(
+//        isSuccess: true,
+//        onContinue: { Text("Next Page") }
+//    )
+//}

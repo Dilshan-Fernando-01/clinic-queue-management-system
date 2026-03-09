@@ -11,7 +11,7 @@ struct OTPVerificationView: View {
     let phoneNumber: String
     @Environment(\.presentationMode) var presentationMode
     
- 
+    @EnvironmentObject var sessionManager: SessionManager
     @State private var otpDigits: [String] = Array(repeating: "", count: 4)
     @FocusState private var focusedField: Int?
     @State private var navigateToHome = false
@@ -70,7 +70,7 @@ struct OTPVerificationView: View {
                 backgroundColor: isOTPComplete ? AppColors.primary : AppColors.primary.opacity(0.5)
             ) {
                 if isOTPComplete {
-                    
+                    sessionManager.startPhoneSession(phoneNumber: phoneNumber)
                     navigateToHome = true
                 }
             }
@@ -107,6 +107,7 @@ struct OTPVerificationView: View {
         }
         .background(
             NavigationLink(destination: ServicesView(), isActive: $navigateToHome) {
+                
                 EmptyView()
                     .navigationBarBackButtonHidden(true)
             }

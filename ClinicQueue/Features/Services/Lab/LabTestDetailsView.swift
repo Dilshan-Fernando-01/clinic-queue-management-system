@@ -129,14 +129,14 @@ struct LabTestDetailsView: View {
                     
                     .navigationDestination(isPresented: $navigateToPaymentView) {
                         if selectedPaymentOption == "card" {
-                            PaymentView {
-                                PaymentStatusView(
-                                    isSuccess: true,
-                                    onContinue: {
-                                        QueueStageWaitingView()
-                                    }
-                                )
-                            }
+//                            PaymentView {
+//                                PaymentStatusView(
+//                                    isSuccess: true,
+//                                    onContinue: {
+//                                        QueueStageWaitingView()
+//                                    }
+//                                )
+//                            }
                         } else {
                             PaymentThroughCashView()
                         }
