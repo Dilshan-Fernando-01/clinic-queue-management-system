@@ -1,6 +1,5 @@
 import SwiftUI
 
-// MARK: - Models
 
 struct NotificationItem: Identifiable {
     let id = UUID()
@@ -18,7 +17,6 @@ enum AvatarType {
     case personFemale
 }
 
-// MARK: - Sample Data
 
 let sampleNotifications: [(section: String, items: [NotificationItem])] = [
     (
@@ -66,7 +64,7 @@ let sampleNotifications: [(section: String, items: [NotificationItem])] = [
     )
 ]
 
-// MARK: - Avatar View
+
 
 struct NotificationAvatarView: View {
     let avatarType: AvatarType
@@ -133,7 +131,7 @@ struct NotificationAvatarView: View {
     }
 }
 
-// MARK: - Notification Card View
+
 
 struct NotificationCardView: View {
     let item: NotificationItem
@@ -175,7 +173,7 @@ struct NotificationCardView: View {
     }
 }
 
-// MARK: - Section Header View
+
 
 struct SectionHeaderView: View {
     let title: String
@@ -191,7 +189,7 @@ struct SectionHeaderView: View {
     }
 }
 
-// MARK: - Main Notification View
+
 
 struct NotificationView: View {
     @Environment(\.dismiss) private var dismiss
@@ -199,7 +197,7 @@ struct NotificationView: View {
     var body: some View {
         VStack(spacing: 0) {
 
-            // Navigation Bar
+       
             ZStack {
                 HStack {
                     Button(action: { dismiss() }) {
@@ -221,7 +219,7 @@ struct NotificationView: View {
             Divider()
                 .opacity(0.3)
 
-            // Scrollable Content
+     
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 0) {
                     ForEach(sampleNotifications, id: \.section) { group in
@@ -247,7 +245,7 @@ struct NotificationView: View {
     }
 }
 
-// MARK: - Preview
+
 
 struct NotificationView_Previews: PreviewProvider {
     static var previews: some View {
