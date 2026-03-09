@@ -35,7 +35,7 @@ extension PatientDetailsFormView {
 
 
 struct PatientDetailsFormView: View {
-
+    @EnvironmentObject var sessionManager: SessionManager
     @State private var name: String = ""
     @State private var age: String = ""
     @State private var gender: String? = nil
@@ -85,6 +85,15 @@ struct PatientDetailsFormView: View {
                 Spacer()
 
                 PrimaryButton(title: "Proceed to Queue") {
+                    
+                    sessionManager.currentClinicVisit = ClinicVisit(
+                          patientName: name,
+                          age: Int(age) ?? 0,
+                          gender: gender ?? "",
+                          symptomStrings: []
+                      )
+
+                    
 
                     navigateToSymptoms = true
 
@@ -97,7 +106,7 @@ struct PatientDetailsFormView: View {
             .padding(.top, 20)
 
             .navigationDestination(isPresented: $navigateToSymptoms) {
-                SymptomsSelection()
+                SymptomsSelection().environmentObject(sessionManager)
             }
             
             FloatingNav(

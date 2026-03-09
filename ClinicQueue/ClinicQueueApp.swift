@@ -9,9 +9,12 @@ import SwiftUI
 
 @main
 struct ClinicQueueApp: App {
+    
+    @StateObject private var sessionManager = SessionManager()
+    
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView().environmentObject(sessionManager)
         }
     }
 }

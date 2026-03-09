@@ -9,6 +9,8 @@ import SwiftUI
 
 struct PaymentView<SuccessDestination: View>: View {
     
+  
+    
     let onPaymentSuccess: () -> SuccessDestination
     
     @State private var nameOnCard = ""
@@ -25,12 +27,17 @@ struct PaymentView<SuccessDestination: View>: View {
     @State private var remainingSeconds = 349
     @State private var timer: Timer?
     
-    private let paymentDetailsData: [PaymentDetailRow] = [
-        PaymentDetailRow(label: "Consultation", value: "$59.00"),
-        PaymentDetailRow(label: "Admin Fee", value: "$01.00"),
-        PaymentDetailRow(label: "Additional Discount", value: "-"),
-        PaymentDetailRow(label: "Total", value: "$70.00")
-    ]
+    @Binding var currentVisit: ClinicVisit
+
+    
+    private var paymentDetailsData: [PaymentDetailRow] {
+        [
+            PaymentDetailRow(label: "Consultation", value: "$\(String(format: "%.2f", currentVisit.consultationFee ?? 0.0))"),
+            PaymentDetailRow(label: "Admin Fee", value: "$\(String(format: "%.2f", currentVisit.adminFee ?? 0.0))"),
+            PaymentDetailRow(label: "Additional Discount", value: "$\(String(format: "%.2f", PaymentConfig.additionalDiscount))"),
+            PaymentDetailRow(label: "Total", value: "$\(String(format: "%.2f", currentVisit.totalPayment))")
+        ]
+    }
     
     private let paymentMethods = [
         PaymentMethod(name: "Apple Pay", iconName: "apple"),
@@ -214,11 +221,11 @@ struct PaymentView<SuccessDestination: View>: View {
     }
 }
 
-#Preview {
-    PaymentView {
-        PaymentStatusView(
-            isSuccess: true,
-            onContinue: { Text("Next Page") }
-        )
-    }
-}
+//#Preview {
+//    PaymentView {
+//        PaymentStatusView(
+//            isSuccess: true,
+//            onContinue: { Text("Next Page") }
+//        )
+//    }
+//}

@@ -15,6 +15,7 @@ struct InfoCardData {
     let detail1: (label: String, value: String)?
     let detail2: (label: String, value: String)?
     let price: String?
+    var isPriceButtonVisble: Bool?
 
     let availableDates: [DoctorAvailability]?  
     let maxPatientsPerDay: Int?
@@ -28,7 +29,8 @@ struct InfoCardData {
         detail2: (label: String, value: String)? = nil,
         price: String? = nil,
         availableDates: [DoctorAvailability]? = nil,
-        maxPatientsPerDay: Int? = nil
+        maxPatientsPerDay: Int? = nil,
+        isPriceButtonVisble: Bool? = true
     ) {
         self.image = image
         self.heading = heading
@@ -39,6 +41,7 @@ struct InfoCardData {
         self.price = price
         self.availableDates = availableDates
         self.maxPatientsPerDay = maxPatientsPerDay
+        self.isPriceButtonVisble = isPriceButtonVisble
     }
 }
 
@@ -100,7 +103,7 @@ struct InfoCard: View {
                     }
                     
 
-                    if let price = data.price {
+                    if let price = data.price, data.isPriceButtonVisble == true {
                         Button(action: {
                             onPriceTap?()
                         }) {
