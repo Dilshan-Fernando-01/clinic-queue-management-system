@@ -4,6 +4,7 @@
 //
 //  Created by dilshan fernando on 2026-03-07.
 //
+
 import SwiftUI
 
 struct InfoCardData {
@@ -13,6 +14,25 @@ struct InfoCardData {
     let activeQueueCount: String?
     let detail1: (label: String, value: String)?
     let detail2: (label: String, value: String)?
+    let price: String?
+    
+    init(
+        image: Image,
+        heading: String,
+        subheading: String,
+        activeQueueCount: String? = nil,
+        detail1: (label: String, value: String)? = nil,
+        detail2: (label: String, value: String)? = nil,
+        price: String? = nil
+    ) {
+        self.image = image
+        self.heading = heading
+        self.subheading = subheading
+        self.activeQueueCount = activeQueueCount
+        self.detail1 = detail1
+        self.detail2 = detail2
+        self.price = price
+    }
 }
 
 struct InfoCard: View {
@@ -21,7 +41,6 @@ struct InfoCard: View {
     var body: some View {
         HStack(alignment: .center, spacing: 20) {
             
- 
             data.image
                 .resizable()
                 .scaledToFill()
@@ -30,10 +49,8 @@ struct InfoCard: View {
                 .background(Color.gray.opacity(0.3))
                 .clipShape(Circle())
             
-  
             VStack(alignment: .leading, spacing: 8) {
                 
-
                 VStack(alignment: .leading, spacing: 2) {
                     Text(data.heading)
                         .font(.system(size: 16, weight: .semibold))
@@ -44,7 +61,6 @@ struct InfoCard: View {
                         .foregroundColor(AppColors.placeholder)
                 }
                 
- 
                 VStack(alignment: .leading, spacing: 4) {
                     
                     if let queue = data.activeQueueCount {
@@ -73,6 +89,18 @@ struct InfoCard: View {
                                 .foregroundColor(AppColors.textdark)
                         }
                         .font(.system(size: 12))
+                    }
+                    
+
+                    if let price = data.price {
+                        Text(price)
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(AppColors.primary)
+                            .clipShape(Capsule())
+                            .padding(.top, 6)
                     }
                 }
             }

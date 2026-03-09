@@ -9,8 +9,7 @@ import SwiftUI
 struct CategoryGrid: View {
     
     let items: [CategoryItem]
-    
-    @State private var selectedItems: Set<UUID> = []
+    @Binding var selectedCategories: Set<String>
     
     let columns = [
         GridItem(.flexible()),
@@ -27,12 +26,12 @@ struct CategoryGrid: View {
                 
                 CategoryBoxGrid(
                     item: item,
-                    isSelected: selectedItems.contains(item.id),
+                    isSelected: selectedCategories.contains(item.title),
                     action: {
-                        if selectedItems.contains(item.id) {
-                            selectedItems.remove(item.id)
+                        if selectedCategories.contains(item.title) {
+                            selectedCategories.remove(item.title)
                         } else {
-                            selectedItems.insert(item.id)
+                            selectedCategories.insert(item.title)
                         }
                     }
                 )
