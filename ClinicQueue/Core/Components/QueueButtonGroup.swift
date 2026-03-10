@@ -17,43 +17,64 @@ struct QueueButtonGroup: View {
     let queues: [QueueOption]
     @Binding var selectedId: UUID?
 
+    private let columns = [
+        GridItem(.adaptive(minimum: 96), spacing: 10)
+    ]
+
     var body: some View {
-        HStack(spacing: 10) {
-            ForEach(queues) { queue in
-                let isSelected = selectedId == queue.id
-
-                Button {
-                    selectedId = queue.id
-                } label: {
-                    VStack(spacing: 6) {
-                        Text(queue.heading)
-                            .font(.system(size: 20, weight: .bold))
-                            .foregroundColor(isSelected ? .white : .black)
-
-                        Text(queue.subText)
-                            .font(.system(size: 8))
-                            .foregroundColor(isSelected ? .white : AppColors.text)
+        Group {
+            if queues.count == 1 {
+               
+                HStack {
+                    Spacer()
+                    queueButton(for: queues.first!)
+                    Spacer()
+                }
+            } else {
+               
+                LazyVGrid(columns: columns, spacing: 10) {
+                    ForEach(queues) { queue in
+                        queueButton(for: queue)
                     }
-                    .frame(minWidth: 96, minHeight: 76)
-                    .background(
-                        RoundedRectangle(cornerRadius: 10)
-                            .fill(isSelected ? AppColors.primary : .white)
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 10)
-                            .stroke(
-                                isSelected ? Color(hex: "157979") : Color(hex: "ECF5F5"),
-                                lineWidth: 2
-                            )
-                    )
                 }
             }
         }
-        .frame(maxWidth: .infinity, alignment: queues.count == 1 ? .center : .leading)
+        .animation(.easeInOut, value: selectedId)
         .onAppear {
             if queues.count == 1 {
                 selectedId = queues.first?.id
             }
+        }
+    }
+
+    // Extracted button view
+    private func queueButton(for queue: QueueOption) -> some View {
+        let isSelected = selectedId == queue.id
+
+        return Button {
+            selectedId = queue.id
+        } label: {
+            VStack(spacing: 6) {
+                Text(queue.heading)
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundColor(isSelected ? .white : .black)
+
+                Text(queue.subText)
+                    .font(.system(size: 8))
+                    .foregroundColor(isSelected ? .white : AppColors.text)
+            }
+            .frame(minWidth: 96, minHeight: 76)
+            .background(
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(isSelected ? AppColors.primary : .white)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 10)
+                    .stroke(
+                        isSelected ? Color(hex: "157979") : Color(hex: "ECF5F5"),
+                        lineWidth: 2
+                    )
+            )
         }
     }
 }

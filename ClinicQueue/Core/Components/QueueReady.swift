@@ -1,10 +1,3 @@
-//
-//  QueueReady.swift
-//  ClinicQueue
-//
-//  Created by Keshana Liyanaarachchi on 2026-03-09.
-//
-
 import SwiftUI
 
 struct QueueReady: View {
@@ -15,15 +8,16 @@ struct QueueReady: View {
     
     var body: some View {
         ZStack {
+            // Background image fills entire screen
             Image("welcome_bg")
                 .resizable()
                 .scaledToFill()
                 .ignoresSafeArea()
             
+
             VStack(spacing: 32) {
                 
-                Spacer()
-                
+  
                 VStack(spacing: 26) {
                     Text("Your Queue Number")
                         .font(.system(size: 22, weight: .semibold))
@@ -37,6 +31,7 @@ struct QueueReady: View {
                         .cornerRadius(20)
                 }
                 
+
                 VStack(spacing: 12) {
                     Text("Now Serving")
                         .font(.system(size: 18, weight: .semibold))
@@ -50,7 +45,7 @@ struct QueueReady: View {
                         .cornerRadius(12)
                 }
                 
-                // Wait Time Section
+
                 VStack(spacing: 8) {
                     Text("Estimated Wait Time")
                         .font(.system(size: 16, weight: .medium))
@@ -64,12 +59,12 @@ struct QueueReady: View {
                         .background(Color.black.opacity(0.8))
                         .cornerRadius(20)
                 }
-                Spacer()
-                Spacer()
-                Spacer()
+                
                 Spacer()
             }
+            .frame(maxHeight: .infinity, alignment: .top)
             .padding(.horizontal, 24)
+            .padding(.top, 40) 
         }
     }
 }

@@ -4,12 +4,10 @@
 <dict>
 	<key>UIAppFonts</key>
 	<array>
-		<string>Gilmer Regular.otf</string>
-		<string>Gilmer Light.otf</string>
-		<string>Gilmer Outline.otf</string>
-		<string>Gilmer Medium.otf</string>
-		<string>Gilmer Bold.otf</string>
-		<string>Gilmer Heavy.otf</string>
+		<string>Gilmer-Bold.otf</string>
+		<string>Gilmer-Heavy.ttf</string>
+		<string>Gilmer-Medium.ttf</string>
+		<string>Gilmer-regular-ttf</string>
 	</array>
 </dict>
 </plist>

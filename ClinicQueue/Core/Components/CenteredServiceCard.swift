@@ -41,7 +41,8 @@ struct CenteredServiceCard: View {
 
          
                 Text(service.title)
-                    .font(.headline.weight(.semibold))
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundColor(AppColors.textdark) 
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
                     .multilineTextAlignment(.center)

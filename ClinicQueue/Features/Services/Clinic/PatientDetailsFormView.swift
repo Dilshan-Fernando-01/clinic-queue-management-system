@@ -76,10 +76,11 @@ struct PatientDetailsFormView: View {
                     )
 
                     CustomDropdown(
-                        placeholder: "Gender",
-                        options: genderOptions,
-                        selectedKey: $gender
-                    )
+                     placeholder: "Gender",
+                     options: genderOptions,
+                     selectedKey: $gender,
+                    
+                     )
                 }
 
                 Spacer()

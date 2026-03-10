@@ -18,7 +18,6 @@ struct OTPVerificationView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
-            // Back Button
             Button(action: {
                 presentationMode.wrappedValue.dismiss()
             }) {
@@ -100,7 +99,6 @@ struct OTPVerificationView: View {
         .padding(.horizontal, 24)
         .navigationBarHidden(true)
         .onAppear {
-            // Auto-focus first field when view appears
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 focusedField = 0
             }
@@ -170,7 +168,7 @@ struct OTPDigitBox: View {
     }
 }
 
-// Preview
+
 struct OTPVerificationView_Previews: PreviewProvider {
     static var previews: some View {
         OTPVerificationView(phoneNumber: "77 123 4567")

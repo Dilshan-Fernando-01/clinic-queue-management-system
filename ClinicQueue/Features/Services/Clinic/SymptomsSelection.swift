@@ -67,3 +67,6 @@ struct SymptomsSelection: View {
         }
     }
 }
+#Preview {
+    SymptomsSelection()
+}
