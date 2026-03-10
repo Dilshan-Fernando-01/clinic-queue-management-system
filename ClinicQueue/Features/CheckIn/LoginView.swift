@@ -25,7 +25,6 @@ struct LoginView: View {
                     }
                     .padding(.top, 30)
                     
-                    // Phone Number Button with Navigation
                     PrimaryButton(title: "Continue with Phone Number") {
                         navigateToPhoneEntry = true
                     }

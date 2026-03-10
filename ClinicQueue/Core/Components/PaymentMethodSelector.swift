@@ -7,14 +7,14 @@
 
 import SwiftUI
 
-// MARK: - Payment Method Model
+
 struct PaymentMethod: Identifiable {
     let id = UUID()
     let name: String
     let iconName: String
 }
 
-// MARK: - Payment Method Button
+
 struct PaymentMethodButton: View {
     let method: PaymentMethod
     @Binding var selectedMethod: UUID?
@@ -97,6 +97,12 @@ struct PaymentMethodSelector: View {
     @State private var selectedMethod: UUID?
     @State private var showMore = false
     
+    init(title: String, methods: [PaymentMethod]) {
+            self.title = title
+            self.methods = methods
+            _selectedMethod = State(initialValue: methods.first?.id)
+        }
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text(title)
@@ -141,7 +147,7 @@ struct PaymentMethodSelector: View {
     private var displayedMethods: [PaymentMethod] {
         if methods.count > 4 {
             var firstThree = Array(methods.prefix(3))
-            firstThree.append(PaymentMethod(name: "More", iconName: "dots")) 
+            firstThree.append(PaymentMethod(name: "More", iconName: "dots"))
             return firstThree
         }
         return methods
