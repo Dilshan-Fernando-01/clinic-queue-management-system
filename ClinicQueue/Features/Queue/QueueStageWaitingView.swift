@@ -45,13 +45,10 @@ struct QueueStageWaitingView: View {
         ScrollView {
 
             VStack(spacing: 32) {
-
-                QueueReady(
-                    queueNumber: queueNumber,
-                    nowServing: nowServing,
-                    estimatedWait: estimatedWait
-                )
                 
+                QueueBanner()
+
+
                 Text("Services")
                     .font(.system(size: 20, weight: .bold))
                     .padding(.top, Spacing.section)
@@ -66,7 +63,6 @@ struct QueueStageWaitingView: View {
                     .padding(.top, Spacing.section)
 
             }
-            .padding(.top, 40)
         }
     }
 }

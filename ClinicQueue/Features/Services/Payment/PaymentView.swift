@@ -116,16 +116,10 @@ struct PaymentView<SuccessDestination: View>: View {
                             expirationDate: $expirationDate
                         )
                         .padding(.top, Spacing.section)
+                        .padding(.bottom, 20)
                         
-                        PrimaryButton(title: "Book Appointment", backgroundColor: isCardInfoValid ? AppColors.primary : AppColors.primary.opacity(0.5)) {
-                            isOtpModalOpen = true
-                            
-                            resetOtpTimer()
-                        }.disabled(!isCardInfoValid)
-                        .padding(.horizontal)
-                        .padding(.top, Spacing.section)
                     }
-                }
+                } .padding(.bottom, 150)
                 
                 
                 if isOtpModalOpen {
@@ -199,6 +193,25 @@ struct PaymentView<SuccessDestination: View>: View {
                         .padding()
                     }
                 }
+                VStack {
+                    Spacer()
+
+                    VStack {
+                        PrimaryButton(
+                            title: "Book Appointment",
+                            backgroundColor: isCardInfoValid ? AppColors.primary : AppColors.primary.opacity(0.5)
+                        ) {
+                            isOtpModalOpen = true
+                            resetOtpTimer()
+                        }
+                        .disabled(!isCardInfoValid)
+                    }
+                    .padding(20)
+                    .background(Color(UIColor.systemBackground))
+                    .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: -5)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+                
                 
                 FloatingNav(
                     mainIcon: "plus",
