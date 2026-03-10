@@ -135,17 +135,7 @@ struct AppointmentStarterView: View {
                     .padding(.horizontal)
                     .padding(.top, Spacing.section)
                     
-                    PrimaryButton(title: "Book Appointment") {
-                        if var visit = sessionManager.currentClinicVisit {
-                              visit.consultationFee = consultationFee
-                              visit.adminFee = adminFee
-                              sessionManager.currentClinicVisit = visit
-                          }
-                        
-                        navigateToPaymentView = true
-                    }
-                    .padding(.horizontal)
-                    .padding(.top, Spacing.section)
+
                 }
                 .padding(.vertical, 20)
                 .onAppear {
@@ -211,8 +201,31 @@ struct AppointmentStarterView: View {
                     } else {
                         PaymentThroughCashView()
                     }
-                }
+                } .padding(.bottom, 140) 
+                
+            
             }
+            
+            VStack {
+                Spacer()
+
+                VStack {
+                    PrimaryButton(title: "Book Appointment") {
+                        if var visit = sessionManager.currentClinicVisit {
+                            visit.consultationFee = consultationFee
+                            visit.adminFee = adminFee
+                            sessionManager.currentClinicVisit = visit
+                        }
+
+                        navigateToPaymentView = true
+                    }
+                }
+                .padding(20)
+                .background(Color(UIColor.systemBackground))
+                .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: -5)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+            
             
                 FloatingNav(
                     mainIcon: "plus",
