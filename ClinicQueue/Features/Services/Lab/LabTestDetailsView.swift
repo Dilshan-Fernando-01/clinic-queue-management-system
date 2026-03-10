@@ -1,4 +1,3 @@
-
 //
 //  LabTestDetailsView.swift
 //  ClinicQueue
@@ -11,64 +10,64 @@ import SwiftUI
 struct LabTestDetailsView: View {
     let selectedTests: [LabCardData]
     var backgroundColor: Color = AppColors.primary
-    @State private var selectedTestIndex = 0
     @State private var navigateToNext = false
+    @State private var navigateToPaymentView = false
+    @State private var selectedPaymentOption: String? = "card"
+
     private let paymentDetailsData: [PaymentDetailRow] = [
         PaymentDetailRow(label: "Consultation", value: "$59.00"),
         PaymentDetailRow(label: "Admin Fee", value: "$01.00"),
         PaymentDetailRow(label: "Additional Discount", value: "-"),
         PaymentDetailRow(label: "Total", value: "$70.00")
     ]
+
     private let paymentOptionsData: [CheckboxItem] = [
-        CheckboxItem(
-            key: "card",
-            label: "Card Payment",
-            icon: Image("Card")
-        ),
+        CheckboxItem(key: "card", label: "Card Payment", icon: Image("Card")),
         CheckboxItem(key: "cash", label: "Cash Payment", icon: Image("Cash"))
     ]
-    @State private var navigateToPaymentView = false
-    @State private var selectedPaymentOption: String? = "card"
+
     var body: some View {
         ZStack(alignment: .top) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
+                    VStack(alignment: .leading, spacing: 20) {
+                        HeaderSection(title: "Lab Tests")
+                    }
+                    .padding(.top, -60)
+                
                     ForEach(Array(selectedTests.enumerated()), id: \.element.id) { index, test in
                         VStack(alignment: .leading, spacing: 16) {
-                            
-                            Text(test.title)
-                                .font(.app(.heading))
-                                .frame(maxWidth: .infinity, alignment: .center)
-                                .padding(.top, index == 0 ? 6 : 2)
-                            
-                         
-                            SelectableLabCard(
-                                props: test,
-                                isSelected: true,
-                                onTap: {},
+
+                        
+                            BloodTestCard(
+                                image: test.icon,
+                                title: test.title,
+                                specialText: test.description1,
+                                detailLine1: "\(test.label1)\(test.label1Text)",
+                                detailLine2: "\(test.label2)\(test.label2Text)",
+                                showExtraSection: false,
+                                fee: test.buttonText,
                                 onButtonTap: {
                                     print("Fee button tapped for: \(test.title)")
-                                }
+                                },
+                                isCheckboxSelectable: false
                             )
-                            
-                            // Required Section
+
+                     
                             VStack(alignment: .leading, spacing: 12) {
                                 Text("Required:")
                                     .font(.app(.subheading))
                                     .foregroundColor(.primary)
-                                
+
                                 VStack(alignment: .leading, spacing: 8) {
                                     HStack(alignment: .top, spacing: 8) {
-                                        Text("•")
-                                            .font(.app(.body))
+                                        Text("•").font(.app(.body))
                                         Text("No special preparation needed")
                                             .font(.app(.body))
                                             .foregroundColor(.secondary)
                                     }
-                                    
                                     HStack(alignment: .top, spacing: 8) {
-                                        Text("•")
-                                            .font(.app(.body))
+                                        Text("•").font(.app(.body))
                                         Text("Bring your lab request form")
                                             .font(.app(.body))
                                             .foregroundColor(.secondary)
@@ -77,18 +76,19 @@ struct LabTestDetailsView: View {
                                 .padding(.leading, 4)
                             }
                             .padding(.vertical, 8)
-                            
-                            // Timeline Section
+                            .padding(.horizontal, 10)
+
+            
                             VStack(alignment: .leading, spacing: 12) {
                                 Text("Timeline")
                                     .font(.app(.subheading))
                                     .foregroundColor(.primary)
-                                
+
                                 Text("We'll recommend the fastest option. You can change if needed.")
                                     .font(.app(.body))
                                     .foregroundColor(.secondary)
                                     .fixedSize(horizontal: false, vertical: true)
-                                
+
                                 HStack {
                                     Spacer()
                                     Text("Estimated Time ~ 45 min")
@@ -101,6 +101,8 @@ struct LabTestDetailsView: View {
                                 .cornerRadius(8)
                             }
                             .padding(.vertical, 8)
+                            .padding(.horizontal, 10)
+
                             
                             if index < selectedTests.count - 1 {
                                 Divider()
@@ -108,50 +110,39 @@ struct LabTestDetailsView: View {
                             }
                         }
                     }
-                    
+
                     PaymentDetails(rows: paymentDetailsData)
                         .padding(.top, Spacing.section)
-                    
+                        .padding(.horizontal, 10)
+
                     PaymentOptions(
                         items: paymentOptionsData,
                         selectedKey: $selectedPaymentOption
                     )
-                    
                     .padding(.top, Spacing.section)
+                    .padding(.horizontal, 10)
 
                     HStack {
                         PrimaryButton(title: "Booking", maxWidth: 220) {
-                            print("Continue to next step")
-                            navigateToNext = true
+                            navigateToPaymentView = true
                         }
                         .frame(maxWidth: .infinity, alignment: .center)
-                    }
-                    
-                    .navigationDestination(isPresented: $navigateToPaymentView) {
-                        if selectedPaymentOption == "card" {
-//                            PaymentView {
-//                                PaymentStatusView(
-//                                    isSuccess: true,
-//                                    onContinue: {
-//                                        QueueStageWaitingView()
-//                                    }
-//                                )
-//                            }
-                        } else {
-                            PaymentThroughCashView()
-                        }
                     }
                     .padding(.top, 2)
                     .padding(.bottom, 16)
                 }
-                .padding(.horizontal, 20)
+                .padding(.horizontal, 2)
             }
         }
-        .safeAreaInset(edge: .top) {
-            HeaderSection(title: "Lab Test Details")
-        }
-        .navigationDestination(isPresented: $navigateToNext) {
-            Text("Next View")
+       
+        .navigationDestination(isPresented: $navigateToPaymentView) {
+            if selectedPaymentOption == "card" {
+//                PaymentView {
+//                    PaymentStatusView(isSuccess: true, onContinue: { QueueStageWaitingView() })
+//                }
+            } else {
+                PaymentThroughCashView()
+            }
         }
     }
 }
@@ -168,7 +159,7 @@ struct LabTestDetailsView: View {
                 label1Text: "~45 min",
                 label2: "Location: ",
                 label2Text: "Room 02 - Consultation Wing",
-                buttonText: "Fee $25"
+                buttonText: "$25"
             ),
             LabCardData(
                 icon: "SearchIcon",
@@ -179,9 +170,8 @@ struct LabTestDetailsView: View {
                 label1Text: "~45 min",
                 label2: "Location: ",
                 label2Text: "Room 02 - Consultation Wing",
-                buttonText: "Fee $25"
+                buttonText: "$25"
             )
         ])
     }
 }
-

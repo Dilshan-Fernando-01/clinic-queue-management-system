@@ -17,8 +17,44 @@ struct BloodTestCard: View {
     var onButtonTap: (() -> Void)?
     
     var isCheckboxSelectable: Bool = false
+    var initiallySelected: Bool = false
     @State private var isSelected: Bool = false
     var onSelectionChange: ((Bool) -> Void)?
+
+    init(
+        image: String,
+        title: String,
+        specialText: String,
+        detailLine1: String,
+        detailLine2: String,
+        showExtraSection: Bool = false,
+        bottomTitleLeft: String = "",
+        listItems: [String] = [],
+        bottomTitleRight: String = "",
+        bottomSubTextRight: String = "",
+        fee: String,
+        onButtonTap: (() -> Void)? = nil,
+        isCheckboxSelectable: Bool = false,
+        initiallySelected: Bool = false,
+        onSelectionChange: ((Bool) -> Void)? = nil
+    ) {
+        self.image = image
+        self.title = title
+        self.specialText = specialText
+        self.detailLine1 = detailLine1
+        self.detailLine2 = detailLine2
+        self.showExtraSection = showExtraSection
+        self.bottomTitleLeft = bottomTitleLeft
+        self.listItems = listItems
+        self.bottomTitleRight = bottomTitleRight
+        self.bottomSubTextRight = bottomSubTextRight
+        self.fee = fee
+        self.onButtonTap = onButtonTap
+        self.isCheckboxSelectable = isCheckboxSelectable
+        self.initiallySelected = initiallySelected
+        self.onSelectionChange = onSelectionChange
+        self._isSelected = State(initialValue: initiallySelected)
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -74,7 +110,6 @@ struct BloodTestCard: View {
                 .stroke(isSelected ? Color(red: 0.28, green: 0.58, blue: 0.53) : Color.gray.opacity(0.15),
                         lineWidth: isSelected ? 2 : 1)
         )
-
         .overlay(alignment: .topTrailing) {
             if isCheckboxSelectable && isSelected {
                 Image(systemName: "checkmark.circle.fill")
@@ -114,7 +149,6 @@ struct BloodTestCard_Previews: PreviewProvider {
     static var previews: some View {
         ScrollView {
             VStack(spacing: 20) {
- 
                 BloodTestCard(
                     image: "doctor02",
                     title: "Blood Group & Rh",
@@ -126,7 +160,6 @@ struct BloodTestCard_Previews: PreviewProvider {
                     isCheckboxSelectable: true
                 )
                 
-  
                 BloodTestCard(
                     image: "doctor01",
                     title: "Comprehensive Lab",
