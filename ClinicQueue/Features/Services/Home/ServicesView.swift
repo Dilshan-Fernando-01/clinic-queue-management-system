@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ServicesView: View {
-   
+    @EnvironmentObject var sessionManager: SessionManager
     private let services: [Service] = [
         Service(
             icon: "stethoscope",
@@ -62,6 +62,29 @@ struct ServicesView: View {
 
     var body: some View {
         NavigationStack {
+            if let visit = sessionManager.currentClinicVisit, !visit.isSessionComplete,
+                let step = visit.doctorStep {
+
+                
+                 let nowServing = Int(step.nowServing ?? "2") ?? 0
+                 let queueNumber = Int(step.queueNumber ?? "0") ?? 0
+                 let maxQueue = 10
+                 let progress = min(max(((queueNumber - nowServing + 1) * 100) / maxQueue, 0), 100)
+
+                 NavigationLink(
+                     destination: Queue(),
+                     label: {
+                         ActiveQueueBanner(
+                             title: "Your Queue: \(step.name ?? "Doctor")",
+                             description: "Queue Number: \(step.queueNumber ?? "--"), Estimated Wait: \(step.estimatedWait ?? "--")",
+                             queueNumber: step.queueNumber ?? "--",
+                             progress: progress,
+                             onNavTap: {}
+                         )
+                         .padding(.bottom, 10)
+                     }
+                 )
+             }
             ZStack {
                 Color(.white)
                     .ignoresSafeArea()
