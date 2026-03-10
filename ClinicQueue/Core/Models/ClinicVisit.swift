@@ -68,5 +68,11 @@ struct ClinicVisit: Identifiable {
     var status: StepStatus {
            steps.last?.status ?? .pending
        }
+    
+}
 
+extension ClinicVisit {
+    var isSessionComplete: Bool {
+        steps.allSatisfy { $0.isFinished }
+    }
 }

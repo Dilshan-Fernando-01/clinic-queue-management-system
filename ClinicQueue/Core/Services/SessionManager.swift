@@ -50,3 +50,11 @@ enum LoginMethod {
     case apple
     case google
 }
+
+
+//var activeClinicVisit: ClinicVisit? {
+//    if let visit = currentClinicVisit, !visit.steps.allSatisfy({ $0.isFinished }) {
+//        return visit
+//    }
+//    return nil
+//}

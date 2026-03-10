@@ -29,13 +29,18 @@ struct PatientSession: Identifiable {
     var age: Int
     var gender: String
     var symptoms: [String] = []
-    
+    var selectedSymptom: Symptom?
+
     var assignedDoctor: InfoCardData?
-    var clinicQueueStep: QueueStep = .waiting
-    var labQueue: [LabTest] = []
-    var imagingQueue: [ImagingTest] = []
-    var pharmacyCart: [String] = [] 
+    var clinicSteps: [ClinicStep] = []    
+    var pharmacyCart: [String] = []
     var appointmentDate: Date?
-    
-    var isSessionComplete: Bool = false
+
+    var isSessionComplete: Bool {
+        clinicSteps.allSatisfy { $0.isFinished }
+    }
+
+    var currentStep: ClinicStep? {
+        clinicSteps.first { !$0.isFinished && !$0.isCancelled }
+    }
 }

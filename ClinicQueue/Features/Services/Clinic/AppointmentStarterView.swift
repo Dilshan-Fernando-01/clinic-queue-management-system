@@ -164,14 +164,14 @@ struct AppointmentStarterView: View {
                             type: .doctor,
                             name: doctor.heading,
                             description: doctor.subheading,
-                            estimatedWait: "~15 min",
-                            price: price,
-                            location: nil,
+                            estimatedWait: nextAvailableQueue?.subText ?? "~15 min",
+                            price: consultationFee,
+                            location: doctor.detail2?.1,   
                             requirements: nil,
                             specialty: doctor.subheading,
-                            queueNumber: nextAvailableQueue?.heading
+                            queueNumber: nextAvailableQueue?.heading,
+                            serviceImage: doctor.image
                         )
-
                         visit.updateStep(doctorStep)
                         sessionManager.currentClinicVisit = visit
                     }
@@ -186,7 +186,7 @@ struct AppointmentStarterView: View {
                                         doctor: assignedDoctor,
                                         queue: nextAvailableQueue,
                                         onContinue: {
-                                            QueueStageWaitingView()
+                                            Queue()
                                         },
                                         currentVisit: sessionManager.currentClinicVisit
                                     )
@@ -216,7 +216,16 @@ struct AppointmentStarterView: View {
                             visit.adminFee = adminFee
                             sessionManager.currentClinicVisit = visit
                         }
+                       
+                        let recommended = TestRecommendation.recommendedTests(for: "stomach")
 
+                        let labTests = recommended.filter { $0.type == .labTest }
+                        let imagingTests = recommended.filter { $0.type == .imaging }
+
+                        print("Lab Tests: \(labTests.map { $0.name })")
+                        print("Imaging Tests: \(imagingTests.map { $0.name })")
+                        
+                        
                         navigateToPaymentView = true
                     }
                 }

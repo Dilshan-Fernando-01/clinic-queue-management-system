@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 enum StepType {
     case doctor
@@ -16,13 +17,14 @@ enum StepType {
 enum StepStatus: String {
     case pending
     case waiting
+    case next
+    case ready
     case inProgress
     case completed
 }
 
 struct ClinicStep: Identifiable {
     let id = UUID()
-    
     var type: StepType
     var name: String
     var description: String?        
@@ -32,5 +34,9 @@ struct ClinicStep: Identifiable {
     var requirements: [String]?
     var specialty: String?
     var queueNumber: String?
+    var nowServing: String?
     var status: StepStatus = .pending
+    var serviceImage: Image?
+    var isFinished: Bool = false
+    var isCancelled: Bool = false 
 }
