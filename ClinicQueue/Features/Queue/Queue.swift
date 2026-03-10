@@ -12,7 +12,7 @@ struct Queue: View {
     @EnvironmentObject var sessionManager: SessionManager
     @State private var simulatedStatus: StepStatus = .waiting
 
-    // MARK: - Doctor Step
+    
     private var doctorStep: ClinicStep? {
         sessionManager.currentClinicVisit?.doctorStep
     }
@@ -43,6 +43,7 @@ struct Queue: View {
         }
     }
 
+ 
     private func startQueueSimulation() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 5) { simulatedStatus = .next }
         DispatchQueue.main.asyncAfter(deadline: .now() + 10) { simulatedStatus = .ready }
@@ -50,15 +51,34 @@ struct Queue: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 20) { simulatedStatus = .completed }
     }
 
-   
-    private var completedSteps: [ClinicStep] {
-        guard let steps = sessionManager.currentClinicVisit?.steps else { return [] }
-        return steps.filter { $0.isFinished && $0.type != .doctor }
+
+    private var requestedTests: [ClinicStep] {
+        guard let visit = sessionManager.currentClinicVisit else { return [] }
+        var tests: [ClinicStep] = []
+
+       
+        for symptomKey in visit.symptomStrings {
+            let recommended = TestRecommendation.recommendedTests(for: symptomKey)
+            tests.append(contentsOf: recommended)
+        }
+
+      
+        var uniqueTests: [ClinicStep] = []
+        for test in tests {
+            if !uniqueTests.contains(where: { $0.id == test.id }) {
+                uniqueTests.append(test)
+            }
+        }
+
+        print("DEBUG: Requested tests for current visit:")
+        for t in uniqueTests { print("- \(t.name)") }
+
+        return uniqueTests
     }
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 16) {
+            VStack(spacing: 24) {
 
              
                 if let visit = sessionManager.currentClinicVisit,
@@ -69,15 +89,13 @@ struct Queue: View {
                         nowServingNumber: doctorStep.queueNumber ?? "--",
                         estimatedWait: "~15 minutes"
                     )
-                  
                 }
 
-                
-                if let doctor = doctorInfo,
-                   simulatedStatus != .completed {
-                    VStack(spacing: 12) {
+               
+                if let doctor = doctorInfo {
+                    VStack(spacing: 16) {
                         Text("Currently Serving")
-                            .font(.system(size: 20, weight: .bold))
+                            .font(.system(size: 22, weight: .bold))
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal, 20)
                         InfoCard(data: doctor)
@@ -85,15 +103,15 @@ struct Queue: View {
                     }
                 }
 
-               
-                if simulatedStatus == .completed && !completedSteps.isEmpty {
-                    VStack(spacing: 12) {
-                        Text("Completed / Requested Services")
-                            .font(.system(size: 20, weight: .bold))
+              
+                if simulatedStatus == .completed && !requestedTests.isEmpty {
+                    VStack(spacing: 16) {
+                        Text("Doctor-Requested Services")
+                            .font(.system(size: 22, weight: .bold))
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal, 20)
 
-                        ForEach(completedSteps) { step in
+                        ForEach(requestedTests) { step in
                             BloodTestCard(
                                 image: step.serviceImage != nil ? "doctor01" : "Placeholder",
                                 title: step.name,
@@ -107,10 +125,12 @@ struct Queue: View {
                         }
                     }
                 }
+
             }
-            .padding(.top, 0)
+            .padding(.top, 20)
+            .padding(.bottom, 32)
         }
-        .background(Color(white: 0.95)) 
+        .background(Color(white: 0.95))
         .onAppear {
             startQueueSimulation()
         }
