@@ -46,6 +46,46 @@ struct PaymentView<SuccessDestination: View>: View {
         PaymentMethod(name: "PayPal", iconName: "paypal")
     ]
     
+    private var isCardInfoValid: Bool {
+        let containsNumbers = nameOnCard.rangeOfCharacter(from: .decimalDigits) != nil
+        let isNameValid = !nameOnCard.trimmingCharacters(in: .whitespaces).isEmpty && !containsNumbers
+        
+        let isCardNumberValid = cardNumber.count >= 15
+        let isCvvValid = cvv.count >= 3
+        
+        let isExpValid = validateExpirationDate(expirationDate)
+        
+        return isNameValid && isCardNumberValid && isCvvValid && isExpValid
+    }
+
+    private func validateExpirationDate(_ dateStr: String) -> Bool {
+        let components = dateStr.split(separator: "/")
+        guard components.count == 2,
+              let yearSuffix = Int(components[0]),
+              let month = Int(components[1]),
+              (1...12).contains(month) else {
+            return false
+        }
+        
+        let fullYear = 2000 + yearSuffix
+        
+        let calendar = Calendar.current
+        let currentYear = calendar.component(.year, from: Date())
+        let currentMonth = calendar.component(.month, from: Date())
+        
+        if fullYear > currentYear {
+            return true
+        } else if fullYear == currentYear {
+            return month >= currentMonth
+        }
+        
+        return false
+    }
+    
+    private var isOtpComplete: Bool {
+        !otpDigits.contains { $0.isEmpty }
+    }
+    
     var body: some View {
         
         NavigationStack {
@@ -77,10 +117,11 @@ struct PaymentView<SuccessDestination: View>: View {
                         )
                         .padding(.top, Spacing.section)
                         
-                        PrimaryButton(title: "Book Appointment") {
+                        PrimaryButton(title: "Book Appointment", backgroundColor: isCardInfoValid ? AppColors.primary : AppColors.primary.opacity(0.5)) {
                             isOtpModalOpen = true
+                            
                             resetOtpTimer()
-                        }
+                        }.disabled(!isCardInfoValid)
                         .padding(.horizontal)
                         .padding(.top, Spacing.section)
                     }
@@ -132,8 +173,10 @@ struct PaymentView<SuccessDestination: View>: View {
                             .font(.system(size: 15))
                             
                             
-                            PrimaryButton(title: "Confirm") {
-                                
+                            PrimaryButton(
+                                title: "Confirm",
+                                backgroundColor: isOtpComplete ? AppColors.primary : AppColors.primary.opacity(0.5)
+                            ) {
                                 timer?.invalidate()
                                 isOtpModalOpen = false
                                 
@@ -141,6 +184,8 @@ struct PaymentView<SuccessDestination: View>: View {
                                     isNavigateToPaymentProcess = true
                                 }
                             }
+                            .disabled(!isOtpComplete)
+                        
                             
                             
                             LinkButton(

@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct LandingView: View {
-    
+    @EnvironmentObject var sessionManager: SessionManager
     @State private var navigateToDoctorList = false
     
     var body: some View {
@@ -17,30 +17,30 @@ struct LandingView: View {
                                 .frame(width: 180, height: 160)
                                 .foregroundColor(.black.opacity(0.4))
                         )
-                       
+                    
                 }
-
-             
+                
+                
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Welcome")
                         .font(.largeTitle)
                         .bold()
-
+                    
                     Text("Lorem ipsum dolor sit amet consectetur.\nLorem id sit")
                         .foregroundColor(.gray)
-
+                    
                     Spacer()
-
+                    
                     HStack {
                         Spacer()
-                    
+                        
                         Button(action: {
                             navigateToDoctorList = true
                         }) {
                             HStack(spacing: 10) {
                                 Text("Continue")
                                     .foregroundColor(.gray)
-
+                                
                                 Image(systemName: "arrow.right")
                                     .foregroundColor(.white)
                                     .padding()
@@ -55,9 +55,15 @@ struct LandingView: View {
             }
             
             .navigationDestination(isPresented: $navigateToDoctorList) {
-                LoginView()
-                    .navigationBarBackButtonHidden(true)
+                if sessionManager.isLoggedIn {
+                    ServicesView()
+                        .navigationBarBackButtonHidden(true)
+                } else {
+                    LoginView()
+                        .navigationBarBackButtonHidden(true)
+                }
             }
+        
         }
     }
 }
