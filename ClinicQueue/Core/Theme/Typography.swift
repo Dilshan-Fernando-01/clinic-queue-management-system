@@ -27,7 +27,7 @@ enum AppTextStyle {
         case .body: return .regular
         case .paragraph: return .regular
         case .caption: return .regular
-        case .button: return .medium
+        case .button: return .bold
         }
     }
 }

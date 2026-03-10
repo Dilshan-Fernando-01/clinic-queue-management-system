@@ -7,6 +7,21 @@
 
 import SwiftUI
 
+private let paymentDetailsData: [PaymentDetailRow] = [
+    PaymentDetailRow(label: "Consultation", value: "$59.00"),
+    PaymentDetailRow(label: "Admin Fee", value: "$01.00"),
+    PaymentDetailRow(label: "Additional Discount", value: "-"),
+    PaymentDetailRow(label: "Total", value: "$70.00")
+]
+private let paymentOptionsData: [CheckboxItem] = [
+    CheckboxItem(
+        key: "card",
+        label: "Card Payment",
+        icon: Image("Card")
+    ),
+    CheckboxItem(key: "cash", label: "Cash Payment", icon: Image("Cash"))
+]
+
 struct DoctorAppointmentStarterView: View {
     let doctor: InfoCardData
 
@@ -25,7 +40,6 @@ struct DoctorAppointmentStarterView: View {
                         .padding(.horizontal)
                     
                     InfoCard(data: doctor)
-                        .padding(.horizontal)
                         .padding(.top, Spacing.section)
                     
                     VStack(alignment: .leading, spacing: 12) {
@@ -43,13 +57,25 @@ struct DoctorAppointmentStarterView: View {
                     .padding(.horizontal)
                     .padding(.top, Spacing.section)
                     
+                    
+                    PaymentDetails(rows: paymentDetailsData)
+                        .padding(.top, Spacing.section)
+                    
+                    PaymentOptions(
+                        items: paymentOptionsData,
+                        selectedKey: $selectedPaymentOption
+                    )
+                    
+                    .padding(.top, Spacing.section)
+                    
+                    
                     PrimaryButton(title: "Book Appointment") {
                         navigateToPaymentView = true
                     }
                     .padding(.horizontal)
                     .padding(.top, Spacing.section)
                 }
-                .padding(.vertical, 20)
+                .padding()
                 .navigationDestination(isPresented: $navigateToPaymentView) {
                   
                         Text("Please select a queue")
@@ -70,3 +96,19 @@ struct DoctorAppointmentStarterView: View {
     }
 
 
+extension InfoCardData {
+    static let mock = InfoCardData(
+        image: Image("doctor_placeholder"),
+        heading: "Dr. John Doe",
+        subheading: "Cardiologist",
+        price: "$50",
+        availableDates: []
+    )
+}
+
+
+#Preview {
+    NavigationStack {
+        DoctorAppointmentStarterView(doctor: .mock)
+    }
+}

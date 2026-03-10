@@ -1,20 +1,11 @@
-//
-//  CustomDropdown.swift
-//  ClinicQueue
-//
-//  Created by dilshan fernando on 2026-03-07.
-//
-
 import SwiftUI
 
-
-
 struct CustomDropdown: View {
-
     var placeholder: String
     var options: [DropdownOption]
 
     @Binding var selectedKey: String?
+    @FocusState var focusedField: FormField?
 
     var borderRadius: CGFloat = 100
     var borderWidth: CGFloat = 1
@@ -24,19 +15,17 @@ struct CustomDropdown: View {
     @State private var isOpen = false
 
     var body: some View {
-
         VStack(spacing: 0) {
-
             Button {
                 withAnimation {
                     isOpen.toggle()
+                    focusedField = isOpen ? .gender : nil
                 }
             } label: {
-
                 HStack {
-
                     Text(selectedLabel ?? placeholder)
                         .foregroundColor(selectedKey == nil ? AppColors.placeholder : AppColors.text)
+                        .allowsHitTesting(false) 
 
                     Spacer()
 
@@ -45,26 +34,28 @@ struct CustomDropdown: View {
                         .rotationEffect(.degrees(isOpen ? 180 : 0))
                 }
                 .padding(padding)
+                .frame(maxWidth: .infinity)
+                .background(Color.white)
                 .overlay(
                     RoundedRectangle(cornerRadius: borderRadius)
-                        .stroke(borderColor, lineWidth: borderWidth)
+                        .stroke(focusedField == .gender ? AppColors.primary : borderColor, lineWidth: borderWidth)
+                        .animation(.easeInOut(duration: 0.2), value: focusedField)
                 )
             }
 
             if isOpen {
                 VStack(spacing: 0) {
-
                     ForEach(options) { option in
-
                         Button {
                             selectedKey = option.key
-                            isOpen = false
+                            withAnimation {
+                                isOpen = false
+                                focusedField = nil
+                            }
                         } label: {
-
                             HStack {
                                 Text(option.label)
                                     .foregroundColor(AppColors.text)
-
                                 Spacer()
                             }
                             .padding(padding)
@@ -80,9 +71,10 @@ struct CustomDropdown: View {
                     RoundedRectangle(cornerRadius: 12)
                         .stroke(borderColor, lineWidth: 1)
                 )
+                .frame(maxWidth: .infinity)
             }
         }
-        .padding(.horizontal)
+        .frame(maxWidth: .infinity)
     }
 
     private var selectedLabel: String? {

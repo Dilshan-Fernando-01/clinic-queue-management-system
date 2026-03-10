@@ -139,9 +139,9 @@ struct PaymentMethodSelector: View {
     }
     
     private var displayedMethods: [PaymentMethod] {
-        if methods.count > 3 {
+        if methods.count > 4 {
             var firstThree = Array(methods.prefix(3))
-            firstThree.append(PaymentMethod(name: "More", iconName: "dots")) // More button
+            firstThree.append(PaymentMethod(name: "More", iconName: "dots")) 
             return firstThree
         }
         return methods

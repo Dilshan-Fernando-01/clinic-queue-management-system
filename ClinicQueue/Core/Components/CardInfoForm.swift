@@ -1,10 +1,3 @@
-//
-//  CardInfoForm.swift
-//  ClinicQueue
-//
-//  Created by dilshan fernando on 2026-03-08.
-//
-
 import SwiftUI
 
 struct CardInfoForm: View {
@@ -20,37 +13,33 @@ struct CardInfoForm: View {
             Text("Card Info")
                 .font(.system(size: 20, weight: .bold))
             
-
             InputField(
                 placeholder: "Name on the Card",
                 value: $nameOnCard
             )
             
-   
             InputField(
                 placeholder: "Card Number",
                 value: $cardNumber
             )
             
-
-            HStack(spacing: 8) {
+            HStack(spacing: 12) {
                 InputField(
                     placeholder: "CVV",
                     value: $cvv
                 )
-                .frame(width: UIScreen.main.bounds.width * 0.35)
+                .frame(maxWidth: 100)
                 
                 InputField(
                     placeholder: "Expiration Date (YY/MM)",
                     value: $expirationDate
                 )
-                .frame(width: UIScreen.main.bounds.width * 0.60)
+                .frame(maxWidth: .infinity)
             }
         }
-        .padding(.horizontal)
+        .padding(.horizontal, 16)
     }
 }
-
 
 struct CardInfoForm_Previews: PreviewProvider {
     @State static var name = ""

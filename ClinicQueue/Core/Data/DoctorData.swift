@@ -200,7 +200,7 @@ func generateDates(days: Int) -> [DoctorAvailability] {
             let weekday = formatter.string(from: date)
             let timeRange = "17:30 pm - 20:30 pm"
             let icon = Image(systemName: "calendar")
-            let queueLabel = "Slot \(i + 1)"
+            let queueLabel = "\(i + 1)"
 
             items.append(
                 DoctorAvailability(

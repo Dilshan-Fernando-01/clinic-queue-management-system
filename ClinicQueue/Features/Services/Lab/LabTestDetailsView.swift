@@ -184,3 +184,4 @@ struct LabTestDetailsView: View {
         ])
     }
 }
+

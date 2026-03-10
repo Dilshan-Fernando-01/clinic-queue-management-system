@@ -5,55 +5,50 @@ struct ServiceCard: View {
     var isHighlighted: Bool = false
 
     var body: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(service.background)
-                .shadow(color: Color.black.opacity(0.05),
-                        radius: 10, x: 0, y: 4)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 24, style: .continuous)
-                        .stroke(isHighlighted ? Color.purple : Color.clear,
-                                lineWidth: 3)
-                )
-
-            VStack(alignment: .leading, spacing: 12) {
-                // Icon with background
-                Image(systemName: service.icon)
-                    .font(.system(size: 24))
-                    .foregroundColor(.black)
+        VStack(alignment: .leading, spacing: 12) {
+           
+            ZStack {
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(Color.white.opacity(0.8))
                     .frame(width: 44, height: 44)
-                    .background(
+                    .overlay(
                         RoundedRectangle(cornerRadius: 12, style: .continuous)
-                            .fill(Color.white.opacity(0.8))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                    .stroke(isHighlighted ? Color.purple.opacity(0.6)
-                                                          : Color.black.opacity(0.06),
-                                            lineWidth: isHighlighted ? 2 : 1)
-                            )
+                            .stroke(isHighlighted ? AppColors.primary.opacity(0.6) : Color.black.opacity(0.06),
+                                    lineWidth: 1)
                     )
 
-                // Title - with minimum scale factor for long text
-                Text(service.title)
-                    .font(.headline.weight(.semibold))
-                    .lineLimit(2)
-                    .minimumScaleFactor(0.8)
-                    .fixedSize(horizontal: false, vertical: true)
-
-                // Subtitle - with proper multiline display
-                Text(service.subtitle)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .lineLimit(3)
-                    .minimumScaleFactor(0.8)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .multilineTextAlignment(.leading)
-
-                Spacer(minLength: 0)
+                Image(systemName: service.icon)
+                    .font(.system(size: 20))
+                    .foregroundColor(AppColors.textdark)
             }
-            .padding(16)
+            
+           
+            VStack(alignment: .leading, spacing: 4) {
+                Text(service.title)
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundColor(AppColors.textdark)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.leading)
+                
+                Text(service.subtitle)
+                    .font(.system(size: 12))
+                    .foregroundColor(AppColors.text)
+                    .lineLimit(3)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            
+            Spacer(minLength: 0)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .clipped()
+       
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(service.background)
+        .cornerRadius(24)
+        .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 4)
+        .overlay(
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .stroke(isHighlighted ? AppColors.primary : Color.clear, lineWidth: 2)
+        )
     }
 }

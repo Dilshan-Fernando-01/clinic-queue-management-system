@@ -25,8 +25,12 @@ struct PrimaryButton: View {
         }
         
     }
-    
-    
-    
-    
+  
 }
+
+#Preview {
+    PrimaryButton(title: "Booking", maxWidth: 220) {
+        print("Continue to next step")
+    }
+}
+
