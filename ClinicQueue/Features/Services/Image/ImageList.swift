@@ -12,7 +12,7 @@ struct ImageList: View {
     let specialties: [CategoryItem] = ImagingCategoriesData.categories
     let imagingTests: [ClinicStep] = ImagingData.imagingTests
 
-    
+    @EnvironmentObject var sessionManager: SessionManager
     @State private var selectedTests: Set<UUID> = []
     @State private var searchText = ""
     @State private var selectedCategory: String? = nil
@@ -158,6 +158,7 @@ struct ImageList: View {
                 .animation(.spring(), value: selectedTests.isEmpty)
                 .navigationDestination(isPresented: $navigateToNext) {
                     ImagingDetailsView(selectedTests: selectedImagingCards)
+                        .environmentObject(sessionManager)
                 }
 
                 // Sticky Next Button
@@ -195,9 +196,9 @@ struct ImageList: View {
         }
     }
 }
-
-struct ImageList_Previews: PreviewProvider {
-    static var previews: some View {
+#Preview {
+    NavigationStack {
         ImageList()
+            .environmentObject(SessionManager()) 
     }
 }

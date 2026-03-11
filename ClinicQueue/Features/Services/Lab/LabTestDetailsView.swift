@@ -10,143 +10,129 @@ import SwiftUI
 struct LabTestDetailsView: View {
     let selectedTests: [LabCardData]
     var backgroundColor: Color = AppColors.primary
-    @State private var navigateToNext = false
+
     @State private var navigateToPaymentView = false
     @State private var selectedPaymentOption: String? = "card"
+    @EnvironmentObject var sessionManager: SessionManager
 
-    private let paymentDetailsData: [PaymentDetailRow] = [
-        PaymentDetailRow(label: "Consultation", value: "$59.00"),
-        PaymentDetailRow(label: "Admin Fee", value: "$01.00"),
-        PaymentDetailRow(label: "Additional Discount", value: "-"),
-        PaymentDetailRow(label: "Total", value: "$70.00")
-    ]
+    private var adminFee: Double {
+        PaymentConfig.adminFee
+    }
+
+    private var totalPrice: Double {
+        selectedTests.reduce(0.0) { sum, test in
+            let cleaned = test.buttonText.replacingOccurrences(of: "$", with: "")
+            return sum + (Double(cleaned) ?? 0.0)
+        }
+    }
+    private var totalPayment: Double {
+        totalPrice + adminFee - PaymentConfig.additionalDiscount
+    }
+
+    // ✅ Dynamic payment details from actual selected tests
+    private var paymentDetailsData: [PaymentDetailRow] {
+        [
+            PaymentDetailRow(label: "Lab Tests",           value: "$ \(String(format: "%.2f", totalPrice))"),
+            PaymentDetailRow(label: "Admin Fee",           value: "$ \(String(format: "%.2f", adminFee))"),
+            PaymentDetailRow(label: "Additional Discount", value: "$ \(String(format: "%.2f", PaymentConfig.additionalDiscount))"),
+            PaymentDetailRow(label: "Total",               value: "$ \(String(format: "%.2f", totalPayment))")
+        ]
+    }
 
     private let paymentOptionsData: [CheckboxItem] = [
         CheckboxItem(key: "card", label: "Card Payment", icon: Image("Card")),
         CheckboxItem(key: "cash", label: "Cash Payment", icon: Image("Cash"))
     ]
 
+    private var visitBinding: Binding<ClinicVisit> {
+        Binding(
+            get: { sessionManager.currentClinicVisit ?? ClinicVisit(patientName: "", age: 0, gender: "") },
+            set: { sessionManager.currentClinicVisit = $0 }
+        )
+    }
+
     var body: some View {
-        ZStack(alignment: .top) {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
-                   
-                    VStack(alignment: .leading, spacing: 20) {
-                        
-                        Text("Lab Tests")
-                            .font(.system(size: 20, weight: .bold))
-                            .frame(maxWidth: .infinity, alignment: .center)
-                            .padding(.horizontal)
-                           
-                    }
-                
-                    ForEach(Array(selectedTests.enumerated()), id: \.element.id) { index, test in
-                        VStack(alignment: .leading, spacing: 16) {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 24) {
 
-                        
-                            BloodTestCard(
-                                image: test.icon,
-                                title: test.title,
-                                specialText: test.description1,
-                                detailLine1: "\(test.label1)\(test.label1Text)",
-                                detailLine2: "\(test.label2)\(test.label2Text)",
-                                showExtraSection: false,
-                                fee: test.buttonText,
-                                onButtonTap: {
-                                    print("Fee button tapped for: \(test.title)")
-                                },
-                                isCheckboxSelectable: false
-                            )
+                Text("Lab Tests")
+                    .font(.system(size: 20, weight: .bold))
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.horizontal)
 
-                     
-                            VStack(alignment: .leading, spacing: 12) {
-                                Text("Required:")
-                                    .font(.app(.subheading))
-                                    .foregroundColor(.primary)
+                ForEach(Array(selectedTests.enumerated()), id: \.element.id) { index, test in
+                    VStack(alignment: .leading, spacing: 16) {
 
-                                VStack(alignment: .leading, spacing: 8) {
-                                    HStack(alignment: .top, spacing: 8) {
-                                        Text("•").font(.app(.body))
-                                        Text("No special preparation needed")
-                                            .font(.app(.body))
-                                            .foregroundColor(.secondary)
-                                    }
-                                    HStack(alignment: .top, spacing: 8) {
-                                        Text("•").font(.app(.body))
-                                        Text("Bring your lab request form")
-                                            .font(.app(.body))
-                                            .foregroundColor(.secondary)
-                                    }
-                                }
-                                .padding(.leading, 4)
-                            }
-                            .padding(.vertical, 8)
-                            .padding(.horizontal, 10)
+                        // ✅ Same card style as TestHistoryView / ImagingDetailsView
+                        BloodTestCard(
+                            image: test.icon,
+                            title: test.title,
+                            specialText: test.description1,
+                            detailLine1: "\(test.label1)\(test.label1Text)",
+                            detailLine2: "",
+                            showExtraSection: true,
+                            bottomTitleLeft: "Requirements",
+                            listItems: ["No special preparation needed", "Bring your lab request form"],
+                            bottomTitleRight: "Approx Time",
+                            bottomSubTextRight: test.label1Text,
+                            fee: test.buttonText,
+                            isActiveQueue: true
+                        )
 
-            
-                            VStack(alignment: .leading, spacing: 12) {
-                                Text("Timeline")
-                                    .font(.app(.subheading))
-                                    .foregroundColor(.primary)
-
-                                Text("We'll recommend the fastest option. You can change if needed.")
-                                    .font(.app(.body))
-                                    .foregroundColor(.secondary)
-                                    .fixedSize(horizontal: false, vertical: true)
-
-                                HStack {
-                                    Spacer()
-                                    Text("Estimated Time ~ 45 min")
-                                        .font(.app(.subheading))
-                                        .foregroundColor(.white)
-                                    Spacer()
-                                }
-                                .padding(.vertical, 12)
-                                .background(backgroundColor)
-                                .cornerRadius(8)
-                            }
-                            .padding(.vertical, 8)
-                            .padding(.horizontal, 10)
-
-                            
-                            if index < selectedTests.count - 1 {
-                                Divider()
-                                    .padding(.vertical, 8)
-                            }
+                        if index < selectedTests.count - 1 {
+                            Divider().padding(.vertical, 8)
                         }
                     }
+                }
 
-                    PaymentDetails(rows: paymentDetailsData)
-                        .padding(.top, Spacing.section)
-                        .padding(.horizontal, 10)
-
-                    PaymentOptions(
-                        items: paymentOptionsData,
-                        selectedKey: $selectedPaymentOption
-                    )
+                PaymentDetails(rows: paymentDetailsData)
                     .padding(.top, Spacing.section)
                     .padding(.horizontal, 10)
 
-                    HStack {
-                        PrimaryButton(title: "Booking", maxWidth: 220) {
-                            navigateToPaymentView = true
+                PaymentOptions(
+                    items: paymentOptionsData,
+                    selectedKey: $selectedPaymentOption
+                )
+                .padding(.top, Spacing.section)
+                .padding(.horizontal, 10)
+
+                HStack {
+                    PrimaryButton(title: "Booking", maxWidth: 220) {
+                        // ✅ Save totals into session before navigating
+                        if var visit = sessionManager.currentClinicVisit {
+                            visit.consultationFee = totalPrice
+                            visit.adminFee        = adminFee
+                            sessionManager.currentClinicVisit = visit
                         }
-                        .frame(maxWidth: .infinity, alignment: .center)
+                        navigateToPaymentView = true
                     }
-                    .padding(.top, 2)
-                    .padding(.bottom, 16)
+                    .frame(maxWidth: .infinity, alignment: .center)
                 }
-                .padding(.horizontal, 2)
+                .padding(.top, 2)
+                .padding(.bottom, 140)
             }
+            .padding(.horizontal, 2)
         }
-       
+
+        // ✅ Card → PaymentView → PaymentStatusView → Queue
         .navigationDestination(isPresented: $navigateToPaymentView) {
             if selectedPaymentOption == "card" {
-//                PaymentView {
-//                    PaymentStatusView(isSuccess: true, onContinue: { QueueStageWaitingView() })
-//                }
+                PaymentView(
+                    onPaymentSuccess: {
+                        PaymentStatusView(
+                            isSuccess: true,
+                            doctor: nil,
+                            queue: nil,
+                            onContinue: { Queue() },   // ✅ Queue after success
+                            currentVisit: sessionManager.currentClinicVisit
+                        )
+                    },
+                    currentVisit: visitBinding
+                )
+                .environmentObject(sessionManager)
             } else {
                 PaymentThroughCashView()
+                    .environmentObject(sessionManager)
             }
         }
     }
@@ -178,5 +164,6 @@ struct LabTestDetailsView: View {
                 buttonText: "$25"
             )
         ])
+        .environmentObject(SessionManager())
     }
 }
