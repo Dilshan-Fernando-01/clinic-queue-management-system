@@ -70,4 +70,5 @@ struct QueueStageWaitingView: View {
 
 #Preview {
     QueueStageWaitingView()
+        .environmentObject(SessionManager())
 }

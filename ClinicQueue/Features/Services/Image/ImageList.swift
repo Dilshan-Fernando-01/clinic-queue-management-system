@@ -5,85 +5,58 @@
 //  Created by Keshana Liyanaarachchi on 2026-03-10.
 //
 
-
 import SwiftUI
 
 struct ImageList: View {
 
-    let specialties: [CategoryItem] = LabCategoriesData.categories
+    let specialties: [CategoryItem] = ImagingCategoriesData.categories
+    let imagingTests: [ClinicStep] = ImagingData.imagingTests
 
-    let labTests: [LabCardData] = [
-        LabCardData(
-            icon: "SearchIcon",
-            iconSize: 32,
-            title: "Complete Blood Count (CBC)",
-            description1: "45 patients in queue",
-            label1: "Estimated wait: ",
-            label1Text: "~25 min",
-            label2: "Location: ",
-            label2Text: "Lab 02 – Main Wing",
-            buttonText: "$15"
-        ),
-        LabCardData(
-            icon: "SearchIcon",
-            iconSize: 32,
-            title: "Lipid Profile",
-            description1: "23 patients in queue",
-            label1: "Estimated wait: ",
-            label1Text: "~15 min",
-            label2: "Location: ",
-            label2Text: "Lab 05 – East Wing",
-            buttonText: "$25"
-        ),
-        LabCardData(
-            icon: "SearchIcon",
-            iconSize: 32,
-            title: "Thyroid Function Test",
-            description1: "18 patients in queue",
-            label1: "Estimated wait: ",
-            label1Text: "~20 min",
-            label2: "Location: ",
-            label2Text: "Lab 03 – West Wing",
-            buttonText: "$30"
-        ),
-        LabCardData(
-            icon: "SearchIcon",
-            iconSize: 32,
-            title: "Urinalysis",
-            description1: "12 patients in queue",
-            label1: "Estimated wait: ",
-            label1Text: "~10 min",
-            label2: "Location: ",
-            label2Text: "Lab 08 – North Wing",
-            buttonText: "$12"
-        ),
-        LabCardData(
-            icon: "SearchIcon",
-            iconSize: 32,
-            title: "Liver Function Test",
-            description1: "30 patients in queue",
-            label1: "Estimated wait: ",
-            label1Text: "~35 min",
-            label2: "Location: ",
-            label2Text: "Lab 12 – South Wing",
-            buttonText: "$28"
-        )
-    ]
-
+    
     @State private var selectedTests: Set<UUID> = []
-    @State private var showingSelectedSection = false
-    @State private var selectedCategories: Set<String> = []
+    @State private var searchText = ""
     @State private var selectedCategory: String? = nil
-    @State private var isNavigatingToDetails = false
+    @State private var navigateToNext = false
+
+    private var pageTitle: String {
+        selectedCategory ?? "Imaging Services"
+    }
+
+    private var filteredImagingTests: [ClinicStep] {
+        if searchText.isEmpty {
+            return imagingTests
+        } else {
+            return imagingTests.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
+        }
+    }
+
+    private var selectedImagingCards: [ClinicStep] {
+        filteredImagingTests.filter { selectedTests.contains($0.id) }
+    }
+
+    private var availableImagingCards: [ClinicStep] {
+        filteredImagingTests.filter { !selectedTests.contains($0.id) }
+    }
 
     var body: some View {
         NavigationStack {
-            ZStack(alignment: .top) {
+            ZStack(alignment: .bottom) {
                 ScrollView {
-
                     VStack(alignment: .leading, spacing: 20) {
-                        HeaderSection(title: "Find Lab Test")}
-                    .padding(.top ,-60)
+                        HeaderSection(title: pageTitle)
+                            .animation(.easeInOut(duration: 0.25), value: pageTitle)
+                    }
+                    .padding(.top, -60)
+
+                    VStack(alignment: .center) {
+                        IconInputField(
+                            iconName: "SearchIcon",
+                            placeholder: "Find an Imaging Test",
+                            value: $searchText
+                        )
+                        .padding(.top, 10)
+                        .padding(.horizontal, 10)
+                    }
 
                     Text("Category")
                         .font(.app(.heading))
@@ -91,21 +64,32 @@ struct ImageList: View {
                         .padding(.top, 32)
                         .padding(.horizontal, 10)
 
+                    // Single-select: tapping a new button removes highlight from previous
                     CategoryGrid(
                         items: specialties,
-                        selectedCategories: $selectedCategories
+                        selectedCategories: Binding(
+                            get: {
+                                selectedCategory.map { [$0] } ?? []
+                            },
+                            set: { newValue in
+                                let current: Set<String> = selectedCategory.map { [$0] } ?? []
+                                let added = newValue.subtracting(current)
+
+                                withAnimation(.easeInOut(duration: 0.25)) {
+                                    if let newlyTapped = added.first {
+                                        // New button tapped → deselect old, select new
+                                        selectedCategory = newlyTapped
+                                    } else {
+                                        // Same button tapped again → deselect
+                                        selectedCategory = nil
+                                    }
+                                }
+                            }
+                        )
                     )
-                
-                    .onChange(of: selectedCategories) { newValue in
-                        if let tapped = newValue.first {
-                            selectedCategory = tapped
-                            isNavigatingToDetails = true
-                           
-                            selectedCategories = []
-                        }
-                    }
                     .padding(.top, 20)
 
+                    // Selected imaging tests section
                     if !selectedTests.isEmpty {
                         Text("Selected Tests")
                             .font(.app(.heading))
@@ -114,17 +98,17 @@ struct ImageList: View {
                             .padding(.horizontal, 10)
 
                         VStack(spacing: 12) {
-                            ForEach(labTests.filter { selectedTests.contains($0.id) }) { test in
+                            ForEach(selectedImagingCards) { test in
                                 BloodTestCard(
-                                    image: test.icon,
-                                    title: test.title,
-                                    specialText: test.description1,
-                                    detailLine1: "\(test.label1)\(test.label1Text)",
-                                    detailLine2: "\(test.label2)\(test.label2Text)",
+                                    image: "ImagingIcon",
+                                    title: test.name,
+                                    specialText: "Available Now",
+                                    detailLine1: "Location: \(test.location)",
+                                    detailLine2: "Wait: \(test.estimatedWait)",
                                     showExtraSection: false,
-                                    fee: test.buttonText,
+                                    fee: "$25",
                                     onButtonTap: {
-                                        print("Fee button tapped for: \(test.title)")
+                                        print("Fee button tapped for: \(test.name)")
                                     },
                                     isCheckboxSelectable: true,
                                     initiallySelected: true,
@@ -137,56 +121,66 @@ struct ImageList: View {
                         .padding(.top, 20)
                     }
 
-                    Text("Choose Your Lab Test")
-                        .font(.app(.heading))
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.top, 32)
-                        .padding(.horizontal, 10)
-                    
+                    // Available imaging tests section
+                    if !availableImagingCards.isEmpty {
+                        Text("Choose Your Imaging Test")
+                            .font(.app(.heading))
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.top, 32)
+                            .padding(.horizontal, 10)
 
-                    VStack(spacing: 12) {
-                        ForEach(labTests.filter { !selectedTests.contains($0.id) }) { test in
-                            BloodTestCard(
-                                image: test.icon,
-                                title: test.title,
-                                specialText: test.description1,
-                                detailLine1: "\(test.label1)\(test.label1Text)",
-                                detailLine2: "\(test.label2)\(test.label2Text)",
-                                showExtraSection: false,
-                                fee: test.buttonText,
-                                onButtonTap: {
-                                    print("Fee button tapped for: \(test.title)")
-                                },
-                                isCheckboxSelectable: true,
-                                initiallySelected: false,
-                                onSelectionChange: { isSelected in
-                                    if isSelected { toggleSelection(test.id) }
-                                }
-                            )
+                        VStack(spacing: 12) {
+                            ForEach(availableImagingCards) { test in
+                                BloodTestCard(
+                                    image: "ImagingIcon",
+                                    title: test.name,
+                                    specialText: "Available Now",
+                                    detailLine1: "Location: \(test.location)",
+                                    detailLine2: "Wait: \(test.estimatedWait)",
+                                    showExtraSection: false,
+                                    fee: "$25",
+                                    onButtonTap: {
+                                        print("Fee button tapped for: \(test.name)")
+                                    },
+                                    isCheckboxSelectable: true,
+                                    initiallySelected: false,
+                                    onSelectionChange: { isSelected in
+                                        if isSelected { toggleSelection(test.id) }
+                                    }
+                                )
+                            }
                         }
+                        .padding(.top, 20)
                     }
-                    .padding(.top, 20)
+                }
+                .padding(.horizontal, 2)
+                .padding(.bottom, 100)
+                .animation(.spring(), value: selectedTests.isEmpty)
+                .navigationDestination(isPresented: $navigateToNext) {
+                    ImagingDetailsView(selectedTests: selectedImagingCards)
+                }
+
+                // Sticky Next Button
+                VStack(spacing: 0) {
+                    LinearGradient(
+                        colors: [Color(.systemBackground).opacity(0), Color(.systemBackground)],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                    .frame(height: 24)
 
                     HStack {
                         PrimaryButton(title: "Next", maxWidth: 160) {
-                            print("Selected tests: \(selectedTests.count)")
+                            navigateToNext = true
                         }
+                        .disabled(selectedTests.isEmpty)
+                        .opacity(selectedTests.isEmpty ? 0.5 : 1.0)
                     }
                     .frame(maxWidth: .infinity, alignment: .center)
-                    .padding(.top)
-                    .disabled(selectedTests.isEmpty)
-                    .opacity(selectedTests.isEmpty ? 0.5 : 1.0)
+                    .padding(.vertical, 16)
+                    .background(Color(.systemBackground))
                 }
-                .padding(.horizontal, 2)
-                .padding(.top, 0)
-                .padding(.bottom, 32)
                 .animation(.spring(), value: selectedTests.isEmpty)
-            }
-         
-            .navigationDestination(isPresented: $isNavigatingToDetails) {
-                if let category = selectedCategory {
-                    LabDetails(selectedCategory: category)
-                }
             }
         }
     }
@@ -202,7 +196,7 @@ struct ImageList: View {
     }
 }
 
-struct ImageListView_Previews: PreviewProvider {
+struct ImageList_Previews: PreviewProvider {
     static var previews: some View {
         ImageList()
     }

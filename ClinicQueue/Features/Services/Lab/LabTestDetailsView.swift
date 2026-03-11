@@ -30,10 +30,15 @@ struct LabTestDetailsView: View {
         ZStack(alignment: .top) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
+                   
                     VStack(alignment: .leading, spacing: 20) {
-                        HeaderSection(title: "Lab Tests")
+                        
+                        Text("Lab Tests")
+                            .font(.system(size: 20, weight: .bold))
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .padding(.horizontal)
+                           
                     }
-                    .padding(.top, -60)
                 
                     ForEach(Array(selectedTests.enumerated()), id: \.element.id) { index, test in
                         VStack(alignment: .leading, spacing: 16) {

@@ -23,6 +23,8 @@ struct BloodTestCard: View {
     
     var isActiveQueue: Bool = false
 
+
+
     init(
         image: String,
         title: String,
@@ -38,7 +40,8 @@ struct BloodTestCard: View {
         onButtonTap: (() -> Void)? = nil,
         isCheckboxSelectable: Bool = false,
         initiallySelected: Bool = false,
-        onSelectionChange: ((Bool) -> Void)? = nil
+        onSelectionChange: ((Bool) -> Void)? = nil,
+        isActiveQueue: Bool = false
     ) {
         self.image = image
         self.title = title
@@ -56,6 +59,7 @@ struct BloodTestCard: View {
         self.initiallySelected = initiallySelected
         self.onSelectionChange = onSelectionChange
         self._isSelected = State(initialValue: initiallySelected)
+        self.isActiveQueue = isActiveQueue 
     }
 
     var body: some View {

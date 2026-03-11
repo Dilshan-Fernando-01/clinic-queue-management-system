@@ -199,14 +199,7 @@ struct NotificationView: View {
 
        
             ZStack {
-                HStack {
-                    Button(action: { dismiss() }) {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 18, weight: .medium))
-                            .foregroundColor(.black)
-                    }
-                    Spacer()
-                }
+               
 
                 Text("Notification")
                     .font(.system(size: 20, weight: .bold))
