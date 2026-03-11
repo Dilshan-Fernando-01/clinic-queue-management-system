@@ -12,7 +12,7 @@ struct TestRecommendation {
     static func recommendedTests(for symptomKey: String) -> [ClinicStep] {
         var recommended: [ClinicStep] = []
 
-        switch symptomKey {
+        switch symptomKey.lowercased() {
         case "eye":
             if let cbc = LabData.labTest.first(where: { $0.name.contains("CBC") }) {
                 recommended.append(cbc)

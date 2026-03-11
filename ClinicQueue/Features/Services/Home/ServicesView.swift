@@ -38,17 +38,16 @@ struct ServicesView: View {
         switch service.destination {
         case .consultation:
             PatientDetailsFormView()
-
         case .laboratory:
             LabList()
-
         case .imaging:
             Text("Imaging View")
-
         case .pharmacy:
             Text("Pharmacy View")
         case .appointment:
             FindDoctorView()
+        @unknown default:
+            EmptyView()
         }
     }
     
@@ -172,7 +171,7 @@ struct ServicesView: View {
                 FloatingNav(
                     mainIcon: "plus",
                     items: [
-                        FloatingNavItem(icon: "house.fill", label: "Home", destination: AnyView(ServicesView())),
+                        FloatingNavItem(icon: "house.fill", label: "Home", destination: AnyView(EmptyView())),
                         FloatingNavItem(icon: "map.fill", label: "Map", destination: AnyView(Text("Map View"))),
                         FloatingNavItem(icon: "gearshape.fill", label: "Settings", destination: AnyView(SettingsView()))
                     ]
@@ -182,9 +181,9 @@ struct ServicesView: View {
     }
 }
 
-
-struct ServicesView_Previews: PreviewProvider {
+struct ServicesView_Previews_Fixed: PreviewProvider {
     static var previews: some View {
         ServicesView()
+            .environmentObject(SessionManager())
     }
 }
