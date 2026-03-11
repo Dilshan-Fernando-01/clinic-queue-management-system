@@ -38,7 +38,8 @@ struct BloodTestCard: View {
         onButtonTap: (() -> Void)? = nil,
         isCheckboxSelectable: Bool = false,
         initiallySelected: Bool = false,
-        onSelectionChange: ((Bool) -> Void)? = nil
+        onSelectionChange: ((Bool) -> Void)? = nil,
+        isActiveQueue: Bool = false
     ) {
         self.image = image
         self.title = title
@@ -253,7 +254,7 @@ struct BloodTestCard_Previews: PreviewProvider {
                     bottomTitleRight: "Approximate Time",
                     bottomSubTextRight: "~12 min",
                     fee: "$48",
-                    isActiveQueue: true
+//                    isActiveQueue: true
                 )
             }
             .padding(.vertical)

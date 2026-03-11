@@ -39,4 +39,5 @@ struct ClinicStep: Identifiable {
     var serviceImage: Image?
     var isFinished: Bool = false
     var isCancelled: Bool = false 
+    var symptomKeys: [String] = []
 }
