@@ -12,7 +12,9 @@ struct SelectableLabCard: View {
     let isSelected: Bool
     let onTap: () -> Void
     let onButtonTap: () -> Void
-    
+
+    private let brandColor = Color(red: 0.28, green: 0.58, blue: 0.53)
+
     var body: some View {
         HStack(alignment: .center, spacing: 20) {
             
@@ -32,7 +34,7 @@ struct SelectableLabCard: View {
                     Spacer()
                     
                     Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                        .foregroundColor(isSelected ? .blue : .gray)
+                        .foregroundColor(isSelected ? brandColor : .gray)
                         .font(.system(size: 24))
                         .onTapGesture {
                             onTap()
@@ -58,11 +60,9 @@ struct SelectableLabCard: View {
                     PrimaryButton(
                         title: props.buttonText,
                         maxWidth: 140
-                        
                     ) {
                         onButtonTap()
                     }
-                   
                 }
             }
         }
@@ -73,7 +73,7 @@ struct SelectableLabCard: View {
                 .fill(props.cardBackground)
                 .overlay(
                     RoundedRectangle(cornerRadius: 10)
-                        .stroke(isSelected ? Color.blue : Color.clear, lineWidth: 2)
+                        .stroke(isSelected ? brandColor : Color.clear, lineWidth: 2)
                 )
         )
         .shadow(color: .gray.opacity(0.2), radius: 5, x: 0, y: 6)
