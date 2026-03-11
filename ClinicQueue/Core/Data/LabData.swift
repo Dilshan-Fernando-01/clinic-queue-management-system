@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct LabData {
-    static let labTests: [ClinicStep] = [
+    static let labTest: [ClinicStep] = [
         ClinicStep(
             type: .labTest,
             name: "Complete Blood Count (CBC)",
@@ -100,4 +100,21 @@ struct LabData {
             requirements: ["Avoid cycling or ejaculation 48 hours prior"]
         )
     ]
+
+    // ✅ Maps [ClinicStep] → [LabCardData] so LabDetails can consume it directly
+    static var labTests: [LabCardData] {
+        labTest.map { step in
+            LabCardData(
+                icon: "SearchIcon",
+                iconSize: 32,
+                title: step.name,
+                description1: step.description ?? "",
+                label1: "Estimated wait: ",
+                label1Text: step.estimatedWait ?? "-",
+                label2: "Location: ",
+                label2Text: step.location ?? "-",
+                buttonText: step.price.map { "$\(Int($0))" } ?? "-"
+            )
+        }
+    }
 }

@@ -40,7 +40,7 @@ struct ServicesView: View {
             PatientDetailsFormView()
 
         case .laboratory:
-            Text("Laboratory View")
+            LabList()
 
         case .imaging:
             Text("Imaging View")

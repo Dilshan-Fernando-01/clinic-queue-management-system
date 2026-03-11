@@ -17,10 +17,46 @@ struct BloodTestCard: View {
     var onButtonTap: (() -> Void)?
     
     var isCheckboxSelectable: Bool = false
+    var initiallySelected: Bool = false
     @State private var isSelected: Bool = false
     var onSelectionChange: ((Bool) -> Void)?
     
     var isActiveQueue: Bool = false
+
+    init(
+        image: String,
+        title: String,
+        specialText: String,
+        detailLine1: String,
+        detailLine2: String,
+        showExtraSection: Bool = false,
+        bottomTitleLeft: String = "",
+        listItems: [String] = [],
+        bottomTitleRight: String = "",
+        bottomSubTextRight: String = "",
+        fee: String,
+        onButtonTap: (() -> Void)? = nil,
+        isCheckboxSelectable: Bool = false,
+        initiallySelected: Bool = false,
+        onSelectionChange: ((Bool) -> Void)? = nil
+    ) {
+        self.image = image
+        self.title = title
+        self.specialText = specialText
+        self.detailLine1 = detailLine1
+        self.detailLine2 = detailLine2
+        self.showExtraSection = showExtraSection
+        self.bottomTitleLeft = bottomTitleLeft
+        self.listItems = listItems
+        self.bottomTitleRight = bottomTitleRight
+        self.bottomSubTextRight = bottomSubTextRight
+        self.fee = fee
+        self.onButtonTap = onButtonTap
+        self.isCheckboxSelectable = isCheckboxSelectable
+        self.initiallySelected = initiallySelected
+        self.onSelectionChange = onSelectionChange
+        self._isSelected = State(initialValue: initiallySelected)
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
