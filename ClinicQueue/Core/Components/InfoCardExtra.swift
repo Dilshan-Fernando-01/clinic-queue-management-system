@@ -20,6 +20,8 @@ struct BloodTestCard: View {
     var initiallySelected: Bool = false
     @State private var isSelected: Bool = false
     var onSelectionChange: ((Bool) -> Void)?
+    
+    var isActiveQueue: Bool = false
 
     init(
         image: String,
@@ -60,6 +62,7 @@ struct BloodTestCard: View {
         VStack(alignment: .leading, spacing: 16) {
             
             HStack(alignment: .top, spacing: 16) {
+                
                 Image(image)
                     .resizable()
                     .aspectRatio(contentMode: .fill)
@@ -67,15 +70,29 @@ struct BloodTestCard: View {
                     .clipShape(Circle())
                 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(title).font(.headline).fontWeight(.bold)
-                    Text(specialText).font(.subheadline).foregroundColor(Color(red: 0.3, green: 0.6, blue: 0.5))
-                    Text(detailLine1).font(.caption).foregroundColor(.secondary)
-                    Text(detailLine2).font(.caption).foregroundColor(.secondary)
+                    
+                    Text(title)
+                        .font(.headline)
+                        .fontWeight(.bold)
+                    
+                    Text(specialText)
+                        .font(.subheadline)
+                        .foregroundColor(Color(red: 0.3, green: 0.6, blue: 0.5))
+                    
+                    Text(detailLine1)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    
+                    Text(detailLine2)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
                     
                     if !showExtraSection {
-                        feeButton.padding(.top, 4)
+                        actionSection
+                            .padding(.top, 4)
                     }
                 }
+                
                 Spacer()
             }
             
@@ -83,22 +100,35 @@ struct BloodTestCard: View {
                 Divider()
                 
                 HStack(alignment: .top) {
+                    
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(bottomTitleLeft).font(.caption).bold()
+                        Text(bottomTitleLeft)
+                            .font(.caption)
+                            .bold()
+                        
                         ForEach(listItems, id: \.self) { item in
-                            Text("• \(item)").font(.caption2).foregroundColor(.secondary)
+                            Text("• \(item)")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
                         }
                     }
+                    
                     Spacer()
+                    
                     VStack(alignment: .trailing, spacing: 4) {
-                        Text(bottomTitleRight).font(.caption).bold()
-                        Text(bottomSubTextRight).font(.caption2).foregroundColor(.secondary)
+                        Text(bottomTitleRight)
+                            .font(.caption)
+                            .bold()
+                        
+                        Text(bottomSubTextRight)
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
                     }
                 }
                 
                 HStack {
                     Spacer()
-                    feeButton
+                    actionSection
                 }
             }
         }
@@ -107,8 +137,12 @@ struct BloodTestCard: View {
         .cornerRadius(25)
         .overlay(
             RoundedRectangle(cornerRadius: 25)
-                .stroke(isSelected ? Color(red: 0.28, green: 0.58, blue: 0.53) : Color.gray.opacity(0.15),
-                        lineWidth: isSelected ? 2 : 1)
+                .stroke(
+                    isSelected
+                    ? Color(red: 0.28, green: 0.58, blue: 0.53)
+                    : Color.gray.opacity(0.15),
+                    lineWidth: isSelected ? 2 : 1
+                )
         )
         .overlay(alignment: .topTrailing) {
             if isCheckboxSelectable && isSelected {
@@ -127,6 +161,51 @@ struct BloodTestCard: View {
             }
         }
     }
+
+    
+    private var actionSection: some View {
+        Group {
+            
+            if isActiveQueue {
+                
+                HStack(spacing: 12) {
+                    
+                    Button(action: {
+                        onButtonTap?()
+                    }) {
+                        Text("Start This Test")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(.white)
+                            .padding(.vertical, 8)
+                            .padding(.horizontal, 16)
+                            .background(Color(red: 0.28, green: 0.58, blue: 0.53))
+                            .cornerRadius(20)
+                    }
+                    .buttonStyle(.plain)
+                    
+                    
+                    Button(action: {
+                        print("Schedule Later tapped")
+                    }) {
+                        Text("Schedule Later")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(Color(red: 0.28, green: 0.58, blue: 0.53))
+                            .padding(.vertical, 8)
+                            .padding(.horizontal, 16)
+                            .background(
+                                RoundedRectangle(cornerRadius: 20)
+                                    .stroke(Color(red: 0.28, green: 0.58, blue: 0.53), lineWidth: 1)
+                            )
+                    }
+                    .buttonStyle(.plain)
+                }
+                
+            } else {
+                feeButton
+            }
+        }
+    }
+    
     
     private var feeButton: some View {
         Button(action: {
@@ -140,7 +219,7 @@ struct BloodTestCard: View {
                 .background(Color(red: 0.28, green: 0.58, blue: 0.53))
                 .cornerRadius(20)
         }
-        .buttonStyle(PlainButtonStyle())
+        .buttonStyle(.plain)
     }
 }
 
@@ -149,6 +228,7 @@ struct BloodTestCard_Previews: PreviewProvider {
     static var previews: some View {
         ScrollView {
             VStack(spacing: 20) {
+
                 BloodTestCard(
                     image: "doctor02",
                     title: "Blood Group & Rh",
@@ -160,19 +240,20 @@ struct BloodTestCard_Previews: PreviewProvider {
                     isCheckboxSelectable: true
                 )
                 
+                
                 BloodTestCard(
                     image: "doctor01",
-                    title: "Comprehensive Lab",
-                    specialText: "Standard Component",
-                    detailLine1: "Estimated wait: ~10 min",
-                    detailLine2: "Location: Room 05 - Lab Wing",
+                    title: "Kidney Function Test",
+                    specialText: "Lab Test",
+                    detailLine1: "Location: Main Lab - Level 1",
+                    detailLine2: "",
                     showExtraSection: true,
                     bottomTitleLeft: "Requirements",
-                    listItems: ["Fast for 8 hours"],
-                    bottomTitleRight: "Duration",
-                    bottomSubTextRight: "15 - 20 mins",
-                    fee: "$45",
-                    isCheckboxSelectable: true
+                    listItems: ["Avoid high-protein meals", "Hydration is key"],
+                    bottomTitleRight: "Approximate Time",
+                    bottomSubTextRight: "~12 min",
+                    fee: "$48",
+                    isActiveQueue: true
                 )
             }
             .padding(.vertical)

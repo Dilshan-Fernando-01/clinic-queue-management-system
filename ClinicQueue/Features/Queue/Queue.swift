@@ -90,41 +90,54 @@ struct Queue: View {
                         estimatedWait: "~15 minutes"
                     )
                 }
-
-               
-                if let doctor = doctorInfo {
-                    VStack(spacing: 16) {
-                        Text("Currently Serving")
-                            .font(.system(size: 22, weight: .bold))
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.horizontal, 20)
-                        InfoCard(data: doctor)
-                            .padding(.horizontal, 20)
-                    }
-                }
-
-              
+                
+                
                 if simulatedStatus == .completed && !requestedTests.isEmpty {
                     VStack(spacing: 16) {
-                        Text("Doctor-Requested Services")
+                        Text("Requested Services")
                             .font(.system(size: 22, weight: .bold))
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.horizontal, 20)
+                            .padding(.horizontal, 33)
 
                         ForEach(requestedTests) { step in
                             BloodTestCard(
-                                image: step.serviceImage != nil ? "doctor01" : "Placeholder",
+                                image: "doctor01",
                                 title: step.name,
-                                specialText: step.specialty ?? "",
+                                specialText:  "",
                                 detailLine1: "Location: \(step.location ?? "N/A")",
-                                detailLine2: step.estimatedWait ?? "",
-                                showExtraSection: false,
-                                fee: step.price != nil ? "$\(Int(step.price!))" : "Free"
+                                detailLine2: "",
+                                
+                                showExtraSection: true,
+                                
+                                bottomTitleLeft: "Requirements",
+                                listItems: step.requirements ?? [],
+                                
+                                bottomTitleRight: "Approximate Time",
+                                bottomSubTextRight: step.estimatedWait ?? "",
+                                
+                                fee: step.price != nil ? "$\(Int(step.price!))" : "Free",
+                                
+                                isActiveQueue: true
                             )
                             .padding(.horizontal, 20)
                         }
                     }
                 }
+
+               
+                if let doctor = doctorInfo {
+                    VStack(spacing: 16) {
+                        Text("Services")
+                            .font(.system(size: 22, weight: .bold))
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal, 20)
+                        InfoCard(data: doctor)
+                            .padding(.horizontal, 15)
+                    }.padding(.horizontal, 18)
+                }
+
+              
+                
 
             }
             .padding(.top, 20)
