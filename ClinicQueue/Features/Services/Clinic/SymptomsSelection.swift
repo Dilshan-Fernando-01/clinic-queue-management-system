@@ -48,20 +48,73 @@ struct SymptomsSelection: View {
             VStack {
                 PrimaryButton(title: "Proceed to Queue") {
                     let selectedKeysArray = Array(selectedSymptoms)
+                    
+                    // Save first selected symptom in currentClinicVisit
                     if let firstSymptomKey = selectedKeysArray.first,
                        let symptomObj = SymptomData.symptoms.first(where: { $0.key == firstSymptomKey }) {
                         sessionManager.currentClinicVisit?.selectedSymptom = symptomObj
                     }
-                    //**
+                    
+                
                     if session.activity(for: .clinic) == nil {
-                          session.addActivity(service: .clinic)
-                      }
-                    sessionManager.currentClinicVisit?.symptomStrings = selectedKeysArray
-                    if let activeActivityIndex = session.activities.firstIndex(where: { $0.isSelected }) {
-                        session.activities[activeActivityIndex].symptoms = selectedKeysArray
-                        session.activities = session.activities
-                        session.printAllActivities() 
+                        session.addActivity(service: .clinic)
                     }
+                    
+                    sessionManager.currentClinicVisit?.symptomStrings = selectedKeysArray
+                    
+                    
+                    if let activeActivityIndex = session.activities.firstIndex(where: { $0.isSelected }) {
+                        var doctorActivity = session.activities[activeActivityIndex]
+                        doctorActivity.symptoms = selectedKeysArray
+                        
+                        // --- Assign doctor ---
+                        if let specialty = sessionManager.currentClinicVisit?.selectedSymptom?.specialty {
+                            let doctors = DoctorData.doctorGroups
+                                .first(where: { $0.specialty == specialty })?.doctors ?? []
+                            
+                            let selectedDoctor = DoctorData.leastBusyDoctor(from: doctors)
+                            doctorActivity.selectedDoctor = selectedDoctor
+                        }
+                        
+                       
+                        doctorActivity.isSelected = true
+                        
+                      
+                        session.activities[activeActivityIndex] = doctorActivity
+                        session.printAllActivities()
+                        
+                      
+                        var testActivities: [Activity] = []
+                        for symptomKey in selectedKeysArray {
+                            let tests = TestRecommendation.recommendedTests(for: symptomKey)
+                            for test in tests {
+                                var testActivity = Activity(
+                                    id: UUID(),
+                                    service: .clinic,
+                                    stage: .unknown,
+                                    doctor: nil,
+                                    selectedDoctor: nil,
+                                    queueNumber: nil,
+                                    isSelected: false,
+                                    queueStage: .unknown,
+                                    labStep: test.type == .labTest ? test : nil,
+                                    imagingStep: test.type == .imaging ? test : nil,
+                                    pharmacyStep: nil,
+                                    appointmentDate: nil,
+                                    patientName: sessionManager.currentClinicVisit?.patientName ?? "",
+                                    symptoms: [symptomKey],
+                                    testName: test.name
+                                )
+                                testActivities.append(testActivity)
+                                print("➕ Added test activity: \(test.name) for symptom \(symptomKey)")
+                            }
+                        }
+                        
+                        // Append all test activities to session
+                        session.activities.append(contentsOf: testActivities)
+                        session.printAllActivities()
+                    }
+                    
                     navigateToAppitmentStarter = true
                 }
                 .disabled(selectedSymptoms.isEmpty)

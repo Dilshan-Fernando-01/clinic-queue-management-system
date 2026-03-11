@@ -1,195 +1,222 @@
-//
-//  Queue.swift
-//  ClinicQueue
-//
-//  Created by dilshan fernando on 2026-03-10.
-//
+import SwiftUI
 
-extension QueueStage {
-    func toQueueStages() -> QueueStages {
+extension QueueStages {
+
+    func toQueueStage() -> QueueStage {
+
         switch self {
-        case .wait: return .wait
-        case .next: return .next
-        case .ready: return .ready
-        case .inProgress: return .inProgress
-        case .completed: return .completed
+
+        case .wait:
+            return .wait
+
+        case .next:
+            return .next
+
+        case .ready:
+            return .ready
+
+        case .inProgress:
+            return .inProgress
+
+        case .completed:
+            return .completed
+
+        case .unknown:
+            return .wait
+
+        case .cancel:
+            return .completed
         }
     }
 }
-
-
-import SwiftUI
-
 
 struct Queue: View {
 
     @EnvironmentObject var sessionManager: SessionManager
     @EnvironmentObject var session: SessionManagerV2
+
     @State private var simulatedStatus: StepStatus = .waiting
 
-    
-    private var doctorStep: ClinicStep? {
-        sessionManager.currentClinicVisit?.doctorStep
+
+    private var activeActivity: Activity? {
+
+        session.activities.first(where: { activity in
+            activity.service == session.currentService &&
+            activity.isSelected &&
+            activity.queueStage != .cancel
+        })
     }
 
-    private var doctorInfo: InfoCardData? {
-        guard let step = doctorStep else { return nil }
-        return InfoCardData(
-            image: step.serviceImage ?? Image("DoctorPlaceholder"),
-            heading: step.name,
-            subheading: step.specialty ?? "",
-            activeQueueCount: nil,
-            detail1: ("Location:", step.location ?? "N/A"),
-            detail2: nil,
-            price: step.price != nil ? "$\(Int(step.price!))" : "Free",
-            availableDates: nil,
-            maxPatientsPerDay: nil,
-            isPriceButtonVisble: step.price != nil
-        )
+    private var requestedActivities: [Activity] {
+
+        
+        
+        
+        session.activities.filter { activity in
+            activity.service == session.currentService &&
+            !activity.isSelected &&
+            activity.queueStage != .cancel
+        }
+  
     }
 
-    private func mapQueueStage(for status: StepStatus) -> QueueStage {
+    private func getQueueNumber(for activity: Activity) -> Int {
+
+        if let doctor = activity.selectedDoctor,
+           let countString = doctor.activeQueueCount,
+           let count = Int(countString) {
+
+            return count + 1
+        }
+
+        return 14
+    }
+
+    private func getNowServingNumber(for queue: Int) -> Int {
+
+        return max(queue - 2, 1)
+    }
+
+
+    private func mapQueueStage(for status: StepStatus) -> QueueStages {
+
         switch status {
-        case .pending, .waiting: return .wait
-        case .next: return .next
-        case .ready: return .ready
-        case .inProgress: return .inProgress
-        case .completed: return .completed
+
+        case .pending:
+            return .wait
+
+        case .waiting:
+            return .wait
+
+        case .next:
+            return .next
+
+        case .ready:
+            return .ready
+
+        case .inProgress:
+            return .inProgress
+
+        case .completed:
+            return .completed
         }
     }
-    
-    
-    
+
     private func updateActiveActivityQueue() {
 
-        if let selectedIndex = session.activities.firstIndex(where: { $0.isSelected && $0.service == session.currentService }) {
-            let newQueueStage = mapQueueStage(for: simulatedStatus).toQueueStages()
-            session.activities[selectedIndex].queueStage = newQueueStage
-            print("Updated queueStage for active activity: \(session.activities[selectedIndex].id) -> \(newQueueStage)")
-        } else {
-            print("No active activity found for current service")
+        guard let activity = activeActivity else { return }
+
+        if let index = session.activities.firstIndex(where: { $0.id == activity.id }) {
+
+            session.activities[index].queueStage = mapQueueStage(for: simulatedStatus)
         }
     }
-    
 
- 
+
     private func startQueueSimulation() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
-            simulatedStatus = .next
-            updateActiveActivityQueue()
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 10) {
-            simulatedStatus = .ready
-            updateActiveActivityQueue()
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 15) {
-            simulatedStatus = .inProgress
-            updateActiveActivityQueue()
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 20) {
-            simulatedStatus = .completed
-            updateActiveActivityQueue()
-        }
-    }
 
-    private var requestedTests: [ClinicStep] {
-        guard let visit = sessionManager.currentClinicVisit else { return [] }
-        var tests: [ClinicStep] = []
+        let steps: [StepStatus] = [.next, .ready, .inProgress, .completed]
 
-       
-        for symptomKey in visit.symptomStrings {
-            let recommended = TestRecommendation.recommendedTests(for: symptomKey)
-            tests.append(contentsOf: recommended)
-        }
+        for (i, status) in steps.enumerated() {
 
-      
-        var uniqueTests: [ClinicStep] = []
-        for test in tests {
-            if !uniqueTests.contains(where: { $0.id == test.id }) {
-                uniqueTests.append(test)
+            DispatchQueue.main.asyncAfter(deadline: .now() + Double((i + 1) * 5)) {
+
+                simulatedStatus = status
+                updateActiveActivityQueue()
             }
         }
-
-        print("DEBUG: Requested tests for current visit:")
-        for t in uniqueTests { print("- \(t.name)") }
-
-        return uniqueTests
     }
 
+
     var body: some View {
+
         ScrollView {
+
             VStack(spacing: 24) {
 
-             
-                if let visit = sessionManager.currentClinicVisit,
-                   let doctorStep = visit.doctorStep {
+                if let activity = activeActivity {
+
+                    let qNumber = getQueueNumber(for: activity)
+                    let nowServing = getNowServingNumber(for: qNumber)
+
                     QueueBanner(
-                        queueNumber: doctorStep.queueNumber ?? "--",
-                        queueStage: mapQueueStage(for: simulatedStatus),
-                        nowServingNumber: doctorStep.queueNumber ?? "--",
+                        queueNumber: String(qNumber),
+                        queueStage: mapQueueStage(for: simulatedStatus).toQueueStage(),
+                        nowServingNumber: String(nowServing),
                         estimatedWait: "~15 minutes"
                     )
+                    .padding(.horizontal, 20)
                 }
-                
-                
-                if simulatedStatus == .completed && !requestedTests.isEmpty {
+
+                if let activity = activeActivity {
+
+                    activityCard(activity)
+                        .padding(.horizontal, 20)
+                }
+
+
+                if simulatedStatus == .completed && !requestedActivities.isEmpty {
+
                     VStack(spacing: 16) {
+
                         Text("Requested Services")
                             .font(.system(size: 22, weight: .bold))
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.horizontal, 33)
-
-                        ForEach(requestedTests) { step in
-                            BloodTestCard(
-                                image: "doctor01",
-                                title: step.name,
-                                specialText:  "",
-                                detailLine1: "Location: \(step.location ?? "N/A")",
-                                detailLine2: "",
-                                
-                                showExtraSection: true,
-                                
-                                bottomTitleLeft: "Requirements",
-                                listItems: step.requirements ?? [],
-                                
-                                bottomTitleRight: "Approximate Time",
-                                bottomSubTextRight: step.estimatedWait ?? "",
-                                
-                                fee: step.price != nil ? "$\(Int(step.price!))" : "Free",
-                                
-                                isActiveQueue: true
-                            )
                             .padding(.horizontal, 20)
+
+                        ForEach(requestedActivities, id: \.id) { activity in
+
+                            activityCard(activity)
+                                .padding(.horizontal, 20)
                         }
                     }
                 }
-
-               
-                if let doctor = doctorInfo {
-                    VStack(spacing: 16) {
-                        Text("Services")
-                            .font(.system(size: 22, weight: .bold))
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.horizontal, 20)
-                        InfoCard(data: doctor)
-                            .padding(.horizontal, 15)
-                    }.padding(.horizontal, 18)
-                }
-
-              
-                
-
             }
             .padding(.top, 20)
-            .padding(.bottom, 32)
+            .padding(.bottom, 40)
         }
         .background(Color(white: 0.95))
         .onAppear {
+
             startQueueSimulation()
+        }
+    }
+
+    @ViewBuilder
+    private func activityCard(_ activity: Activity) -> some View {
+        
+        Text(activity.service.rawValue.capitalized)
+                .font(.system(size: 22, weight: .bold))
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 20)
+
+        if let doctor = activity.selectedDoctor {
+
+            InfoCard(
+                data: doctor
+            ).padding(.horizontal, 30)
+
+        } else {
+
+            BloodTestCard(
+                image: "doctor01",
+                title: activity.testName ?? "Test",
+                specialText: "",
+                detailLine1: "Location: \(activity.labStep?.location ?? "N/A")",
+                detailLine2: "",
+                showExtraSection: true,
+                bottomTitleLeft: "Requirements",
+                listItems: activity.labStep?.requirements ?? [],
+                bottomTitleRight: "Approximate Time",
+                bottomSubTextRight: activity.labStep?.estimatedWait ?? "",
+                fee: activity.labStep?.price != nil ? "$\(Int(activity.labStep!.price!))" : "Free",
+                isActiveQueue: true
+            ).padding(.horizontal, 20)
         }
     }
 }
 
 #Preview {
+
     Queue()
 }

@@ -9,44 +9,29 @@ import SwiftUI
 
 struct PaymentStatusView<NextDestination: View>: View {
     let isSuccess: Bool
-      let doctor: InfoCardData?
-      let queue: QueueOption?
-      let onContinue: () -> NextDestination
-      let currentVisit: ClinicVisit?
-      @State private var navigateNext = false
-    @EnvironmentObject var session: SessionManagerV2
-    
-    
-    private var paymentDetailsData: [PaymentDetailRow] {
+    let doctor: InfoCardData?
+    let queue: QueueOption?
+    let onContinue: () -> NextDestination
+    let currentVisit: ClinicVisit?
 
+    @State private var navigateNext = false
+    @EnvironmentObject var session: SessionManagerV2
+    @EnvironmentObject var sessionManager: SessionManager
+
+    private var paymentDetailsData: [PaymentDetailRow] {
         guard let visit = sessionManager.currentClinicVisit else { return [] }
 
         return [
-            PaymentDetailRow(
-                label: "Consultation",
-                value: "$\(String(format: "%.2f", visit.consultationFee ?? 0))"
-            ),
-            PaymentDetailRow(
-                label: "Admin Fee",
-                value: "$\(String(format: "%.2f", visit.adminFee ?? 0))"
-            ),
-            PaymentDetailRow(
-                label: "Additional Discount",
-                value: "$\(String(format: "%.2f", PaymentConfig.additionalDiscount))"
-            ),
-            PaymentDetailRow(
-                label: "Total",
-                value: "$\(String(format: "%.2f", visit.totalPayment))"
-            )
+            PaymentDetailRow(label: "Consultation", value: "$\(String(format: "%.2f", visit.consultationFee ?? 0))"),
+            PaymentDetailRow(label: "Admin Fee", value: "$\(String(format: "%.2f", visit.adminFee ?? 0))"),
+            PaymentDetailRow(label: "Additional Discount", value: "$\(String(format: "%.2f", PaymentConfig.additionalDiscount))"),
+            PaymentDetailRow(label: "Total", value: "$\(String(format: "%.2f", visit.totalPayment))")
         ]
     }
-    
-    @EnvironmentObject var sessionManager: SessionManager
-    
+
     var body: some View {
         NavigationStack {
             ZStack {
-
                 ScrollView {
                     VStack(spacing: 20) {
                         Text(isSuccess ? "Payment Successful" : "Payment Failed")
@@ -70,63 +55,56 @@ struct PaymentStatusView<NextDestination: View>: View {
                             .padding(.horizontal)
                             .padding(.top, Spacing.section)
 
-                        PrimaryButton(
-                            title: isSuccess ? "Continue" : "Try Again"
-                        ) {
-                            if isSuccess {
-                                if var currentVisit = sessionManager.currentClinicVisit {
-                                    if var visit = sessionManager.currentClinicVisit, let doctor = doctor {
-
-                                        var doctorStep = visit.doctorStep ?? ClinicStep(type: .doctor, name: doctor.heading)
-
-                                        doctorStep.name = doctor.heading
-                                        doctorStep.specialty = doctor.subheading
-                                        doctorStep.queueNumber = queue?.heading
-
-                                        let cleanedPrice = doctor.price?.replacingOccurrences(of: "$", with: "") ?? "0"
-                                        doctorStep.price = Double(cleanedPrice) ?? 0
-
-                                        visit.updateStep(doctorStep)
-                                        sessionManager.currentClinicVisit = visit
-                                    }
-                                    if let priceString = doctor?.price {
-                                        let cleanedPrice = priceString.replacingOccurrences(of: "$", with: "")
-                                        currentVisit.consultationFee = Double(cleanedPrice) ?? 0
-                                    } else {
-                                        currentVisit.consultationFee = 0
-                                    }
-                               
-                                    currentVisit.consultationFee = doctor?.price.flatMap { Double($0) } ?? 0
-                                    currentVisit.adminFee = PaymentConfig.adminFee
-                                    
-                                 
-                                    sessionManager.currentClinicVisit = currentVisit
-                                    
-                                    
-                                    
-                                    for index in session.activities.indices {
-                                        let isTestActivity = session.activities[index].testName != nil
-                                        if isTestActivity {
-                                            session.activities[index].queueStage = .wait
-                                            session.activities[index].stage = .planning
-                                            session.activities[index].isSelected = true
-                                        }
-                                    }
-                                    session.printAllActivities()
-                                }
-                                
-                                
-                                
-                          
-                                
-                                
-                            }
-                            
+                        PrimaryButton(title: isSuccess ? "Continue" : "Try Again") {
                             navigateNext = true
                         }
                     }
                     .padding()
                     .navigationBarBackButtonHidden(true)
+                    .onAppear {
+                        guard isSuccess, var visit = sessionManager.currentClinicVisit else { return }
+
+                        if let doctor = doctor {
+                            var doctorStep = visit.doctorStep ?? ClinicStep(type: .doctor, name: doctor.heading)
+                            doctorStep.name = doctor.heading
+                            doctorStep.specialty = doctor.subheading
+                            doctorStep.queueNumber = queue?.heading
+                            if let priceString = doctor.price?.replacingOccurrences(of: "$", with: "") {
+                                doctorStep.price = Double(priceString) ?? 0
+                            } else {
+                                doctorStep.price = 0
+                            }
+                            visit.updateStep(doctorStep)
+
+                            visit.consultationFee = doctorStep.price
+                            visit.adminFee = PaymentConfig.adminFee
+                            sessionManager.currentClinicVisit = visit
+                        }
+
+                        let currentServiceType = session.currentService
+
+                            // 2️⃣ Find the selected activity for this service
+                            if let selectedActivityIndex = session.activities.firstIndex(where: { activity in
+                                activity.service == currentServiceType && activity.isSelected
+                            }) {
+                                // 3️⃣ Update only this activity
+                                session.activities[selectedActivityIndex].queueStage = .wait
+                                session.activities[selectedActivityIndex].stage = .inQueue
+
+                                // Optional debug
+                                print("✅ Updated selected activity for service \(currentServiceType):")
+                                let updatedActivity = session.activities[selectedActivityIndex]
+                                print("""
+                                    - id: \(updatedActivity.id)
+                                    - service: \(updatedActivity.service)
+                                    - queueStage: \(updatedActivity.queueStage)
+                                    - stage: \(updatedActivity.stage)
+                                    - selected: \(updatedActivity.isSelected)
+                                """)
+                            }
+
+                        session.printAllActivities()
+                    }
                 }
 
                 FloatingNav(
@@ -143,13 +121,4 @@ struct PaymentStatusView<NextDestination: View>: View {
             }
         }
     }
-    
-    
 }
-
-//#Preview {
-//    PaymentStatusView(
-//        isSuccess: true,
-//        onContinue: { Text("Next Page") }
-//    )
-//}
