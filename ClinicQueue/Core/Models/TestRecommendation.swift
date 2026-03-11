@@ -14,7 +14,7 @@ struct TestRecommendation {
 
         switch symptomKey {
         case "eye":
-            if let cbc = LabData.labTests.first(where: { $0.name.contains("CBC") }) {
+            if let cbc = LabData.labTest.first(where: { $0.name.contains("CBC") }) {
                 recommended.append(cbc)
             }
             if let mri = ImagingData.imagingTests.first(where: { $0.name.contains("MRI Brain") }) {
@@ -22,7 +22,7 @@ struct TestRecommendation {
             }
             
         case "chest":
-            if let lipid = LabData.labTests.first(where: { $0.name.contains("Lipid") }) {
+            if let lipid = LabData.labTest.first(where: { $0.name.contains("Lipid") }) {
                 recommended.append(lipid)
             }
             if let xray = ImagingData.imagingTests.first(where: { $0.name.contains("Chest X-Ray") }) {
@@ -30,11 +30,11 @@ struct TestRecommendation {
             }
             
         case "fever":
-            if let cbc = LabData.labTests.first(where: { $0.name.contains("CBC") }) {
+            if let cbc = LabData.labTest.first(where: { $0.name.contains("CBC") }) {
                 recommended.append(cbc)
             }
         case "stomach":
-            if let lft = LabData.labTests.first(where: { $0.name.contains("Liver") }) {
+            if let lft = LabData.labTest.first(where: { $0.name.contains("Liver") }) {
                 recommended.append(lft)
             }
             if let abdUltrasound = ImagingData.imagingTests.first(where: { $0.name.contains("Abdomen") }) {
