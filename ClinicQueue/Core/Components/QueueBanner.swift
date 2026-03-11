@@ -98,7 +98,7 @@ struct QueueBanner: View {
                 Spacer()
                 
             }
-            .padding(.top, 40)
+            .padding(.top, 0)
             .frame(maxWidth: .infinity)
         }
     }
