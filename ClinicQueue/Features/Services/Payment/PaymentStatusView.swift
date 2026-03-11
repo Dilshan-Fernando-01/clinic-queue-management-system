@@ -14,7 +14,7 @@ struct PaymentStatusView<NextDestination: View>: View {
       let onContinue: () -> NextDestination
       let currentVisit: ClinicVisit?
       @State private var navigateNext = false
-    
+    @EnvironmentObject var session: SessionManagerV2
     
     
     private var paymentDetailsData: [PaymentDetailRow] {
@@ -101,7 +101,25 @@ struct PaymentStatusView<NextDestination: View>: View {
                                     
                                  
                                     sessionManager.currentClinicVisit = currentVisit
+                                    
+                                    
+                                    
+                                    for index in session.activities.indices {
+                                        let isTestActivity = session.activities[index].testName != nil
+                                        if isTestActivity {
+                                            session.activities[index].queueStage = .wait
+                                            session.activities[index].stage = .planning
+                                            session.activities[index].isSelected = true
+                                        }
+                                    }
+                                    session.printAllActivities()
                                 }
+                                
+                                
+                                
+                          
+                                
+                                
                             }
                             
                             navigateNext = true

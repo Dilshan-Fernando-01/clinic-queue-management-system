@@ -10,6 +10,7 @@ import SwiftUI
 struct SymptomsSelection: View {
     
     @EnvironmentObject var sessionManager: SessionManager
+    @EnvironmentObject var session: SessionManagerV2
 
     private let symptoms: [CheckboxItem] = SymptomData.symptoms.map {
         CheckboxItem(key: $0.key, label: $0.label)
@@ -51,10 +52,17 @@ struct SymptomsSelection: View {
                        let symptomObj = SymptomData.symptoms.first(where: { $0.key == firstSymptomKey }) {
                         sessionManager.currentClinicVisit?.selectedSymptom = symptomObj
                     }
+                    //**
+                    if session.activity(for: .clinic) == nil {
+                          session.addActivity(service: .clinic)
+                      }
                     sessionManager.currentClinicVisit?.symptomStrings = selectedKeysArray
-
+                    if let activeActivityIndex = session.activities.firstIndex(where: { $0.isSelected }) {
+                        session.activities[activeActivityIndex].symptoms = selectedKeysArray
+                        session.activities = session.activities
+                        session.printAllActivities() 
+                    }
                     navigateToAppitmentStarter = true
-                    print("Selected symptoms:", selectedSymptoms)
                 }
                 .disabled(selectedSymptoms.isEmpty)
             }

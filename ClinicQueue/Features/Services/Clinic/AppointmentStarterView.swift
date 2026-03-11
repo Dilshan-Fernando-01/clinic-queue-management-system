@@ -9,6 +9,7 @@ import SwiftUI
 
 struct AppointmentStarterView: View {
     @EnvironmentObject var sessionManager: SessionManager
+    @EnvironmentObject var session: SessionManagerV2
     @State private var assignedDoctor: InfoCardData?
     @State private var selectedQueue: UUID? = nil
     @State private var selectedFloatingDestination: Int? = nil
@@ -151,22 +152,22 @@ struct AppointmentStarterView: View {
                         assignedDoctor = DoctorData.leastBusyDoctor(from: generalDoctors)
                     }
                     
-                   
+                    
                     selectedQueue = nextAvailableQueue?.id
-
-
+                    
+                    
                     if var visit = sessionManager.currentClinicVisit, let doctor = assignedDoctor {
-
+                        
                         let cleanedPrice = doctor.price?.replacingOccurrences(of: "$", with: "") ?? "0"
                         let price = Double(cleanedPrice) ?? 0
-
+                        
                         var doctorStep = ClinicStep(
                             type: .doctor,
                             name: doctor.heading,
                             description: doctor.subheading,
                             estimatedWait: nextAvailableQueue?.subText ?? "~15 min",
                             price: consultationFee,
-                            location: doctor.detail2?.1,   
+                            location: doctor.detail2?.1,
                             requirements: nil,
                             specialty: doctor.subheading,
                             queueNumber: nextAvailableQueue?.heading,
@@ -174,7 +175,70 @@ struct AppointmentStarterView: View {
                         )
                         visit.updateStep(doctorStep)
                         sessionManager.currentClinicVisit = visit
+                        
+                        if session.activity(for: .clinic) == nil {
+                            session.addActivity(service: .clinic)
+                        }
+                        if let activeIndex = session.activities.firstIndex(where: { $0.isSelected && $0.service == .clinic }) {
+                            session.activities[activeIndex].selectedDoctor = assignedDoctor
+                            session.activities[activeIndex].stage = .planning
+                            session.activities[activeIndex].queueStage = .wait
+                            session.activities[activeIndex].isSelected = true
+                            session.activities = session.activities
+                            session.printAllActivities()
+                        }
+                        
+                        
+                        if let visit = sessionManager.currentClinicVisit {
+                            
+                            let symptomLabels = visit.symptomStrings
+                            print("Selected symptoms:", symptomLabels)
+                            
+                            var recommendedTests: [ClinicStep] = []
+                            
+                            for symptom in symptomLabels {
+                                let tests = TestRecommendation.recommendedTests(for: symptom.lowercased())
+                                print("Tests for \(symptom):", tests.map { $0.name })
+                                recommendedTests.append(contentsOf: tests)
+                            }
+                            
+                            var uniqueTests: [ClinicStep] = []
+                            var seenNames: Set<String> = []
+                            
+                            for test in recommendedTests {
+                                if !seenNames.contains(test.name) {
+                                    uniqueTests.append(test)
+                                    seenNames.insert(test.name)
+                                }
+                            }
+                            
+                            recommendedTests = uniqueTests
+
+                            for test in recommendedTests {
+                                if session.activities.contains(where: { $0.service == .clinic && $0.testName == test.name }) {
+
+                                    continue
+                                }
+                                
+                                let newTestActivity = Activity(
+                                    service: .clinic,
+                                    stage: .planning,
+                                    isSelected: false,
+                                    queueStage: .unknown,
+                                    symptoms: symptomLabels,
+                                    testName: test.name
+                                )
+                                
+                                var temp = session.activities
+                                temp.append(newTestActivity)
+                                session.activities = temp
+                                
+                            }
+                        
+                        }
                     }
+                
+                        
                 }
                 .navigationDestination(isPresented: $navigateToPaymentView) {
                     if selectedPaymentOption == "card" {

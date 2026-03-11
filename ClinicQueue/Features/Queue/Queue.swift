@@ -5,11 +5,26 @@
 //  Created by dilshan fernando on 2026-03-10.
 //
 
+extension QueueStage {
+    func toQueueStages() -> QueueStages {
+        switch self {
+        case .wait: return .wait
+        case .next: return .next
+        case .ready: return .ready
+        case .inProgress: return .inProgress
+        case .completed: return .completed
+        }
+    }
+}
+
+
 import SwiftUI
+
 
 struct Queue: View {
 
     @EnvironmentObject var sessionManager: SessionManager
+    @EnvironmentObject var session: SessionManagerV2
     @State private var simulatedStatus: StepStatus = .waiting
 
     
@@ -42,15 +57,40 @@ struct Queue: View {
         case .completed: return .completed
         }
     }
+    
+    
+    
+    private func updateActiveActivityQueue() {
+
+        if let selectedIndex = session.activities.firstIndex(where: { $0.isSelected && $0.service == session.currentService }) {
+            let newQueueStage = mapQueueStage(for: simulatedStatus).toQueueStages()
+            session.activities[selectedIndex].queueStage = newQueueStage
+            print("Updated queueStage for active activity: \(session.activities[selectedIndex].id) -> \(newQueueStage)")
+        } else {
+            print("No active activity found for current service")
+        }
+    }
+    
 
  
     private func startQueueSimulation() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 5) { simulatedStatus = .next }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 10) { simulatedStatus = .ready }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 15) { simulatedStatus = .inProgress }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 20) { simulatedStatus = .completed }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+            simulatedStatus = .next
+            updateActiveActivityQueue()
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 10) {
+            simulatedStatus = .ready
+            updateActiveActivityQueue()
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 15) {
+            simulatedStatus = .inProgress
+            updateActiveActivityQueue()
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 20) {
+            simulatedStatus = .completed
+            updateActiveActivityQueue()
+        }
     }
-
 
     private var requestedTests: [ClinicStep] {
         guard let visit = sessionManager.currentClinicVisit else { return [] }
