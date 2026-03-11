@@ -116,10 +116,10 @@ struct PaymentView<SuccessDestination: View>: View {
                             expirationDate: $expirationDate
                         )
                         .padding(.top, Spacing.section)
-                        .padding(.bottom, 20)
+                        .padding(.bottom, 12)
                         
                     }
-                } .padding(.bottom, 150)
+                } .padding(.bottom, 90)
                 
                 
                 if isOtpModalOpen {

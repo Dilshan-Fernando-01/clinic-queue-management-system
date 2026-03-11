@@ -9,6 +9,7 @@ import SwiftUI
 
 struct FindDoctorView: View {
     
+    @StateObject private var session = SessionManagerV2()
     @State private var doctorName: String = ""
     @State private var selectedCategories: Set<String> = []
     @State private var isCategoryModalPresented = false
@@ -182,6 +183,8 @@ struct FindDoctorView: View {
                     }
                 }
             }
+        }.onAppear{
+            session.currentService = .appointment
         }
     }
 }

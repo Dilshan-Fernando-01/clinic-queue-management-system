@@ -257,7 +257,7 @@ struct BloodTestCard_Previews: PreviewProvider {
                     bottomTitleRight: "Approximate Time",
                     bottomSubTextRight: "~12 min",
                     fee: "$48",
-                    isActiveQueue: true
+//                    isActiveQueue: true
                 )
             }
             .padding(.vertical)

@@ -16,7 +16,7 @@ struct LabData {
             estimatedWait: "~10 min",
             price: 25,
             location: "Phlebotomy Lab - Level 1",
-            requirements: ["Fasting 8-10 hours recommended", "Hydrate well with water"]
+            requirements: ["Fasting 8-10 hours recommended", "Hydrate well with water"], symptomKeys: []
         ),
         ClinicStep(
             type: .labTest,
@@ -25,7 +25,7 @@ struct LabData {
             estimatedWait: "~12 min",
             price: 40,
             location: "Main Lab - Level 1",
-            requirements: ["Strict 12-hour fasting required", "No alcohol 24 hours prior"]
+            requirements: ["Strict 12-hour fasting required", "No alcohol 24 hours prior"], symptomKeys: []
         ),
         ClinicStep(
             type: .labTest,
@@ -34,7 +34,7 @@ struct LabData {
             estimatedWait: "~8 min",
             price: 35,
             location: "Rapid Testing Wing",
-            requirements: ["No fasting required", "Can be taken any time of day"]
+            requirements: ["No fasting required", "Can be taken any time of day"], symptomKeys: []
         ),
         ClinicStep(
             type: .labTest,
@@ -43,7 +43,7 @@ struct LabData {
             estimatedWait: "~5 min",
             price: 15,
             location: "Specimen Collection Point",
-            requirements: ["Mid-stream clean catch sample required", "Sterile container provided at desk"]
+            requirements: ["Mid-stream clean catch sample required", "Sterile container provided at desk"], symptomKeys: []
         ),
         ClinicStep(
             type: .labTest,
@@ -52,7 +52,7 @@ struct LabData {
             estimatedWait: "~10 min",
             price: 45,
             location: "Endocrine Lab - Level 2",
-            requirements: ["Best performed in the morning", "Note current thyroid medications"]
+            requirements: ["Best performed in the morning", "Note current thyroid medications"], symptomKeys: []
         ),
         ClinicStep(
             type: .labTest,
@@ -61,7 +61,7 @@ struct LabData {
             estimatedWait: "~15 min",
             price: 50,
             location: "Main Lab - Level 1",
-            requirements: ["Fasting 8-12 hours required", "Avoid fatty meals night before"]
+            requirements: ["Fasting 8-12 hours required", "Avoid fatty meals night before"], symptomKeys: []
         ),
         ClinicStep(
             type: .labTest,
@@ -70,7 +70,7 @@ struct LabData {
             estimatedWait: "~12 min",
             price: 48,
             location: "Main Lab - Level 1",
-            requirements: ["Avoid high-protein meals 24 hours prior", "Hydration is key"]
+            requirements: ["Avoid high-protein meals 24 hours prior", "Hydration is key"], symptomKeys: []
         ),
         ClinicStep(
             type: .labTest,
@@ -79,7 +79,7 @@ struct LabData {
             estimatedWait: "~10 min",
             price: 65,
             location: "Nutrition Lab - Wing B",
-            requirements: ["No specific fasting required", "Avoid biotin supplements 48h prior"]
+            requirements: ["No specific fasting required", "Avoid biotin supplements 48h prior"], symptomKeys: []
         ),
         ClinicStep(
             type: .labTest,
@@ -88,7 +88,7 @@ struct LabData {
             estimatedWait: "~8 min",
             price: 30,
             location: "Rapid Testing Wing",
-            requirements: ["Inform staff of any diuretic use"]
+            requirements: ["Inform staff of any diuretic use"], symptomKeys: []
         ),
         ClinicStep(
             type: .labTest,
@@ -97,7 +97,7 @@ struct LabData {
             estimatedWait: "~10 min",
             price: 55,
             location: "Urology Lab - Level 3",
-            requirements: ["Avoid cycling or ejaculation 48 hours prior"]
+            requirements: ["Avoid cycling or ejaculation 48 hours prior"], symptomKeys: []
         )
     ]
 
@@ -118,3 +118,4 @@ struct LabData {
         }
     }
 }
+

@@ -9,171 +9,161 @@ import SwiftUI
 
 struct AppointmentStarterView: View {
     @EnvironmentObject var sessionManager: SessionManager
-    @State private var assignedDoctor: InfoCardData?
+    @EnvironmentObject var session: SessionManagerV2
     @State private var selectedQueue: UUID? = nil
-    @State private var selectedFloatingDestination: Int? = nil
+    @State private var navigateToPaymentView = false
 
-    
-    private var nextAvailableQueue: QueueOption? {
-        guard let doctor = assignedDoctor,
-              let firstAvailability = doctor.availableDates?.first,
-              let queueString = doctor.activeQueueCount else { return nil }
+    private var activeActivity: Activity? {
+        guard let index = session.activities.firstIndex(where: { $0.isSelected && $0.service == .clinic }) else { return nil }
 
-        let currentQueue = Int(queueString.components(separatedBy: " ").first ?? "0") ?? 0
-        let nextSlotIndex = currentQueue + 1
+        var activity = session.activities[index]
 
-        return QueueOption(
-            heading: String(format: "%02d", nextSlotIndex),
-            subText: firstAvailability.timeRange
+        return activity
+    }
+
+    private var doctorInfo: InfoCardData? {
+        guard let doctor = activeActivity?.selectedDoctor else { return nil }
+
+        return InfoCardData(
+            image: doctor.image,
+            heading: doctor.heading,
+            subheading: doctor.subheading,
+            activeQueueCount: doctor.activeQueueCount,
+            detail1: ("Location:", doctor.detail2?.1 ?? "N/A"),
+            price: doctor.price,
+            availableDates: doctor.availableDates,
+            isPriceButtonVisble: doctor.isPriceButtonVisble
         )
     }
-    
-    private var queueOptions: [QueueOption] {
-        guard let doctor = assignedDoctor,
-              let availableDates = doctor.availableDates else { return [] }
 
-        return availableDates.map { availability in
-            QueueOption(
-                heading: availability.queueLabel,
-                subText: availability.timeRange
-            )
-        }
-    }
-    
-    private var consultationFee: Double {
-        guard let priceString = assignedDoctor?.price else { return 0 }
+    private var nextAvailableQueue: QueueOption? {
+        guard let doctor = activeActivity?.selectedDoctor else { return nil }
 
-        let cleaned = priceString.replacingOccurrences(of: "$", with: "")
-        return Double(cleaned) ?? 0
-    }
-
-    private var adminFee: Double {
-        PaymentConfig.adminFee
-    }
-
-    private var totalPayment: Double {
-        consultationFee + adminFee - PaymentConfig.additionalDiscount
+        let currentQueue = Int(doctor.activeQueueCount?.components(separatedBy: " ").first ?? "0") ?? 0
+        let nextSlotIndex = currentQueue + 1
+        return QueueOption(heading: String(format: "%02d", nextSlotIndex), subText: doctor.availableDates?.first?.timeRange ?? "~15 min")
     }
 
     private var paymentDetailsData: [PaymentDetailRow] {
-        [
-            PaymentDetailRow(label: "Consultation", value: "$\(String(format: "%.2f", consultationFee))"),
-            PaymentDetailRow(label: "Admin Fee", value: "$\(String(format: "%.2f", adminFee))"),
-            PaymentDetailRow(label: "Additional Discount", value: "$\(String(format: "%.2f", PaymentConfig.additionalDiscount))"),
-            PaymentDetailRow(label: "Total", value: "$\(String(format: "%.2f", totalPayment))")
-        ]
+        guard let activity = activeActivity else { return [] }
+
+        if let doctor = activity.selectedDoctor {
+            let consultationFee = Double(doctor.price?.replacingOccurrences(of: "$", with: "") ?? "0") ?? 0
+            let adminFee = PaymentConfig.adminFee
+            let total = consultationFee + adminFee - PaymentConfig.additionalDiscount
+
+            return [
+                PaymentDetailRow(label: "Consultation", value: "$\(String(format: "%.2f", consultationFee))"),
+                PaymentDetailRow(label: "Admin Fee", value: "$\(String(format: "%.2f", adminFee))"),
+                PaymentDetailRow(label: "Additional Discount", value: "$\(String(format: "%.2f", PaymentConfig.additionalDiscount))"),
+                PaymentDetailRow(label: "Total", value: "$\(String(format: "%.2f", total))")
+            ]
+        } else if activity.testName != nil {
+         
+            let fee = 0.0
+            let adminFee = PaymentConfig.adminFee
+            let total = fee + adminFee - PaymentConfig.additionalDiscount
+
+            return [
+                PaymentDetailRow(label: activity.testName ?? "Test", value: "$\(String(format: "%.2f", fee))"),
+                PaymentDetailRow(label: "Admin Fee", value: "$\(String(format: "%.2f", adminFee))"),
+                PaymentDetailRow(label: "Additional Discount", value: "$\(String(format: "%.2f", PaymentConfig.additionalDiscount))"),
+                PaymentDetailRow(label: "Total", value: "$\(String(format: "%.2f", total))")
+            ]
+        } else {
+            return []
+        }
     }
-    
-    
+
     private let paymentOptionsData: [CheckboxItem] = [
-        CheckboxItem(
-            key: "card",
-            label: "Card Payment",
-            icon: Image("Card")
-        ),
+        CheckboxItem(key: "card", label: "Card Payment", icon: Image("Card")),
         CheckboxItem(key: "cash", label: "Cash Payment", icon: Image("Cash"))
     ]
-    
-    @State private var selectedPaymentOption: String? = "card"
-    @State private var navigateToPaymentView = false
-    
-    
 
-    
+    @State private var selectedPaymentOption: String? = "card"
+
     var body: some View {
         NavigationStack {
-        ZStack {
-            
-            ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    
-                    Text("Your Clinic Queue")
-                        .font(.system(size: 20, weight: .bold))
-                        .frame(maxWidth: .infinity, alignment: .center)
-                        .padding(.horizontal)
-                      
-                    
-                    if let doctor = assignedDoctor {
+            ZStack {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 20) {
 
-                        let modifiedDoctor = {
-                            var d = doctor
-                            d.isPriceButtonVisble = false
-                            return d
-                        }()
-                        
+                        Text("Your Clinic Queue")
+                            .font(.system(size: 20, weight: .bold))
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .padding(.horizontal)
 
-                        InfoCard(data: modifiedDoctor)
+                        if let doctor = doctorInfo {
+                            InfoCard(data: doctor)
+                                .padding(.horizontal)
+                                .padding(.top, Spacing.section)
+                        }
+
+                        if let activity = activeActivity {
+                            if activity.labStep != nil {
+                                BloodTestCard(
+                                    image: "labIcon",
+                                    title: activity.labStep!.name,
+                                    specialText: "",
+                                    detailLine1: "Location: \(activity.labStep?.location ?? "N/A")",
+                                    detailLine2: "",
+                                    showExtraSection: true,
+                                    bottomTitleLeft: "Requirements",
+                                    listItems: activity.labStep?.requirements ?? [],
+                                    bottomTitleRight: "Approximate Time",
+                                    bottomSubTextRight: activity.labStep?.estimatedWait ?? "",
+                                    fee: activity.labStep?.price != nil ? "$\(Int(activity.labStep!.price!))" : "Free",
+                                    isActiveQueue: true
+                                )
+                                .padding(.horizontal)
+                            }
+
+                            if activity.imagingStep != nil {
+                                BloodTestCard(
+                                    image: "imagingIcon",
+                                    title: activity.imagingStep!.name,
+                                    specialText: "",
+                                    detailLine1: "Location: \(activity.imagingStep?.location ?? "N/A")",
+                                    detailLine2: "",
+                                    showExtraSection: true,
+                                    bottomTitleLeft: "Requirements",
+                                    listItems: activity.imagingStep?.requirements ?? [],
+                                    bottomTitleRight: "Approximate Time",
+                                    bottomSubTextRight: activity.imagingStep?.estimatedWait ?? "",
+                                    fee: activity.imagingStep?.price != nil ? "$\(Int(activity.imagingStep!.price!))" : "Free",
+                                    isActiveQueue: true
+                                )
+                                .padding(.horizontal)
+                            }
+                        }
+
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Available Queues")
+                                .font(.system(size: 16, weight: .semibold))
+                                .frame(maxWidth: .infinity, alignment: .center)
+
+                            if let queue = nextAvailableQueue {
+                                QueueButtonGroup(queues: [queue], selectedId: $selectedQueue)
+                                    .padding(.horizontal)
+                            }
+                        }
+                        .padding(.top, Spacing.section)
+
+                        PaymentDetails(rows: paymentDetailsData)
                             .padding(.horizontal)
                             .padding(.top, Spacing.section)
+
+                        PaymentOptions(items: paymentOptionsData, selectedKey: $selectedPaymentOption)
+                            .padding(.horizontal)
+                            .padding(.top, Spacing.section)
+
                     }
-                    
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Available Queues")
-                            .font(.system(size: 16, weight: .semibold))
-                            .frame(maxWidth: .infinity, alignment: .center)
-                        
-                        if let queue = nextAvailableQueue {
-                            QueueButtonGroup(
-                                queues: [queue],
-                                selectedId: $selectedQueue
-                            )
+                    .padding(.vertical, 20)
+                    .onAppear {
+
+                        if activeActivity == nil {
+                            session.addActivity(service: .clinic)
                         }
-                    }
-                    .padding(.horizontal)
-                    .padding(.top, Spacing.section)
-                    
-                    
-                    
-                    PaymentDetails(rows: paymentDetailsData)
-                        .padding(.horizontal)
-                        .padding(.top, Spacing.section)
-                    
-                    PaymentOptions(
-                        items: paymentOptionsData,
-                        selectedKey: $selectedPaymentOption
-                    )
-                    .padding(.horizontal)
-                    .padding(.top, Spacing.section)
-                    
-
-                }
-                .padding(.vertical, 20)
-                .onAppear {
-                    if let symptom = sessionManager.currentClinicVisit?.selectedSymptom {
-                        let filteredDoctors = DoctorData.doctorGroups
-                            .first(where: { $0.specialty == symptom.specialty })?
-                            .doctors ?? []
-                        assignedDoctor = DoctorData.leastBusyDoctor(from: filteredDoctors)
-                    } else {
-                        let generalDoctors = DoctorData.doctorGroups
-                            .first(where: { $0.specialty == "General" })?
-                            .doctors ?? []
-                        assignedDoctor = DoctorData.leastBusyDoctor(from: generalDoctors)
-                    }
-                    
-                   
-                    selectedQueue = nextAvailableQueue?.id
-
-
-                    if var visit = sessionManager.currentClinicVisit, let doctor = assignedDoctor {
-
-                        let cleanedPrice = doctor.price?.replacingOccurrences(of: "$", with: "") ?? "0"
-                        let price = Double(cleanedPrice) ?? 0
-
-                        var doctorStep = ClinicStep(
-                            type: .doctor,
-                            name: doctor.heading,
-                            description: doctor.subheading,
-                            estimatedWait: nextAvailableQueue?.subText ?? "~15 min",
-                            price: consultationFee,
-                            location: doctor.detail2?.1,   
-                            requirements: nil,
-                            specialty: doctor.subheading,
-                            queueNumber: nextAvailableQueue?.heading,
-                            serviceImage: doctor.image
-                        )
-                        visit.updateStep(doctorStep)
-                        sessionManager.currentClinicVisit = visit
                     }
                 }
                 .navigationDestination(isPresented: $navigateToPaymentView) {
@@ -183,14 +173,13 @@ struct AppointmentStarterView: View {
                                 onPaymentSuccess: {
                                     PaymentStatusView(
                                         isSuccess: true,
-                                        doctor: assignedDoctor,
+                                        doctor: activeActivity?.selectedDoctor,
                                         queue: nextAvailableQueue,
-                                        onContinue: {
-                                            Queue()
-                                        },
+                                        onContinue: { Queue() },
                                         currentVisit: sessionManager.currentClinicVisit
                                     )
-                                }, currentVisit: Binding(
+                                },
+                                currentVisit: Binding(
                                     get: { currentVisit },
                                     set: { sessionManager.currentClinicVisit = $0 }
                                 )
@@ -201,41 +190,32 @@ struct AppointmentStarterView: View {
                     } else {
                         PaymentThroughCashView()
                     }
-                } .padding(.bottom, 140) 
-                
-            
-            }
-            
-            VStack {
-                Spacer()
+                }
 
                 VStack {
-                    PrimaryButton(title: "Book Appointment") {
-                        if var visit = sessionManager.currentClinicVisit {
-                            visit.consultationFee = consultationFee
-                            visit.adminFee = adminFee
-                            sessionManager.currentClinicVisit = visit
+                    Spacer()
+
+                    VStack {
+                        PrimaryButton(title: "Book Appointment") {
+
+                            if var visit = sessionManager.currentClinicVisit {
+                                if let doctor = activeActivity?.selectedDoctor {
+                                    let fee = Double(doctor.price?.replacingOccurrences(of: "$", with: "") ?? "0") ?? 0
+                                    visit.consultationFee = fee
+                                    visit.adminFee = PaymentConfig.adminFee
+                                    sessionManager.currentClinicVisit = visit
+                                }
+                            }
+
+                            navigateToPaymentView = true
                         }
-                       
-                        let recommended = TestRecommendation.recommendedTests(for: "stomach")
-
-                        let labTests = recommended.filter { $0.type == .labTest }
-                        let imagingTests = recommended.filter { $0.type == .imaging }
-
-                        print("Lab Tests: \(labTests.map { $0.name })")
-                        print("Imaging Tests: \(imagingTests.map { $0.name })")
-                        
-                        
-                        navigateToPaymentView = true
                     }
+                    .padding(20)
+                    .background(Color(UIColor.systemBackground))
+                    .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: -5)
                 }
-                .padding(20)
-                .background(Color(UIColor.systemBackground))
-                .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: -5)
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-            
-            
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+
                 FloatingNav(
                     mainIcon: "plus",
                     items: [
@@ -244,15 +224,9 @@ struct AppointmentStarterView: View {
                         FloatingNavItem(icon: "gearshape.fill", label: "Settings", destination: AnyView(SettingsView()))
                     ]
                 )
-           
-   
+            }
         }
-        
-        
     }
-    
-    }
-    
 }
 
 #Preview {

@@ -36,6 +36,7 @@ extension PatientDetailsFormView {
 
 struct PatientDetailsFormView: View {
     @EnvironmentObject var sessionManager: SessionManager
+    @EnvironmentObject var session: SessionManagerV2
     @State private var name: String = ""
     @State private var age: String = ""
     @State private var gender: String? = nil
@@ -93,9 +94,23 @@ struct PatientDetailsFormView: View {
                           gender: gender ?? "",
                           symptomStrings: []
                       )
-
                     
+                    session.currentService = .clinic
+                    if session.activity(for: .clinic) == nil {
+                          session.addActivity(service: .clinic)
+                      }
+                    if let activity = session.activity(for: .clinic) {
+                        if let index = session.activities.firstIndex(where: { $0.id == activity.id }) {
+                            session.activities[index].patientName = name
+                            session.activities[index].patientAge = Int(age) ?? 0
+                            session.activities[index].patientGender = gender ?? ""
+                            session.activities[index].isSelected = true
+                            session.activities = session.activities
+                            session.printAllActivities() 
+                        }
+                    }
 
+                
                     navigateToSymptoms = true
 
                 }

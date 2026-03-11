@@ -55,19 +55,29 @@ struct LandingView: View {
             }
             
             .navigationDestination(isPresented: $navigateToDoctorList) {
-                if sessionManager.isLoggedIn {
-                    ServicesView()
-                        .navigationBarBackButtonHidden(true)
-                } else {
-                    LoginView()
-                        .navigationBarBackButtonHidden(true)
-                }
+                DestinationRouterView()
+                    .navigationBarBackButtonHidden(true)
             }
         
         }
     }
 }
 
+private struct DestinationRouterView: View {
+    @EnvironmentObject var sessionManager: SessionManager
+
+    var body: some View {
+        Group {
+            if sessionManager.isLoggedIn {
+                ServicesView()
+            } else {
+                LoginView()
+            }
+        }
+    }
+}
+
 #Preview {
     LandingView()
+        .environmentObject(SessionManager())
 }

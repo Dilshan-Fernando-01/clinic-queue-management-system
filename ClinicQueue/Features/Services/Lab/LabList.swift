@@ -10,6 +10,8 @@ import SwiftUI
 struct LabList: View {
 
     let specialties: [CategoryItem] = LabCategoriesData.categories
+    @StateObject private var session = SessionManagerV2()
+
     let labTests: [LabCardData] = LabData.labTests
 
     @State private var selectedTests: Set<UUID> = []
@@ -153,7 +155,9 @@ struct LabList: View {
                                 )
                             }
                         }
-                        .padding(.top, 20)
+                        .padding(.top, 20).onAppear{
+                            session.currentService = .lab
+                        }
                     }
 
                 }
