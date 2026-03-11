@@ -1,41 +1,38 @@
 //
-//  LabTestDetailsView.swift
+//  ImagingDetailsView.swift
 //  ClinicQueue
 //
-//  Created by Keshana Liyanaarachchi on 2026-03-08.
+//  Created by Keshana Liyanaarachchi on 2026-03-11.
 //
 
 import SwiftUI
 
-struct LabTestDetailsView: View {
-    let selectedTests: [LabCardData]
+struct ImagingDetailsView: View {
+    let selectedTests: [ClinicStep]
     var backgroundColor: Color = AppColors.primary
 
-    @State private var navigateToPaymentView = false
-    @State private var selectedPaymentOption: String? = "card"
     @EnvironmentObject var sessionManager: SessionManager
+    @State private var selectedPaymentOption: String? = "card"
+    @State private var navigateToPaymentView = false
+
+    private var totalPrice: Double {
+        selectedTests.reduce(0) { $0 + ($1.price ?? 0) }
+    }
 
     private var adminFee: Double {
         PaymentConfig.adminFee
     }
 
-    private var totalPrice: Double {
-        selectedTests.reduce(0.0) { sum, test in
-            let cleaned = test.buttonText.replacingOccurrences(of: "$", with: "")
-            return sum + (Double(cleaned) ?? 0.0)
-        }
-    }
     private var totalPayment: Double {
         totalPrice + adminFee - PaymentConfig.additionalDiscount
     }
 
-    // ✅ Dynamic payment details from actual selected tests
     private var paymentDetailsData: [PaymentDetailRow] {
         [
-            PaymentDetailRow(label: "Lab Tests",           value: "$ \(String(format: "%.2f", totalPrice))"),
-            PaymentDetailRow(label: "Admin Fee",           value: "$ \(String(format: "%.2f", adminFee))"),
-            PaymentDetailRow(label: "Additional Discount", value: "$ \(String(format: "%.2f", PaymentConfig.additionalDiscount))"),
-            PaymentDetailRow(label: "Total",               value: "$ \(String(format: "%.2f", totalPayment))")
+            PaymentDetailRow(label: "Imaging Tests",        value: "$ \(String(format: "%.2f", totalPrice))"),
+            PaymentDetailRow(label: "Admin Fee",            value: "$ \(String(format: "%.2f", adminFee))"),
+            PaymentDetailRow(label: "Additional Discount",  value: "$ \(String(format: "%.2f", PaymentConfig.additionalDiscount))"),
+            PaymentDetailRow(label: "Total",                value: "$ \(String(format: "%.2f", totalPayment))")
         ]
     }
 
@@ -44,6 +41,22 @@ struct LabTestDetailsView: View {
         CheckboxItem(key: "cash", label: "Cash Payment", icon: Image("Cash"))
     ]
 
+    private func icon(for name: String) -> String {
+        let lower = name.lowercased()
+        if lower.contains("chest")                              { return "lungs.fill" }
+        else if lower.contains("ct scan") || lower.contains("abdomen") { return "cross.case.fill" }
+        else if lower.contains("mri brain")                    { return "brain.head.profile" }
+        else if lower.contains("ultrasound")                   { return "waveform.path.ecg" }
+        else if lower.contains("mammography")                  { return "figure.stand" }
+        else if lower.contains("bone") || lower.contains("dxa") { return "staroflife.fill" }
+        else if lower.contains("coronary")                     { return "heart.fill" }
+        else if lower.contains("knee") || lower.contains("x-ray") { return "figure.walk" }
+        else if lower.contains("spine") || lower.contains("lumbar") { return "person.fill" }
+        else if lower.contains("head") || lower.contains("emergency") { return "exclamationmark.triangle.fill" }
+        else                                                   { return "cross.fill" }
+    }
+
+    // A computed binding that always returns a valid ClinicVisit
     private var visitBinding: Binding<ClinicVisit> {
         Binding(
             get: { sessionManager.currentClinicVisit ?? ClinicVisit(patientName: "", age: 0, gender: "") },
@@ -55,7 +68,7 @@ struct LabTestDetailsView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
 
-                Text("Lab Tests")
+                Text("Imaging Tests")
                     .font(.system(size: 20, weight: .bold))
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.horizontal)
@@ -63,20 +76,17 @@ struct LabTestDetailsView: View {
                 ForEach(Array(selectedTests.enumerated()), id: \.element.id) { index, test in
                     VStack(alignment: .leading, spacing: 16) {
 
-                        // ✅ Same card style as TestHistoryView / ImagingDetailsView
                         BloodTestCard(
-                            image: test.icon,
-                            title: test.title,
-                            specialText: test.description1,
-                            detailLine1: "\(test.label1)\(test.label1Text)",
-                            detailLine2: "",
-                            showExtraSection: true,
-                            bottomTitleLeft: "Requirements",
-                            listItems: ["No special preparation needed", "Bring your lab request form"],
-                            bottomTitleRight: "Approx Time",
-                            bottomSubTextRight: test.label1Text,
-                            fee: test.buttonText,
-                            isActiveQueue: true
+                            image: icon(for: test.name),
+                            title: test.name,
+                            specialText: "Available Now",
+                            detailLine1: "Location: \(test.location ?? "")",
+                            detailLine2: "Wait: \(test.estimatedWait ?? "")",
+                           
+                         
+                          showExtraSection: false,
+                            fee: "LKR \(test.price ?? 0)",
+                            isCheckboxSelectable: false
                         )
 
                         if index < selectedTests.count - 1 {
@@ -98,7 +108,7 @@ struct LabTestDetailsView: View {
 
                 HStack {
                     PrimaryButton(title: "Booking", maxWidth: 220) {
-                        // ✅ Save totals into session before navigating
+                        // Write totals into the visit before navigating
                         if var visit = sessionManager.currentClinicVisit {
                             visit.consultationFee = totalPrice
                             visit.adminFee        = adminFee
@@ -113,8 +123,6 @@ struct LabTestDetailsView: View {
             }
             .padding(.horizontal, 2)
         }
-
-        // ✅ Card → PaymentView → PaymentStatusView → Queue
         .navigationDestination(isPresented: $navigateToPaymentView) {
             if selectedPaymentOption == "card" {
                 PaymentView(
@@ -123,16 +131,14 @@ struct LabTestDetailsView: View {
                             isSuccess: true,
                             doctor: nil,
                             queue: nil,
-                            onContinue: { Queue() },   // ✅ Queue after success
+                            onContinue: { Queue() },
                             currentVisit: sessionManager.currentClinicVisit
                         )
                     },
                     currentVisit: visitBinding
                 )
-                .environmentObject(sessionManager)
             } else {
                 PaymentThroughCashView()
-                    .environmentObject(sessionManager)
             }
         }
     }
@@ -140,28 +146,15 @@ struct LabTestDetailsView: View {
 
 #Preview {
     NavigationStack {
-        LabTestDetailsView(selectedTests: [
-            LabCardData(
-                icon: "SearchIcon",
-                iconSize: 32,
-                title: "Complete Blood Count (CBC)",
-                description1: "12 patients in queue",
-                label1: "Estimated wait: ",
-                label1Text: "~45 min",
-                label2: "Location: ",
-                label2Text: "Room 02 - Consultation Wing",
-                buttonText: "$25"
-            ),
-            LabCardData(
-                icon: "SearchIcon",
-                iconSize: 32,
-                title: "ESR",
-                description1: "12 patients in queue",
-                label1: "Estimated wait: ",
-                label1Text: "~45 min",
-                label2: "Location: ",
-                label2Text: "Room 02 - Consultation Wing",
-                buttonText: "$25"
+        ImagingDetailsView(selectedTests: [
+            ClinicStep(
+                type: .imaging,
+                name: "Chest X-Ray (PA & Lateral)",
+                description: "A quick, non-invasive imaging test.",
+                estimatedWait: "~15 min",
+                price: 60,
+                location: "Radiology - Level 1, Wing A",
+                requirements: ["Remove all jewelry", "Wear loose-fitting clothing"]
             )
         ])
         .environmentObject(SessionManager())

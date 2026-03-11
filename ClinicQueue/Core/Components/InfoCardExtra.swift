@@ -23,6 +23,8 @@ struct BloodTestCard: View {
     
     var isActiveQueue: Bool = false
 
+
+
     init(
         image: String,
         title: String,
@@ -57,6 +59,7 @@ struct BloodTestCard: View {
         self.initiallySelected = initiallySelected
         self.onSelectionChange = onSelectionChange
         self._isSelected = State(initialValue: initiallySelected)
+        self.isActiveQueue = isActiveQueue 
     }
 
     var body: some View {

@@ -9,24 +9,25 @@ import SwiftUI
 
 struct LabDetails: View {
     let specialties: [CategoryItem] = LabCategoriesData.categories
-
- 
     let labTests: [LabCardData] = LabData.labTests
 
     @State private var selectedTests: Set<UUID> = []
-    @State private var showingSelectedSection = false
     @State private var searchText = ""
-    @State private var selectedCategories: Set<String>
-    @State private var navigateToNext = false  
+    @State private var selectedCategory: String?
+    @State private var navigateToNext = false
 
-    let selectedCategory: String
+    let initialCategory: String
 
     init(selectedCategory: String) {
-        self.selectedCategory = selectedCategory
-        self._selectedCategories = State(initialValue: [selectedCategory])
+        self.initialCategory = selectedCategory
+        self._selectedCategory = State(initialValue: selectedCategory)
     }
 
-  
+    // Title updates when category changes
+    private var pageTitle: String {
+        selectedCategory ?? initialCategory
+    }
+
     private var filteredLabTests: [LabCardData] {
         if searchText.isEmpty {
             return labTests
@@ -35,21 +36,20 @@ struct LabDetails: View {
         }
     }
 
-  
     private var selectedLabCards: [LabCardData] {
         filteredLabTests.filter { selectedTests.contains($0.id) }
     }
-    
 
     private var availableLabCards: [LabCardData] {
         filteredLabTests.filter { !selectedTests.contains($0.id) }
     }
 
     var body: some View {
-        ZStack(alignment: .top) {
+        ZStack(alignment: .bottom) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                    HeaderSection(title: selectedCategory)
+                    HeaderSection(title: pageTitle)
+                        .animation(.easeInOut(duration: 0.25), value: pageTitle)
                 }
                 .padding(.top, -60)
 
@@ -69,9 +69,28 @@ struct LabDetails: View {
                     .padding(.top, 32)
                     .padding(.horizontal, 10)
 
+                // Single-select via custom Binding — only one button highlighted at a time
                 CategoryGrid(
                     items: specialties,
-                    selectedCategories: $selectedCategories
+                    selectedCategories: Binding(
+                        get: {
+                            selectedCategory.map { [$0] } ?? []
+                        },
+                        set: { newValue in
+                            let current: Set<String> = selectedCategory.map { [$0] } ?? []
+                            let added = newValue.subtracting(current)
+
+                            withAnimation(.easeInOut(duration: 0.25)) {
+                                if let newlyTapped = added.first {
+                                    // Tap new button → deselect old, select new
+                                    selectedCategory = newlyTapped
+                                } else {
+                                    // Tap same button → deselect
+                                    selectedCategory = nil
+                                }
+                            }
+                        }
+                    )
                 )
                 .padding(.top, 20)
 
@@ -136,25 +155,35 @@ struct LabDetails: View {
                     }
                     .padding(.top, 20)
                 }
+            }
+            .padding(.horizontal, 2)
+            .padding(.bottom, 100)
+            .animation(.spring(), value: selectedTests.isEmpty)
+            .navigationDestination(isPresented: $navigateToNext) {
+                LabTestDetailsView(selectedTests: selectedLabCards)
+            }
+
+            // Sticky Next Button
+            VStack(spacing: 0) {
+                LinearGradient(
+                    colors: [Color(.systemBackground).opacity(0), Color(.systemBackground)],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .frame(height: 24)
 
                 HStack {
                     PrimaryButton(title: "Next", maxWidth: 160) {
                         navigateToNext = true
                     }
+                    .disabled(selectedTests.isEmpty)
+                    .opacity(selectedTests.isEmpty ? 0.5 : 1.0)
                 }
                 .frame(maxWidth: .infinity, alignment: .center)
-                .padding(.top)
-                .disabled(selectedTests.isEmpty)
-                .opacity(selectedTests.isEmpty ? 0.5 : 1.0)
+                .padding(.vertical, 16)
+                .background(Color(.systemBackground))
             }
-            .padding(.horizontal, 2)
-            .padding(.top, 0)
-            .padding(.bottom, 32)
             .animation(.spring(), value: selectedTests.isEmpty)
-        }
-       
-        .navigationDestination(isPresented: $navigateToNext) {
-            LabTestDetailsView(selectedTests: selectedLabCards)
         }
     }
 

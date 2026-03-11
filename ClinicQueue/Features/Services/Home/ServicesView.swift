@@ -41,6 +41,7 @@ struct ServicesView: View {
         case .laboratory:
             LabList()
         case .imaging:
+            ImageList()
             Text("Imaging View")
         case .pharmacy:
             Text("Pharmacy View")
@@ -104,18 +105,23 @@ struct ServicesView: View {
                             Spacer()
                             
                             HStack(spacing: 16) {
+                                
                                 NavigationLink(destination: NotificationView()) {
                                     Image(systemName: "bell")
                                         .font(.system(size: 20))
                                         .foregroundColor(.black)
                                 }
-                                Circle()
-                                    .fill(Color.gray.opacity(0.3))
-                                    .frame(width: 36, height: 36)
-                                    .overlay(
-                                        Text("KL")
-                                            .font(.caption)
-                                    )
+
+                                NavigationLink(destination: ProfileView()) {   
+                                    Circle()
+                                        .fill(Color.gray.opacity(0.3))
+                                        .frame(width: 36, height: 36)
+                                        .overlay(
+                                            Text("KL")
+                                                .font(.caption)
+                                                .foregroundColor(.black)
+                                        )
+                                }
                             }
                         }
                         
@@ -173,7 +179,7 @@ struct ServicesView: View {
                     items: [
                         FloatingNavItem(icon: "house.fill", label: "Home", destination: AnyView(EmptyView())),
                         FloatingNavItem(icon: "map.fill", label: "Map", destination: AnyView(Text("Map View"))),
-                        FloatingNavItem(icon: "gearshape.fill", label: "Settings", destination: AnyView(SettingsView()))
+                        FloatingNavItem(icon: "gearshape.fill", label: "Settings", destination: AnyView(ProfileView()))
                     ]
                 )
             }

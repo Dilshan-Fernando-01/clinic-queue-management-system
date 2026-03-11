@@ -15,13 +15,14 @@ struct LabList: View {
     let labTests: [LabCardData] = LabData.labTests
 
     @State private var selectedTests: Set<UUID> = []
-    @State private var showingSelectedSection = false
-    @State private var selectedCategories: Set<String> = []
     @State private var selectedCategory: String? = nil
-    @State private var isNavigatingToDetails = false
     @State private var searchText = ""
     @State private var navigateToNext = false
 
+    // Title shown at the top — updates when a category is tapped
+    private var pageTitle: String {
+        selectedCategory ?? "Your Clinic Queue"
+    }
 
     private var filteredLabTests: [LabCardData] {
         if searchText.isEmpty {
@@ -30,12 +31,10 @@ struct LabList: View {
             return labTests.filter { $0.title.localizedCaseInsensitiveContains(searchText) }
         }
     }
-    
- 
+
     private var selectedLabCards: [LabCardData] {
         filteredLabTests.filter { selectedTests.contains($0.id) }
     }
-    
 
     private var availableLabCards: [LabCardData] {
         filteredLabTests.filter { !selectedTests.contains($0.id) }
@@ -43,13 +42,26 @@ struct LabList: View {
 
     var body: some View {
         NavigationStack {
-            ZStack(alignment: .top) {
+            ZStack(alignment: .bottom) {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 20) {
-                        HeaderSection(title: "Find Lab Test")
+                        // Title updates to selected category name
+                        Text(pageTitle)
+                            .font(.system(size: 20, weight: .bold))
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .padding(.horizontal)
+                            .animation(.easeInOut(duration: 0.25), value: pageTitle)
                     }
-                    .padding(.top ,-60)
 
+                    VStack(alignment: .center) {
+                        IconInputField(
+                            iconName: "SearchIcon",
+                            placeholder: "Find a Lab Test",
+                            value: $searchText
+                        )
+                        .padding(.top, 10)
+                        .padding(.horizontal, 10)
+                    }
 
                     Text("Category")
                         .font(.app(.heading))
@@ -57,17 +69,31 @@ struct LabList: View {
                         .padding(.top, 32)
                         .padding(.horizontal, 10)
 
+                   
                     CategoryGrid(
                         items: specialties,
-                        selectedCategories: $selectedCategories
+                        selectedCategories: Binding(
+                            get: {
+                                // CategoryGrid reads: only the currently selected one
+                                selectedCategory.map { [$0] } ?? []
+                            },
+                            set: { newValue in
+                                // CategoryGrid writes: find the newly tapped item
+                                let current: Set<String> = selectedCategory.map { [$0] } ?? []
+                                let added = newValue.subtracting(current)
+
+                                withAnimation(.easeInOut(duration: 0.25)) {
+                                    if let newlyTapped = added.first {
+                                        // User tapped a NEW button → select it, deselect old
+                                        selectedCategory = newlyTapped
+                                    } else {
+                                        // User tapped the SAME button again → deselect
+                                        selectedCategory = nil
+                                    }
+                                }
+                            }
+                        )
                     )
-                    .onChange(of: selectedCategories) { newValue in
-                        if let tapped = newValue.first {
-                            selectedCategory = tapped
-                            isNavigatingToDetails = true
-                            selectedCategories = []
-                        }
-                    }
                     .padding(.top, 20)
 
                     if !selectedTests.isEmpty {
@@ -134,25 +160,32 @@ struct LabList: View {
                         }
                     }
 
-                    HStack {
-                        PrimaryButton(title: "Next", maxWidth: 160) {
-                            navigateToNext = true
-                        }
-                    }
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .padding(.top)
-                    .disabled(selectedTests.isEmpty)
-                    .opacity(selectedTests.isEmpty ? 0.5 : 1.0)
                 }
                 .padding(.horizontal, 2)
-                .padding(.top, 0)
-                .padding(.bottom, 32)
+                .padding(.bottom, 100)
                 .animation(.spring(), value: selectedTests.isEmpty)
-            }
-            .navigationDestination(isPresented: $isNavigatingToDetails) {
-                if let category = selectedCategory {
-                    LabDetails(selectedCategory: category)
+
+                VStack(spacing: 0) {
+                    // Fade gradient above button
+                    LinearGradient(
+                        colors: [Color(.systemBackground).opacity(0), Color(.systemBackground)],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                    .frame(height: 24)
+
+                    HStack {
+                        PrimaryButton(title: "Next", maxWidth: 220) {
+                            navigateToNext = true
+                        }
+                        .disabled(selectedTests.isEmpty)
+                        .opacity(selectedTests.isEmpty ? 0.5 : 1.0)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.vertical, 16)
+                    .background(Color(.systemBackground))
                 }
+                .animation(.spring(), value: selectedTests.isEmpty)
             }
             .navigationDestination(isPresented: $navigateToNext) {
                 LabTestDetailsView(selectedTests: selectedLabCards)

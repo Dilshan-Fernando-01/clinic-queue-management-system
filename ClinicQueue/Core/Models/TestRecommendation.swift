@@ -33,6 +33,7 @@ struct TestRecommendation {
             if let cbc = LabData.labTest.first(where: { $0.name.contains("CBC") }) {
                 recommended.append(cbc)
             }
+            
         case "stomach":
             if let lft = LabData.labTest.first(where: { $0.name.contains("Liver") }) {
                 recommended.append(lft)
