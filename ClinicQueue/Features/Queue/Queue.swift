@@ -23,6 +23,7 @@ struct Queue: View {
     @EnvironmentObject var session: SessionManagerV2
 
     @State private var simulatedStatus: StepStatus = .waiting
+    @State private var navigateToAppointment = false
 
     private var activeActivity: Activity? {
 
@@ -92,58 +93,87 @@ struct Queue: View {
         }
     }
 
+
+    private func startRequestedActivity(_ activity: Activity) {
+
+        guard simulatedStatus == .completed else { return }
+
+        guard let tappedIndex = session.activities.firstIndex(where: { $0.id == activity.id }) else {
+            return
+        }
+
+        let serviceType = session.activities[tappedIndex].service
+
+        for index in session.activities.indices {
+
+            if session.activities[index].service == serviceType {
+                session.activities[index].isSelected = false
+            }
+        }
+
+        session.activities[tappedIndex].isSelected = true
+
+        session.activities[tappedIndex].queueStage = .unknown
+
+        navigateToAppointment = true
+    }
+
     var body: some View {
 
-        ScrollView {
+        NavigationStack {
 
-            VStack(spacing: 24) {
+            ScrollView {
 
-
-                if let activity = activeActivity {
-
-                    let qNumber = getQueueNumber(for: activity)
-                    let nowServing = getNowServingNumber(for: qNumber)
-
-                    QueueBanner(
-                        queueNumber: String(qNumber),
-                        queueStage: mapQueueStage(for: simulatedStatus).toQueueStage(),
-                        nowServingNumber: String(nowServing),
-                        estimatedWait: "~15 minutes"
-                    )
-                    .padding(.horizontal, 20)
-                }
-
-                VStack(alignment: .leading, spacing: 24) {
-
-                    // Requested services FIRST
-                    if simulatedStatus == .completed && !requestedActivities.isEmpty {
-
-                        VStack(alignment: .leading, spacing: 16) {
-
-                            Text("Requested Services")
-                                .font(.system(size: 22, weight: .bold))
-                                .padding(.horizontal, 30)
-
-                            ForEach(requestedActivities, id: \.id) { activity in
-                                activityCard(activity)
-                            }
-                        }
-                    }
+                VStack(spacing: 24) {
 
                     if let activity = activeActivity {
 
-                        activityCard(activity, showHeader: true)
+                        let qNumber = getQueueNumber(for: activity)
+                        let nowServing = getNowServingNumber(for: qNumber)
+
+                        QueueBanner(
+                            queueNumber: String(qNumber),
+                            queueStage: mapQueueStage(for: simulatedStatus).toQueueStage(),
+                            nowServingNumber: String(nowServing),
+                            estimatedWait: "~15 minutes"
+                        )
+                        .padding(.horizontal, 20)
                     }
 
+                    VStack(alignment: .leading, spacing: 24) {
+
+                        if simulatedStatus == .completed && !requestedActivities.isEmpty {
+
+                            VStack(alignment: .leading, spacing: 16) {
+
+                                Text("Requested Services")
+                                    .font(.system(size: 22, weight: .bold))
+                                    .padding(.horizontal, 30)
+
+                                ForEach(requestedActivities, id: \.id) { activity in
+                                    activityCard(activity)
+                                }
+                            }
+                        }
+
+                        if let activity = activeActivity {
+
+                            activityCard(activity, showHeader: true)
+                        }
+
+                    }
+                    .padding(.horizontal, 20)
                 }
-                .padding(.horizontal, 20)
+                .padding(.top, 20)
+                .padding(.bottom, 40)
             }
-            .padding(.top, 20)
-            .padding(.bottom, 40)
-        }
-        .background(Color(white: 0.95))
-        .onAppear {
-            startQueueSimulation()
+            .background(Color(white: 0.95))
+            .onAppear {
+                startQueueSimulation()
+            }
+            .navigationDestination(isPresented: $navigateToAppointment) {
+                AppointmentStarterView()
+            }
         }
     }
 
@@ -177,8 +207,12 @@ struct Queue: View {
                     bottomTitleRight: "Approximate Time",
                     bottomSubTextRight: activity.labStep?.estimatedWait ?? "",
                     fee: activity.labStep?.price != nil ? "$\(Int(activity.labStep!.price!))" : "Free",
+                    onButtonTap: {
+                        startRequestedActivity(activity)
+                    },
                     isActiveQueue: true
-                ).padding(.horizontal, 20)
+                )
+                .padding(.horizontal, 20)
             }
         }
     }
