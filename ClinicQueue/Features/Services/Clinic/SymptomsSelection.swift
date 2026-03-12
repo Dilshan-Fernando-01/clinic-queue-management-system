@@ -49,7 +49,6 @@ struct SymptomsSelection: View {
                 PrimaryButton(title: "Proceed to Queue") {
                     let selectedKeysArray = Array(selectedSymptoms)
                     
-                    // Save first selected symptom in currentClinicVisit
                     if let firstSymptomKey = selectedKeysArray.first,
                        let symptomObj = SymptomData.symptoms.first(where: { $0.key == firstSymptomKey }) {
                         sessionManager.currentClinicVisit?.selectedSymptom = symptomObj
@@ -67,7 +66,6 @@ struct SymptomsSelection: View {
                         var doctorActivity = session.activities[activeActivityIndex]
                         doctorActivity.symptoms = selectedKeysArray
                         
-                        // --- Assign doctor ---
                         if let specialty = sessionManager.currentClinicVisit?.selectedSymptom?.specialty {
                             let doctors = DoctorData.doctorGroups
                                 .first(where: { $0.specialty == specialty })?.doctors ?? []
@@ -110,7 +108,6 @@ struct SymptomsSelection: View {
                             }
                         }
                         
-                        // Append all test activities to session
                         session.activities.append(contentsOf: testActivities)
                         session.printAllActivities()
                     }

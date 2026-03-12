@@ -1,10 +1,3 @@
-//
-//  FindDoctorView.swift
-//  ClinicQueue
-//
-//  Created by dilshan fernando on 2026-03-08.
-//
-
 import SwiftUI
 
 struct FindDoctorView: View {
@@ -18,6 +11,114 @@ struct FindDoctorView: View {
     @State private var selectedAvailabilityId: String?
     @State private var navigateToAppointment = false
     @State private var isAvailabilityModalPresented = false
+    @State private var selectedAvailabilityDate: Date? = nil
+    
+    func saveAppointment(
+        patientName: String,
+        patientAge: Int,
+        patientGender: String,
+        selectedDate: Date
+    ) {
+ 
+        
+        let appointmentActivities = session.activities.filter { $0.service == .appointment }
+        let activitiesWithPatientInfo = appointmentActivities.map { activity -> Activity in
+            var updated = activity
+            updated.service = .appointment
+            updated.patientName = patientName
+            updated.patientAge = patientAge
+            updated.patientGender = patientGender
+            updated.appointmentDate = selectedDate
+            return updated
+        }
+        
+        let totalFee = activitiesWithPatientInfo.reduce(0.0) { partial, activity in
+            var fee = 0.0
+            if activity.labStep != nil { fee += 25 }
+            if activity.imagingStep != nil { fee += 25 }
+            if activity.pharmacyStep != nil { fee += 25 }
+            return partial + fee
+        }
+        
+        let newAppointment = UpcomingAppointment(
+            id: UUID(),
+            date: selectedDate,
+            patientName: patientName,
+            age: patientAge,
+            gender: patientGender,
+            activities: activitiesWithPatientInfo,
+            totalFee: totalFee
+        )
+        
+        session.upcomingAppointments.append(newAppointment)
+        session.activities.removeAll { $0.service == .appointment }
+   
+    }
+    
+ 
+    private func assignDoctorToAppointment(_ doctor: InfoCardData, date: Date? = nil) {
+      
+        
+        var appointmentActivity: Activity
+        if let existingIndex = session.activities.firstIndex(where: { $0.service == .appointment && $0.testName == nil }) {
+            appointmentActivity = session.activities[existingIndex]
+           
+        } else {
+            appointmentActivity = Activity(service: .appointment)
+            session.activities.append(appointmentActivity)
+        }
+        
+ 
+        appointmentActivity.selectedDoctor = doctor
+        appointmentActivity.appointmentDate = date
+        appointmentActivity.isSelected = true
+        appointmentActivity.stage = .planning
+        appointmentActivity.patientName = "John Doe"
+        appointmentActivity.patientAge = 28
+        appointmentActivity.patientGender = "Male"
+        
+        if let existingIndex = session.activities.firstIndex(where: { $0.id == appointmentActivity.id }) {
+            session.activities[existingIndex] = appointmentActivity
+        } else {
+            session.activities.append(appointmentActivity)
+        }
+        
+        
+        for index in session.activities.indices where session.activities[index].service != .appointment || session.activities[index].testName != nil {
+            session.activities[index].isSelected = false
+        }
+        
+        let recommendedTests = TestRecommendation.recommendedTests(forDoctorSpecialty: doctor.subheading)
+        var testActivities: [Activity] = []
+        
+        for test in recommendedTests {
+            let testActivity = Activity(
+                id: UUID(),
+                service: .appointment,
+                stage: .unknown,
+                doctor: nil,
+                selectedDoctor: doctor,
+                queueNumber: nil,
+                isSelected: false,
+                queueStage: .unknown,
+                labStep: test.type == .labTest ? test : nil,
+                imagingStep: test.type == .imaging ? test : nil,
+                pharmacyStep: nil,
+                appointmentDate: date,
+                patientName: appointmentActivity.patientName,
+                patientAge: appointmentActivity.patientAge,
+                patientGender: appointmentActivity.patientGender,
+                symptoms: [],
+                testName: test.name
+            )
+            testActivities.append(testActivity)
+        }
+        
+        session.activities.removeAll { $0.service == .appointment && $0.testName != nil && $0.selectedDoctor?.heading == doctor.heading }
+        session.activities.append(contentsOf: testActivities)
+        
+
+    }
     
     private var allDoctors: [InfoCardData] {
         DoctorData.doctorGroups.flatMap { $0.doctors }
@@ -75,15 +176,11 @@ struct FindDoctorView: View {
                         HStack {
                             Text("Category")
                                 .font(.system(size: 18, weight: .bold))
-                            
                             Spacer()
-                            
                             Text("See all")
                                 .foregroundColor(.gray)
                                 .font(.system(size: 14))
-                                .onTapGesture {
-                                    isCategoryModalPresented = true
-                                }
+                                .onTapGesture { isCategoryModalPresented = true }
                         }
                         .padding(.top, Spacing.section)
                         
@@ -96,9 +193,7 @@ struct FindDoctorView: View {
                         HStack {
                             Text("Available Doctors")
                                 .font(.system(size: 18, weight: .bold))
-                            
                             Spacer()
-                            
                             Text("\(filteredDoctors.count)")
                                 .foregroundColor(.gray)
                                 .font(.system(size: 14))
@@ -121,23 +216,17 @@ struct FindDoctorView: View {
                     .padding()
                 }
                 
-      
                 CustomModal(isPresented: $isCategoryModalPresented) {
                     VStack(spacing: 16) {
                         Text("Select Categories")
                             .font(.title3.bold())
                             .padding(.bottom, 10)
-                        
                         IconInputField(
                             iconName: "SearchIcon",
                             placeholder: "Search Categories",
                             value: $categorySearch
                         )
-                        
-                        LazyVGrid(
-                            columns: Array(repeating: .init(.flexible()), count: 4),
-                            spacing: 16
-                        ) {
+                        LazyVGrid(columns: Array(repeating: .init(.flexible()), count: 4), spacing: 16) {
                             ForEach(modalCategories) { category in
                                 CategoryBoxGrid(
                                     item: category,
@@ -155,16 +244,22 @@ struct FindDoctorView: View {
                     }
                 }
                 
-          
                 CustomModal(isPresented: $isAvailabilityModalPresented) {
                     VStack {
                         if let doctor = selectedDoctor {
                             DoctorAvailabilitySelector(
                                 items: doctor.availableDates ?? [],
-                                selectedId: $selectedAvailabilityId
+                                selectedDate: $selectedAvailabilityDate
                             )
-                            .onChange(of: selectedAvailabilityId) { newValue in
-                                if newValue != nil {
+                            .onChange(of: selectedAvailabilityDate) { newDate in
+                                if let selectedDate = newDate, let doctor = selectedDoctor {
+                                    assignDoctorToAppointment(doctor, date: selectedDate)
+                                    saveAppointment(
+                                        patientName: "John Doe",
+                                        patientAge: 28,
+                                        patientGender: "Male",
+                                        selectedDate: selectedDate
+                                    )
                                     navigateToAppointment = true
                                     isAvailabilityModalPresented = false
                                 }
@@ -173,7 +268,7 @@ struct FindDoctorView: View {
                     }
                 }
                 
-              
+                // MARK: - Navigation
                 if let doctor = selectedDoctor {
                     NavigationLink(
                         destination: DoctorAppointmentStarterView(doctor: doctor),
@@ -183,7 +278,8 @@ struct FindDoctorView: View {
                     }
                 }
             }
-        }.onAppear{
+        }
+        .onAppear {
             session.currentService = .appointment
         }
     }
