@@ -5,9 +5,9 @@
 	<key>UIAppFonts</key>
 	<array>
 		<string>Gilmer-Bold.otf</string>
+		<string>Gilmer-Regular.ttf</string>
 		<string>Gilmer-Heavy.ttf</string>
 		<string>Gilmer-Medium.ttf</string>
-		<string>Gilmer-regular-ttf</string>
 	</array>
 </dict>
 </plist>

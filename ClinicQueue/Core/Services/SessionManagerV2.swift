@@ -27,6 +27,7 @@ class SessionManagerV2: ObservableObject {
     @Published var scheduledLab: [Activity] = []
     @Published var scheduledTest: [Activity] = []
     @Published var upcomingAppointments: [UpcomingAppointment] = []
+    @Published var currentClinicVisit: ClinicVisit? = nil
     
  
     private var cancellables = Set<AnyCancellable>()

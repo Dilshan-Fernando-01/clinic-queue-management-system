@@ -2,40 +2,54 @@
 //  LabTestDetailsView.swift
 //  ClinicQueue
 //
-//  Created by Keshana Liyanaarachchi on 2026-03-08.
+//  Created by dilshan fernando on 2026-03-08.
 //
 
 import SwiftUI
 
-struct LabTestDetailsView: View {
-    let selectedTests: [LabCardData]
-    var backgroundColor: Color = AppColors.primary
+// Workaround wrapper to hold image without changing ClinicStep
+struct LabStepDisplay {
+    let step: ClinicStep
+    let testImageName: String
+}
 
+struct LabTestDetailsView: View {
+    @EnvironmentObject var sessionManager: SessionManagerV2
+
+    var backgroundColor: Color = AppColors.primary
     @State private var navigateToPaymentView = false
     @State private var selectedPaymentOption: String? = "card"
-    @EnvironmentObject var sessionManager: SessionManager
 
     private var adminFee: Double {
         PaymentConfig.adminFee
     }
 
+    private var labStepsDisplay: [LabStepDisplay] {
+        sessionManager.activities
+            .filter { $0.service == .lab }
+            .compactMap { activity -> LabStepDisplay? in
+                guard let labStep = activity.labStep else { return nil }
+                // Assign default image name or customize per test
+                return LabStepDisplay(step: labStep, testImageName: "SearchIcon")
+            }
+    }
+
     private var totalPrice: Double {
-        selectedTests.reduce(0.0) { sum, test in
-            let cleaned = test.buttonText.replacingOccurrences(of: "$", with: "")
-            return sum + (Double(cleaned) ?? 0.0)
+        labStepsDisplay.reduce(0.0) { sum, display in
+            sum + (display.step.price ?? 0)
         }
     }
+
     private var totalPayment: Double {
         totalPrice + adminFee - PaymentConfig.additionalDiscount
     }
 
-    // ✅ Dynamic payment details from actual selected tests
     private var paymentDetailsData: [PaymentDetailRow] {
         [
-            PaymentDetailRow(label: "Lab Tests",           value: "$ \(String(format: "%.2f", totalPrice))"),
-            PaymentDetailRow(label: "Admin Fee",           value: "$ \(String(format: "%.2f", adminFee))"),
+            PaymentDetailRow(label: "Lab Tests", value: "$ \(String(format: "%.2f", totalPrice))"),
+            PaymentDetailRow(label: "Admin Fee", value: "$ \(String(format: "%.2f", adminFee))"),
             PaymentDetailRow(label: "Additional Discount", value: "$ \(String(format: "%.2f", PaymentConfig.additionalDiscount))"),
-            PaymentDetailRow(label: "Total",               value: "$ \(String(format: "%.2f", totalPayment))")
+            PaymentDetailRow(label: "Total", value: "$ \(String(format: "%.2f", totalPayment))")
         ]
     }
 
@@ -46,7 +60,9 @@ struct LabTestDetailsView: View {
 
     private var visitBinding: Binding<ClinicVisit> {
         Binding(
-            get: { sessionManager.currentClinicVisit ?? ClinicVisit(patientName: "", age: 0, gender: "") },
+            get: {
+                sessionManager.currentClinicVisit ?? ClinicVisit(patientName: "Unknown", age: 0, gender: "-")
+            },
             set: { sessionManager.currentClinicVisit = $0 }
         )
     }
@@ -60,26 +76,26 @@ struct LabTestDetailsView: View {
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.horizontal)
 
-                ForEach(Array(selectedTests.enumerated()), id: \.element.id) { index, test in
+                // Display LabStepDisplay
+                ForEach(Array(labStepsDisplay.enumerated()), id: \.element.step.id) { index, display in
                     VStack(alignment: .leading, spacing: 16) {
 
-                        // ✅ Same card style as TestHistoryView / ImagingDetailsView
                         BloodTestCard(
-                            image: test.icon,
-                            title: test.title,
-                            specialText: test.description1,
-                            detailLine1: "\(test.label1)\(test.label1Text)",
-                            detailLine2: "",
+                            image: display.testImageName,
+                            title: display.step.name,
+                            specialText: "Lab Test",
+                            detailLine1: "Estimated wait: \(display.step.estimatedWait ?? "-")",
+                            detailLine2: display.step.location ?? "",
                             showExtraSection: true,
                             bottomTitleLeft: "Requirements",
                             listItems: ["No special preparation needed", "Bring your lab request form"],
                             bottomTitleRight: "Approx Time",
-                            bottomSubTextRight: test.label1Text,
-                            fee: test.buttonText,
-                            isActiveQueue: true
+                            bottomSubTextRight: display.step.estimatedWait ?? "-",
+                            fee: "$\(String(format: "%.2f", display.step.price ?? 0))",
+                            isActiveQueue: false
                         )
 
-                        if index < selectedTests.count - 1 {
+                        if index < labStepsDisplay.count - 1 {
                             Divider().padding(.vertical, 8)
                         }
                     }
@@ -98,10 +114,9 @@ struct LabTestDetailsView: View {
 
                 HStack {
                     PrimaryButton(title: "Booking", maxWidth: 220) {
-                        // ✅ Save totals into session before navigating
                         if var visit = sessionManager.currentClinicVisit {
                             visit.consultationFee = totalPrice
-                            visit.adminFee        = adminFee
+                            visit.adminFee = adminFee
                             sessionManager.currentClinicVisit = visit
                         }
                         navigateToPaymentView = true
@@ -114,7 +129,6 @@ struct LabTestDetailsView: View {
             .padding(.horizontal, 2)
         }
 
-        // ✅ Card → PaymentView → PaymentStatusView → Queue
         .navigationDestination(isPresented: $navigateToPaymentView) {
             if selectedPaymentOption == "card" {
                 PaymentView(
@@ -123,7 +137,7 @@ struct LabTestDetailsView: View {
                             isSuccess: true,
                             doctor: nil,
                             queue: nil,
-                            onContinue: { Queue() },   // ✅ Queue after success
+                            onContinue: { Queue() },
                             currentVisit: sessionManager.currentClinicVisit
                         )
                     },
@@ -138,32 +152,9 @@ struct LabTestDetailsView: View {
     }
 }
 
-#Preview {
-    NavigationStack {
-        LabTestDetailsView(selectedTests: [
-            LabCardData(
-                icon: "SearchIcon",
-                iconSize: 32,
-                title: "Complete Blood Count (CBC)",
-                description1: "12 patients in queue",
-                label1: "Estimated wait: ",
-                label1Text: "~45 min",
-                label2: "Location: ",
-                label2Text: "Room 02 - Consultation Wing",
-                buttonText: "$25"
-            ),
-            LabCardData(
-                icon: "SearchIcon",
-                iconSize: 32,
-                title: "ESR",
-                description1: "12 patients in queue",
-                label1: "Estimated wait: ",
-                label1Text: "~45 min",
-                label2: "Location: ",
-                label2Text: "Room 02 - Consultation Wing",
-                buttonText: "$25"
-            )
-        ])
-        .environmentObject(SessionManager())
-    }
-}
+//#Preview {
+//    NavigationStack {
+//        LabTestDetailsView(selectedTests: [])
+//            .environmentObject(SessionManagerV2())
+//    }
+//}
