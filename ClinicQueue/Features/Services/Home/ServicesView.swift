@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ServicesView: View {
     @EnvironmentObject var sessionManager: SessionManager
+    @EnvironmentObject var session: SessionManagerV2
     private let services: [Service] = [
         Service(
             icon: "stethoscope",
@@ -59,32 +60,77 @@ struct ServicesView: View {
           background: Color(red: 247/255, green: 246/255, blue: 255/255),
           destination: .appointment
       )
+    
+    
+    private func activitiesJSON() -> String {
+            let grouped = Dictionary(grouping: session.activities) { $0.service.rawValue }
+            
+            var result: [String: [[String: Any]]] = [:]
+            
+            for (service, acts) in grouped {
+                result[service] = acts.map { activity in
+                    var dict: [String: Any] = [
+                        "id": activity.id.uuidString,
+                        "stage": activity.stage.rawValue,
+                        "queueStage": activity.queueStage.rawValue,
+                        "isSelected": activity.isSelected,
+                        "patientName": activity.patientName ?? "",
+                        "patientAge": activity.patientAge ?? 0,
+                        "patientGender": activity.patientGender ?? "",
+                        "symptoms": activity.symptoms,
+                        "testName": activity.testName ?? ""
+                    ]
+                    
+                    if let doc = activity.selectedDoctor {
+                        dict["doctor"] = ["heading": doc.heading, "subheading": doc.subheading]
+                    } else {
+                        dict["doctor"] = nil
+                    }
+                    
+                    return dict
+                }
+            }
+            
+            if let jsonData = try? JSONSerialization.data(withJSONObject: result, options: .prettyPrinted),
+               let jsonString = String(data: jsonData, encoding: .utf8) {
+                return jsonString
+            }
+            
+            return "{}"
+        }
+    
+    
 
     var body: some View {
         NavigationStack {
-            if let visit = sessionManager.currentClinicVisit, !visit.isSessionComplete,
-                let step = visit.doctorStep {
+                if let activity = session.activities.first(where: { activity in
+                    switch activity.queueStage {
+                    case .unknown, .completed, .cancel:
+                        return false
+                    default:
+                        return true
+                    }
+                }) {
+                    let queueNumber = activity.queueNumber ?? 12
+                    let progress = min(max(queueNumber * 10, 0), 20)
 
-                
-                 let nowServing = Int(step.nowServing ?? "2") ?? 0
-                 let queueNumber = Int(step.queueNumber ?? "0") ?? 0
-                 let maxQueue = 10
-                 let progress = min(max(((queueNumber - nowServing + 1) * 100) / maxQueue, 0), 100)
-
-                 NavigationLink(
-                     destination: Queue(),
-                     label: {
-                         ActiveQueueBanner(
-                             title: "Your Queue: \(step.name ?? "Doctor")",
-                             description: "Queue Number: \(step.queueNumber ?? "--"), Estimated Wait: \(step.estimatedWait ?? "--")",
-                             queueNumber: step.queueNumber ?? "--",
-                             progress: progress,
-                             onNavTap: {}
-                         )
-                         .padding(.bottom, 10)
-                     }
-                 )
-             }
+                    NavigationLink(
+                        destination: Queue(),
+                        label: {
+                            ActiveQueueBanner(
+                                title: "Your Queue: \(activity.selectedDoctor?.heading ?? "Doctor")",
+                                description: "Patient: \(activity.patientName ?? "--"), Queue Number: \(queueNumber)",
+                                queueNumber: "\(queueNumber)",
+                                progress: progress,
+                                onNavTap: {
+                                    // ✅ Set the activity's service as the current active service
+                                    session.addActivity(service: activity.service)
+                                }
+                            )
+                            .padding(.bottom, 10)
+                        }
+                    )
+                }
             ZStack {
                 Color(.white)
                     .ignoresSafeArea()
@@ -183,6 +229,8 @@ struct ServicesView: View {
                     ]
                 )
             }
+        }.onAppear {
+            print(activitiesJSON())
         }
     }
 }

@@ -47,34 +47,34 @@ class SessionManagerV2: ObservableObject {
             .store(in: &cancellables)
         
 
-        $activities
-            .sink { newValue in
-                print("📋 Activities changed, count:", newValue.count)
-                for activity in newValue {
-                    print("-------------------")
-                    print("""
-                        - Activity \(activity.id)
-                          service: \(activity.service.rawValue)
-                          stage: \(activity.stage.rawValue)
-                          queueStage: \(activity.queueStage.rawValue)
-                          selected: \(activity.isSelected)
-                          patientName: \(activity.patientName ?? "-")
-                          patientAge: \(activity.patientAge ?? -1)
-                          patientGender: \(activity.patientGender ?? "-")
-                          symptoms: \(activity.symptoms)
-                          testName: \(activity.testName ?? "-")
-                    """)
-                    print("-------------------")
-                }
-            }
-            .store(in: &cancellables)
-        
+//        $activities
+//            .sink { newValue in
+//               
+//                for activity in newValue {
+//                    print("-------------------")
+//                    print("""
+//                        - Activity \(activity.id)
+//                          service: \(activity.service.rawValue)
+//                          stage: \(activity.stage.rawValue)
+//                          queueStage: \(activity.queueStage.rawValue)
+//                          selected: \(activity.isSelected)
+//                          patientName: \(activity.patientName ?? "-")
+//                          patientAge: \(activity.patientAge ?? -1)
+//                          patientGender: \(activity.patientGender ?? "-")
+//                          symptoms: \(activity.symptoms)
+//                          testName: \(activity.testName ?? "-")
+//                    """)
+//                    print("-------------------")
+//                }
+//            }
+//            .store(in: &cancellables)
+//        
  
-        $symptoms
-            .sink { newValue in
-                print("Symptoms updated:", newValue)
-            }
-            .store(in: &cancellables)
+//        $symptoms
+//            .sink { newValue in
+//                print("Symptoms updated:", newValue)
+//            }
+//            .store(in: &cancellables)
     }
     
 
@@ -134,14 +134,7 @@ class SessionManagerV2: ObservableObject {
         )
         
         upcomingAppointments.append(appointment)
-        
-        print("✅ Saved new appointment with all activities:")
-        print(" - id: \(appointment.id)")
-        print(" - patient: \(appointment.patientName), age: \(appointment.age), gender: \(appointment.gender)")
-        print(" - activities count: \(appointment.activities.count)")
-        for act in appointment.activities {
-            print("   - Activity \(act.id) | service: \(act.service) | testName: \(act.testName ?? "-") | doctor: \(act.selectedDoctor?.heading ?? "-")")
-        }
+ 
     }
     
     func resetFlow() {
