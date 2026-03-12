@@ -166,7 +166,7 @@ struct LabList: View {
                 .animation(.spring(), value: selectedTests.isEmpty)
 
                 VStack(spacing: 0) {
-                    // Fade gradient above button
+             
                     LinearGradient(
                         colors: [Color(.systemBackground).opacity(0), Color(.systemBackground)],
                         startPoint: .top,

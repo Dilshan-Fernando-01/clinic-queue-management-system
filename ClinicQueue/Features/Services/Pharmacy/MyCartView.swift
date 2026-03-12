@@ -2,12 +2,10 @@
 //  MyCartView.swift
 //  ClinicQueue
 //
-//  Created by Roshan on 2026-03-12.
+//  Created by Keshana Liyanaarachchi on 2026-03-12.
 //
 
-
 import SwiftUI
-
 
 struct CartItem: Identifiable {
     let id = UUID()
@@ -18,6 +16,7 @@ struct CartItem: Identifiable {
     let fallbackIcon: String
     var quantity: Int
 }
+
 
 struct QuantityStepper: View {
     @Binding var quantity: Int
@@ -33,7 +32,7 @@ struct QuantityStepper: View {
                     .frame(width: 34, height: 36)
             }
 
-            Text(String(format: "1", quantity))
+            Text(String(format: "%02d", quantity))
                 .font(.system(size: 14, weight: .bold))
                 .foregroundColor(.white)
                 .frame(width: 36, height: 36)
@@ -58,7 +57,7 @@ struct CartItemRow: View {
 
     var body: some View {
         HStack(spacing: 14) {
-          
+            // Drug image
             AsyncImage(url: URL(string: item.imageURL)) { phase in
                 switch phase {
                 case .success(let img):
@@ -89,7 +88,7 @@ struct CartItemRow: View {
                     .lineLimit(2)
 
                 HStack {
-                    Text(String(format: "$25.00", item.price))
+                    Text(String(format: "$%05.2f", item.price))
                         .font(.system(size: 14, weight: .bold))
                         .foregroundColor(Color(hex: "1A2E44"))
 
@@ -149,6 +148,8 @@ struct PrescriptionFileRow: View {
     }
 }
 
+
+
 struct MyCartView: View {
     let prescriptionImage: UIImage?
 
@@ -159,7 +160,7 @@ struct MyCartView: View {
             price: 0.00,
             imageURL: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/31/Lipitor_tablets.jpg/320px-Lipitor_tablets.jpg",
             fallbackIcon: "cross.case.fill",
-            quantity: 0
+            quantity: 1
         ),
         CartItem(
             name: "levothyroxine",
@@ -167,7 +168,7 @@ struct MyCartView: View {
             price: 0.00,
             imageURL: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Synthroid_levothyroxine_sodium_tablets.jpg/320px-Synthroid_levothyroxine_sodium_tablets.jpg",
             fallbackIcon: "pills.fill",
-            quantity: 0
+            quantity: 1
         ),
         CartItem(
             name: "Ibuprofen",
@@ -175,7 +176,7 @@ struct MyCartView: View {
             price: 0.00,
             imageURL: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Ibuprofen_200mg_Tablets.jpg/320px-Ibuprofen_200mg_Tablets.jpg",
             fallbackIcon: "capsule.fill",
-            quantity: 0
+            quantity: 1
         )
     ]
 
@@ -212,7 +213,7 @@ struct MyCartView: View {
                     .padding(.horizontal, 16)
                     .padding(.top, 16)
 
-                 
+               
                     VStack(spacing: 14) {
                         ForEach($cartItems) { $item in
                             CartItemRow(item: $item)
@@ -220,16 +221,16 @@ struct MyCartView: View {
                     }
                     .padding(.horizontal, 16)
 
-                
+             
                     Spacer().frame(height: 90)
                 }
             }
 
-      
+         
             VStack(spacing: 0) {
-                Button {
-                    // Handle checkout
-                } label: {
+
+                NavigationLink(destination:
+                                PharPayment()) {
                     Text("Check Out")
                         .font(.system(size: 17, weight: .bold))
                         .foregroundColor(.white)
@@ -240,6 +241,7 @@ struct MyCartView: View {
                 }
                 .padding(.horizontal, 40)
                 .padding(.vertical, 16)
+
             }
             .background(
                 Color.white
