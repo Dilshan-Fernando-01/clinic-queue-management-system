@@ -146,7 +146,7 @@ struct AppointmentStarterView: View {
 
                             if activity.labStep != nil {
                                 BloodTestCard(
-                                    image: "labIcon",
+                                    image: "testPlaceholder",
                                     title: activity.labStep!.name,
                                     specialText: "",
                                     detailLine1: "Location: \(activity.labStep?.location ?? "N/A")",
@@ -157,14 +157,16 @@ struct AppointmentStarterView: View {
                                     bottomTitleRight: "Approximate Time",
                                     bottomSubTextRight: activity.labStep?.estimatedWait ?? "",
                                     fee: activity.labStep?.price != nil ? "$\(Int(activity.labStep!.price!))" : "Free",
-                                    isActiveQueue: true
+                                    isActiveQueue: false,
+                                    
+                                    
                                 )
                                 .padding(.horizontal)
                             }
 
                             if activity.imagingStep != nil {
                                 BloodTestCard(
-                                    image: "imagingIcon",
+                                    image: "testPlaceholder",
                                     title: activity.imagingStep!.name,
                                     specialText: "",
                                     detailLine1: "Location: \(activity.imagingStep?.location ?? "N/A")",
@@ -175,7 +177,7 @@ struct AppointmentStarterView: View {
                                     bottomTitleRight: "Approximate Time",
                                     bottomSubTextRight: activity.imagingStep?.estimatedWait ?? "",
                                     fee: activity.imagingStep?.price != nil ? "$\(Int(activity.imagingStep!.price!))" : "Free",
-                                    isActiveQueue: true
+                                    isActiveQueue: false
                                 )
                                 .padding(.horizontal)
                             }
