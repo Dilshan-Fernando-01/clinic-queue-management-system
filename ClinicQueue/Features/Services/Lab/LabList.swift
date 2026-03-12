@@ -187,9 +187,9 @@ struct LabList: View {
                 }
                 .animation(.spring(), value: selectedTests.isEmpty)
             }
-            .navigationDestination(isPresented: $navigateToNext) {
-                LabTestDetailsView(selectedTests: selectedLabCards)
-            }
+//            .navigationDestination(isPresented: $navigateToNext) {
+//                LabTestDetailsView(selectedTests: selectedLabCards)
+//            }
         }
     }
 
