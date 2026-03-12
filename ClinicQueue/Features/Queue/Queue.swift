@@ -1,11 +1,8 @@
 import SwiftUI
 
 extension QueueStages {
-
     func toQueueStage() -> QueueStage {
-
         switch self {
-
         case .wait: return .wait
         case .next: return .next
         case .ready: return .ready
@@ -25,8 +22,8 @@ struct Queue: View {
     @State private var simulatedStatus: StepStatus = .waiting
     @State private var navigateToAppointment = false
 
+  
     private var activeActivity: Activity? {
-
         session.activities.first(where: {
             $0.service == session.currentService &&
             $0.isSelected &&
@@ -34,23 +31,29 @@ struct Queue: View {
         })
     }
 
+  
     private var requestedActivities: [Activity] {
-
         session.activities.filter {
             $0.service == session.currentService &&
-            !$0.isSelected &&
-            $0.queueStage != .cancel
+            $0.queueStage == .unknown
         }
     }
 
-    private func getQueueNumber(for activity: Activity) -> Int {
+ 
+    private var completedActivities: [Activity] {
+        session.activities.filter {
+            $0.service == session.currentService &&
+            $0.queueStage == .completed
+        }
+    }
 
+ 
+    private func getQueueNumber(for activity: Activity) -> Int {
         if let doctor = activity.selectedDoctor,
            let countString = doctor.activeQueueCount,
            let count = Int(countString) {
             return count + 1
         }
-
         return 14
     }
 
@@ -59,10 +62,8 @@ struct Queue: View {
     }
 
     private func mapQueueStage(for status: StepStatus) -> QueueStages {
-
         switch status {
-        case .pending: return .wait
-        case .waiting: return .wait
+        case .pending, .waiting: return .wait
         case .next: return .next
         case .ready: return .ready
         case .inProgress: return .inProgress
@@ -71,63 +72,48 @@ struct Queue: View {
     }
 
     private func updateActiveActivityQueue() {
-
         guard let activity = activeActivity else { return }
-
         if let index = session.activities.firstIndex(where: { $0.id == activity.id }) {
             session.activities[index].queueStage = mapQueueStage(for: simulatedStatus)
         }
     }
 
     private func startQueueSimulation() {
-
         let steps: [StepStatus] = [.next, .ready, .inProgress, .completed]
-
         for (i, status) in steps.enumerated() {
-
             DispatchQueue.main.asyncAfter(deadline: .now() + Double((i + 1) * 5)) {
-
                 simulatedStatus = status
                 updateActiveActivityQueue()
             }
         }
     }
 
-
     private func startRequestedActivity(_ activity: Activity) {
-
         guard simulatedStatus == .completed else { return }
-
         guard let tappedIndex = session.activities.firstIndex(where: { $0.id == activity.id }) else {
             return
         }
 
         let serviceType = session.activities[tappedIndex].service
-
-        for index in session.activities.indices {
-
-            if session.activities[index].service == serviceType {
-                session.activities[index].isSelected = false
-            }
+     
+        for index in session.activities.indices where session.activities[index].service == serviceType {
+            session.activities[index].isSelected = false
         }
 
+   
         session.activities[tappedIndex].isSelected = true
-
         session.activities[tappedIndex].queueStage = .unknown
-
         navigateToAppointment = true
     }
 
+  
     var body: some View {
-
         NavigationStack {
-
             ScrollView {
-
                 VStack(spacing: 24) {
 
+                    
                     if let activity = activeActivity {
-
                         let qNumber = getQueueNumber(for: activity)
                         let nowServing = getNowServingNumber(for: qNumber)
 
@@ -142,23 +128,40 @@ struct Queue: View {
 
                     VStack(alignment: .leading, spacing: 24) {
 
-                        if simulatedStatus == .completed && !requestedActivities.isEmpty {
+                      
+                        if simulatedStatus == .completed {
 
-                            VStack(alignment: .leading, spacing: 16) {
+                          
+                            if !completedActivities.isEmpty {
+                                VStack(alignment: .leading, spacing: 16) {
+                                    Text("Completed Services")
+                                        .font(.system(size: 22, weight: .bold))
+                                        .padding(.horizontal, 30)
 
-                                Text("Requested Services")
-                                    .font(.system(size: 22, weight: .bold))
-                                    .padding(.horizontal, 30)
-
-                                ForEach(requestedActivities, id: \.id) { activity in
-                                    activityCard(activity)
+                                    ForEach(completedActivities, id: \.id) { activity in
+                                        activityCard(activity)
+                                    }
                                 }
                             }
-                        }
 
-                        if let activity = activeActivity {
+                            
+                            if !requestedActivities.isEmpty {
+                                VStack(alignment: .leading, spacing: 16) {
+                                    Text("Requested Services")
+                                        .font(.system(size: 22, weight: .bold))
+                                        .padding(.horizontal, 30)
 
-                            activityCard(activity, showHeader: true)
+                                    ForEach(requestedActivities, id: \.id) { activity in
+                                        activityCard(activity)
+                                    }
+                                }
+                            }
+
+                        } else {
+                           
+                            if let activity = activeActivity {
+                                activityCard(activity, showHeader: true)
+                            }
                         }
 
                     }
@@ -177,6 +180,7 @@ struct Queue: View {
         }
     }
 
+  
     @ViewBuilder
     private func activityCard(_ activity: Activity, showHeader: Bool = false) -> some View {
 
@@ -189,12 +193,9 @@ struct Queue: View {
             }
 
             if let doctor = activity.selectedDoctor {
-
                 InfoCard(data: doctor)
                     .padding(.horizontal, 30)
-
             } else {
-
                 BloodTestCard(
                     image: "doctor01",
                     title: activity.testName ?? "Test",
