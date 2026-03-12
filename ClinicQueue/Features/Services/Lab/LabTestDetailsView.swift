@@ -80,6 +80,7 @@ struct LabTestDetailsView: View {
                 ForEach(Array(labStepsDisplay.enumerated()), id: \.element.step.id) { index, display in
                     VStack(alignment: .leading, spacing: 16) {
 
+                      
                         BloodTestCard(
                             image: TestDataset.imageName(for: display.step.name),
                             title: display.step.name,
@@ -129,6 +130,7 @@ struct LabTestDetailsView: View {
             .padding(.horizontal, 2)
         }
 
+     
         .navigationDestination(isPresented: $navigateToPaymentView) {
             if selectedPaymentOption == "card" {
                 PaymentView(

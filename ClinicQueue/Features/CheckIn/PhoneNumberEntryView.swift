@@ -9,7 +9,7 @@ struct PhoneNumberEntryView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
-            // Back Button
+          
             Button(action: {
                 presentationMode.wrappedValue.dismiss()
             }) {

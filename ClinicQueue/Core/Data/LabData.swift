@@ -101,7 +101,7 @@ struct LabData {
         )
     ]
 
-    // ✅ Maps [ClinicStep] → [LabCardData] so LabDetails can consume it directly
+   
     static var labTests: [LabCardData] {
         labTest.map { step in
             LabCardData(

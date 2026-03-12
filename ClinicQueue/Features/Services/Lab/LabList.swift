@@ -19,7 +19,7 @@ struct LabList: View {
     @State private var searchText = ""
     @State private var navigateToNext = false
 
-    // Title shown at the top — updates when a category is tapped
+
     private var pageTitle: String {
         selectedCategory ?? "Your Clinic Queue"
     }
