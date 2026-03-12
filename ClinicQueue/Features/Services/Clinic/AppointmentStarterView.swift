@@ -14,11 +14,8 @@ struct AppointmentStarterView: View {
     @State private var navigateToPaymentView = false
 
     private var activeActivity: Activity? {
-        guard let index = session.activities.firstIndex(where: { $0.isSelected && $0.service == .clinic }) else { return nil }
-
-        var activity = session.activities[index]
-
-        return activity
+        guard let index = session.activities.firstIndex(where: { $0.isSelected && $0.queueStage != .cancel }) else { return nil }
+        return session.activities[index]
     }
 
     private var doctorInfo: InfoCardData? {
@@ -37,18 +34,48 @@ struct AppointmentStarterView: View {
     }
 
     private var nextAvailableQueue: QueueOption? {
-        guard let doctor = activeActivity?.selectedDoctor else { return nil }
 
-        let currentQueue = Int(doctor.activeQueueCount?.components(separatedBy: " ").first ?? "0") ?? 0
-        let nextSlotIndex = currentQueue + 1
-        return QueueOption(heading: String(format: "%02d", nextSlotIndex), subText: doctor.availableDates?.first?.timeRange ?? "~15 min")
+        guard let activity = activeActivity else { return nil }
+
+        if let doctor = activity.selectedDoctor {
+
+            let currentQueue = Int(
+                doctor.activeQueueCount?
+                    .components(separatedBy: " ")
+                    .first ?? "0"
+            ) ?? 0
+
+            let nextSlotIndex = currentQueue + 1
+
+            return QueueOption(
+                heading: String(format: "%02d", nextSlotIndex),
+                subText: doctor.availableDates?.first?.timeRange ?? "~15 min"
+            )
+        }
+
+        if activity.labStep != nil || activity.imagingStep != nil {
+
+            return QueueOption(
+                heading: "12",
+                subText: activity.labStep?.estimatedWait
+                    ?? activity.imagingStep?.estimatedWait
+                    ?? "~10 min"
+            )
+        }
+
+        return nil
     }
 
     private var paymentDetailsData: [PaymentDetailRow] {
+
         guard let activity = activeActivity else { return [] }
 
         if let doctor = activity.selectedDoctor {
-            let consultationFee = Double(doctor.price?.replacingOccurrences(of: "$", with: "") ?? "0") ?? 0
+
+            let consultationFee = Double(
+                doctor.price?.replacingOccurrences(of: "$", with: "") ?? "0"
+            ) ?? 0
+
             let adminFee = PaymentConfig.adminFee
             let total = consultationFee + adminFee - PaymentConfig.additionalDiscount
 
@@ -58,21 +85,37 @@ struct AppointmentStarterView: View {
                 PaymentDetailRow(label: "Additional Discount", value: "$\(String(format: "%.2f", PaymentConfig.additionalDiscount))"),
                 PaymentDetailRow(label: "Total", value: "$\(String(format: "%.2f", total))")
             ]
-        } else if activity.testName != nil {
-         
-            let fee = 0.0
+        }
+
+        else if let lab = activity.labStep {
+
+            let fee = lab.price ?? 0
             let adminFee = PaymentConfig.adminFee
             let total = fee + adminFee - PaymentConfig.additionalDiscount
 
             return [
-                PaymentDetailRow(label: activity.testName ?? "Test", value: "$\(String(format: "%.2f", fee))"),
+                PaymentDetailRow(label: lab.name, value: "$\(String(format: "%.2f", fee))"),
                 PaymentDetailRow(label: "Admin Fee", value: "$\(String(format: "%.2f", adminFee))"),
                 PaymentDetailRow(label: "Additional Discount", value: "$\(String(format: "%.2f", PaymentConfig.additionalDiscount))"),
                 PaymentDetailRow(label: "Total", value: "$\(String(format: "%.2f", total))")
             ]
-        } else {
-            return []
         }
+
+        else if let imaging = activity.imagingStep {
+
+            let fee = imaging.price ?? 0
+            let adminFee = PaymentConfig.adminFee
+            let total = fee + adminFee - PaymentConfig.additionalDiscount
+
+            return [
+                PaymentDetailRow(label: imaging.name, value: "$\(String(format: "%.2f", fee))"),
+                PaymentDetailRow(label: "Admin Fee", value: "$\(String(format: "%.2f", adminFee))"),
+                PaymentDetailRow(label: "Additional Discount", value: "$\(String(format: "%.2f", PaymentConfig.additionalDiscount))"),
+                PaymentDetailRow(label: "Total", value: "$\(String(format: "%.2f", total))")
+            ]
+        }
+
+        return []
     }
 
     private let paymentOptionsData: [CheckboxItem] = [
@@ -100,6 +143,7 @@ struct AppointmentStarterView: View {
                         }
 
                         if let activity = activeActivity {
+
                             if activity.labStep != nil {
                                 BloodTestCard(
                                     image: "labIcon",
@@ -138,6 +182,7 @@ struct AppointmentStarterView: View {
                         }
 
                         VStack(alignment: .leading, spacing: 12) {
+
                             Text("Available Queues")
                                 .font(.system(size: 16, weight: .semibold))
                                 .frame(maxWidth: .infinity, alignment: .center)
@@ -168,8 +213,11 @@ struct AppointmentStarterView: View {
                     }
                 }
                 .navigationDestination(isPresented: $navigateToPaymentView) {
+
                     if selectedPaymentOption == "card" {
+
                         if let currentVisit = sessionManager.currentClinicVisit {
+
                             PaymentView(
                                 onPaymentSuccess: {
                                     PaymentStatusView(
@@ -185,10 +233,13 @@ struct AppointmentStarterView: View {
                                     set: { sessionManager.currentClinicVisit = $0 }
                                 )
                             )
+
                         } else {
                             Text("No current visit found")
                         }
+
                     } else {
+
                         PaymentThroughCashView()
                     }
                 }
@@ -200,12 +251,26 @@ struct AppointmentStarterView: View {
                         PrimaryButton(title: "Book Appointment") {
 
                             if var visit = sessionManager.currentClinicVisit {
+
                                 if let doctor = activeActivity?.selectedDoctor {
-                                    let fee = Double(doctor.price?.replacingOccurrences(of: "$", with: "") ?? "0") ?? 0
+
+                                    let fee = Double(
+                                        doctor.price?.replacingOccurrences(of: "$", with: "") ?? "0"
+                                    ) ?? 0
+
                                     visit.consultationFee = fee
-                                    visit.adminFee = PaymentConfig.adminFee
-                                    sessionManager.currentClinicVisit = visit
                                 }
+
+                                if let lab = activeActivity?.labStep {
+                                    visit.consultationFee = lab.price ?? 0
+                                }
+
+                                if let imaging = activeActivity?.imagingStep {
+                                    visit.consultationFee = imaging.price ?? 0
+                                }
+
+                                visit.adminFee = PaymentConfig.adminFee
+                                sessionManager.currentClinicVisit = visit
                             }
 
                             navigateToPaymentView = true
