@@ -156,6 +156,7 @@ struct AppointmentStarterView: View {
                         PaymentOptions(items: paymentOptionsData, selectedKey: $selectedPaymentOption)
                             .padding(.horizontal)
                             .padding(.top, Spacing.section)
+                            .padding(.bottom, 80)
 
                     }
                     .padding(.vertical, 20)
