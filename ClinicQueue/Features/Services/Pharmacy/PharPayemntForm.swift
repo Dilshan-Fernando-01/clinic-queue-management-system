@@ -101,7 +101,7 @@ struct PharPayemntForm: View {
                     .frame(height: 30)
                     
                     HStack {
-                        PrimaryButton(title: "Next", maxWidth: 220) {
+                        PrimaryButton(title: "Next", maxWidth: 300) {
                             resetOtpTimer()
                             isOtpModalOpen = true
                         }

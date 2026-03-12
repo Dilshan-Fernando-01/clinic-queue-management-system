@@ -64,7 +64,7 @@ struct PharPayment: View {
                 .padding(.horizontal, 10)
               
                 HStack {
-                    PrimaryButton(title: "Booking", maxWidth: 220) {
+                    PrimaryButton(title: "Booking", maxWidth: 300) {
                         if var visit = sessionManager.currentClinicVisit {
                             
                             sessionManager.currentClinicVisit = visit
@@ -80,8 +80,8 @@ struct PharPayment: View {
             .padding(.horizontal, 2)
         }   .navigationDestination(isPresented: $navigateToPaymentView) {
             if selectedPaymentOption == "card" {
-                
-               
+                PharPayemntForm()
+                    .environmentObject(sessionManager)
             } else {
                 PaymentThroughCashView()
                     .environmentObject(sessionManager)
@@ -91,6 +91,8 @@ struct PharPayment: View {
     }
 }
 
+
 #Preview {
     PharPayment()
+        .environmentObject(SessionManager())
 }

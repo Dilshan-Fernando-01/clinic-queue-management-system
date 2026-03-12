@@ -236,7 +236,7 @@ struct MyCartView: View {
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 18)
-                        .background(Color(hex: "0DC8A4"))
+                        .background(AppColors.primary)
                         .cornerRadius(30)
                 }
                 .padding(.horizontal, 40)
@@ -269,9 +269,9 @@ struct MyCartView: View {
                             .font(.system(size: 10, weight: .bold))
                             .foregroundColor(.white)
                             .frame(width: 16, height: 16)
-                            .background(Color(hex: "0DC8A4"))
+                            .background(AppColors.primary)
                             .clipShape(Circle())
-                            .offset(x: 8, y: -8)
+                            .offset(x: 4, y: -1)
                     }
                 }
             }

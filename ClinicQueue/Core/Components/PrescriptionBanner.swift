@@ -9,12 +9,12 @@ import SwiftUI
 
 struct PrescriptionBanner: View {
     @State private var showUploadModal = false
-    @State private var navigateToCart = false          // ← drives NavigationLink
+    @State private var navigateToCart = false          
     @State private var prescriptionImage: UIImage? = nil
 
     var body: some View {
         ZStack {
-            // Hidden NavigationLink — lives inside NavigationView context ✓
+          
             NavigationLink(
                 destination: MyCartView(prescriptionImage: prescriptionImage),
                 isActive: $navigateToCart
@@ -37,7 +37,7 @@ struct PrescriptionBanner: View {
                             .foregroundColor(.white)
                             .padding(.horizontal, 18)
                             .padding(.vertical, 10)
-                            .background(Color(hex: "0DC8A4"))
+                            .background(AppColors.primary)
                             .cornerRadius(25)
                     }
                 }
@@ -84,16 +84,14 @@ struct PrescriptionBanner: View {
             PrescriptionUploadModal(
                 isPresented: $showUploadModal,
                 onNext: { image in
-                    prescriptionImage = image      // ← store image
-                    navigateToCart = true           // ← trigger NavigationLink
+                    prescriptionImage = image
+                    navigateToCart = true
                 }
             )
             .background(BackgroundClearView())
         }
     }
 }
-
-// Makes fullScreenCover background transparent
 struct BackgroundClearView: UIViewRepresentable {
     func makeUIView(context: Context) -> UIView {
         let view = UIView()

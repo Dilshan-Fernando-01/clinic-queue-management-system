@@ -10,7 +10,7 @@ import PhotosUI
 
 struct PrescriptionUploadModal: View {
     @Binding var isPresented: Bool
-    var onNext: (UIImage?) -> Void          // ← passes image back to parent
+    var onNext: (UIImage?) -> Void         
 
     @State private var selectedImage: UIImage? = nil
     @State private var isPickerPresented = false
@@ -18,17 +18,16 @@ struct PrescriptionUploadModal: View {
 
     var body: some View {
         ZStack {
-            // Dimmed background
+
             Color.black.opacity(0.35)
                 .ignoresSafeArea()
                 .onTapGesture {
                     withAnimation(.spring()) { isPresented = false }
                 }
 
-            // Modal card
+  
             VStack(spacing: 0) {
 
-                // ── Drop Zone ────────────────────────────────────
                 ZStack {
                     RoundedRectangle(cornerRadius: 16)
                         .fill(Color(.systemGray6))
@@ -84,7 +83,6 @@ struct PrescriptionUploadModal: View {
                 .padding(.top, 24)
                 .onTapGesture { isPickerPresented = true }
 
-                // ── Buttons ──────────────────────────────────────
                 HStack(spacing: 14) {
                     Button {
                         withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
@@ -106,7 +104,7 @@ struct PrescriptionUploadModal: View {
 
                     Button {
                         isPresented = false
-                        // Small delay so dismiss animates first, then parent navigates
+                       
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
                             onNext(selectedImage)
                         }
@@ -116,7 +114,7 @@ struct PrescriptionUploadModal: View {
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 14)
-                            .background(Color(hex: "0DC8A4"))
+                            .background(AppColors.primary)
                             .cornerRadius(30)
                     }
                 }
@@ -142,7 +140,6 @@ struct PrescriptionUploadModal: View {
     }
 }
 
-// MARK: - Preview
 
 #Preview {
     PrescriptionUploadModalPreviewWrapper()

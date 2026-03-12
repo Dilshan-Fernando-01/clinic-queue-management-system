@@ -49,7 +49,7 @@ struct PharStatus: View {
                     .padding()
                     .navigationBarBackButtonHidden(true)
                     .onAppear {
-                        // on appear logic here if needed
+                        
                     }
                 }
 
