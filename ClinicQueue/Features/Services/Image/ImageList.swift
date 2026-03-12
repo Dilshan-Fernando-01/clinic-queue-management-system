@@ -100,7 +100,7 @@ struct ImageList: View {
                         VStack(spacing: 12) {
                             ForEach(selectedImagingCards) { test in
                                 BloodTestCard(
-                                    image: "ImagingIcon",
+                                    image: TestDataset.imageName(for: test.name),
                                     title: test.name,
                                     specialText: "Available Now",
                                     detailLine1: "Location: \(test.location)",
@@ -132,7 +132,7 @@ struct ImageList: View {
                         VStack(spacing: 12) {
                             ForEach(availableImagingCards) { test in
                                 BloodTestCard(
-                                    image: "ImagingIcon",
+                                    image: TestDataset.imageName(for: test.name),
                                     title: test.name,
                                     specialText: "Available Now",
                                     detailLine1: "Location: \(test.location)",

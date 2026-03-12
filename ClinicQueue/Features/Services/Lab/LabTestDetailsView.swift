@@ -81,7 +81,7 @@ struct LabTestDetailsView: View {
                     VStack(alignment: .leading, spacing: 16) {
 
                         BloodTestCard(
-                            image: display.testImageName,
+                            image: TestDataset.imageName(for: display.step.name),
                             title: display.step.name,
                             specialText: "Lab Test",
                             detailLine1: "Estimated wait: \(display.step.estimatedWait ?? "-")",
@@ -145,8 +145,17 @@ struct LabTestDetailsView: View {
                 )
                 .environmentObject(sessionManager)
             } else {
-                PaymentThroughCashView()
-                    .environmentObject(sessionManager)
+                
+                PaymentThroughCashView {
+                      PaymentStatusView(
+                          isSuccess: true,
+                          doctor: nil,
+                          queue: nil,
+                          onContinue: { Queue() },
+                          currentVisit: sessionManager.currentClinicVisit
+                      )
+                  }.environmentObject(sessionManager)
+                    
             }
         }
     }

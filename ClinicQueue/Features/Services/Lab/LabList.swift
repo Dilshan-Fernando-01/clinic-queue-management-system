@@ -106,7 +106,7 @@ struct LabList: View {
                         VStack(spacing: 12) {
                             ForEach(selectedLabCards) { test in
                                 BloodTestCard(
-                                    image: test.icon,
+                                    image: TestDataset.imageName(for: test.title),
                                     title: test.title,
                                     specialText: "Available Now",
                                     detailLine1: "\(test.label1)\(test.label1Text)",
@@ -137,7 +137,7 @@ struct LabList: View {
                         VStack(spacing: 12) {
                             ForEach(availableLabCards) { test in
                                 BloodTestCard(
-                                    image: test.icon,
+                                    image: TestDataset.imageName(for: test.title),
                                     title: test.title,
                                     specialText: "Available Now",
                                     detailLine1: "\(test.label1)\(test.label1Text)",
@@ -188,7 +188,7 @@ struct LabList: View {
                 .animation(.spring(), value: selectedTests.isEmpty)
             }
             .navigationDestination(isPresented: $navigateToNext) {
-                LabTestDetailsView(selectedTests: selectedLabCards)
+                LabTestDetailsView()
             }
         }
     }

@@ -77,7 +77,7 @@ struct ImagingDetailsView: View {
                     VStack(alignment: .leading, spacing: 16) {
 
                         BloodTestCard(
-                            image: icon(for: test.name),
+                            image: TestDataset.imageName(for: test.name),
                             title: test.name,
                             specialText: "Available Now",
                             detailLine1: "Location: \(test.location ?? "")",
@@ -108,7 +108,6 @@ struct ImagingDetailsView: View {
 
                 HStack {
                     PrimaryButton(title: "Booking", maxWidth: 220) {
-                        // Write totals into the visit before navigating
                         if var visit = sessionManager.currentClinicVisit {
                             visit.consultationFee = totalPrice
                             visit.adminFee        = adminFee
@@ -138,7 +137,15 @@ struct ImagingDetailsView: View {
                     currentVisit: visitBinding
                 )
             } else {
-                PaymentThroughCashView()
+                PaymentThroughCashView {
+                      PaymentStatusView(
+                          isSuccess: true,
+                          doctor: nil,
+                          queue: nil,
+                          onContinue: { Queue() },
+                          currentVisit: sessionManager.currentClinicVisit
+                      )
+                  }
             }
         }
     }

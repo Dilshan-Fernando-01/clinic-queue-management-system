@@ -146,7 +146,7 @@ struct AppointmentStarterView: View {
 
                             if activity.labStep != nil {
                                 BloodTestCard(
-                                    image: "testPlaceholder",
+                                    image: TestDataset.imageName(for: activity.labStep!.name ?? ""),
                                     title: activity.labStep!.name,
                                     specialText: "",
                                     detailLine1: "Location: \(activity.labStep?.location ?? "N/A")",
@@ -166,7 +166,7 @@ struct AppointmentStarterView: View {
 
                             if activity.imagingStep != nil {
                                 BloodTestCard(
-                                    image: "testPlaceholder",
+                                    image: TestDataset.imageName(for: activity.imagingStep!.name ?? ""),
                                     title: activity.imagingStep!.name,
                                     specialText: "",
                                     detailLine1: "Location: \(activity.imagingStep?.location ?? "N/A")",
@@ -242,7 +242,15 @@ struct AppointmentStarterView: View {
 
                     } else {
 
-                        PaymentThroughCashView()
+                        PaymentThroughCashView {
+                              PaymentStatusView(
+                                  isSuccess: true,
+                                  doctor: activeActivity?.selectedDoctor,
+                                  queue: nextAvailableQueue,
+                                  onContinue: { Queue() },
+                                  currentVisit: sessionManager.currentClinicVisit
+                              )
+                          }
                     }
                 }
 
