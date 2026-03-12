@@ -20,8 +20,10 @@ struct HomeView: View {
                 .padding(.horizontal, 16)
                 .navigationBarHidden(true)
             }
-        }.onAppear{
-            session.currentService = .unknown
+        }.onAppear {
+            DispatchQueue.main.async {
+                session.currentService = .unknown
+            }
         }
     }
 }

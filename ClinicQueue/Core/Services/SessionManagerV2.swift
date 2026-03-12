@@ -14,6 +14,8 @@ class SessionManagerV2: ObservableObject {
     @Published var currentService: ServiceType = .unknown
     @Published var activities: [Activity] = []
     @Published var symptoms: [Symptom] = []
+    @Published var scheduledLab: [Activity] = []
+    @Published var scheduledTest: [Activity] = []
     
  
     private var cancellables = Set<AnyCancellable>()

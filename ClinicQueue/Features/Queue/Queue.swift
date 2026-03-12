@@ -19,6 +19,8 @@ struct Queue: View {
     @EnvironmentObject var sessionManager: SessionManager
     @EnvironmentObject var session: SessionManagerV2
     
+    @State private var showRescheduleAlert = false
+    
     @State private var hasRechecked = false
 
     @State private var simulatedStatus: StepStatus = .waiting
@@ -119,6 +121,35 @@ struct Queue: View {
         session.activities[tappedIndex].queueStage = .unknown
         navigateToAppointment = true
     }
+    
+    private func rescheduleActivity(_ activity: Activity) {
+
+        guard let index = session.activities.firstIndex(where: { $0.id == activity.id }) else {
+     
+            return
+        }
+
+        let removed = session.activities.remove(at: index)
+
+        switch removed.service {
+        case .lab:
+            session.scheduledLab.append(removed)
+         
+        case .imaging:
+            session.scheduledTest.append(removed)
+           
+        default:
+            print("No scheduled array for this service")
+        }
+        
+        showRescheduleAlert = true
+
+        session.activities = session.activities
+
+        for act in session.activities {
+            print(" - \(act.testName ?? "Unknown") [\(act.queueStage.rawValue)]")
+        }
+    }
 
    
     private func recheckWithDoctor() {
@@ -194,7 +225,6 @@ struct Queue: View {
                             
                             if canRecheckWithDoctor {
                                 VStack(spacing: 16) {
-                                    // Recheck with Doctor
                                     Button(action: {
                                         recheckWithDoctor()
                                     }) {
@@ -209,7 +239,7 @@ struct Queue: View {
                                     .buttonStyle(.plain)
 
                                     Button(action: {
-                                        print("Leave Clinic tapped")
+                                        ServicesView()
                                     }) {
                                         Text("Leave Clinic")
                                             .font(.system(size: 16, weight: .medium))
@@ -241,10 +271,20 @@ struct Queue: View {
                 .padding(.bottom, 40)
             }
             .background(Color(white: 0.95))
+            .alert("Rescheduled Successfully", isPresented: $showRescheduleAlert) {
+                        Button("OK", role: .cancel) { }
+                    } message: {
+                        Text("You can check your scheduled activities in the settings page.")
+                    }
+                    .onAppear {
+                        startQueueSimulation()
+                    }
             .onAppear {
                 startQueueSimulation()
             }
             .navigationDestination(isPresented: $navigateToAppointment) {
+                
+                
                 AppointmentStarterView()
             }
         }
@@ -267,7 +307,7 @@ struct Queue: View {
                     .padding(.horizontal, 30)
             } else {
                 BloodTestCard(
-                    image: "doctor01",
+                    image: "testPlaceholder",
                     title: activity.testName ?? "Test",
                     specialText: "",
                     detailLine1: "Location: \(activity.labStep?.location ?? "N/A")",
@@ -281,7 +321,11 @@ struct Queue: View {
                     onButtonTap: {
                         startRequestedActivity(activity)
                     },
-                    isActiveQueue: true
+                    onRescheduleTap: {
+                        print("rescheduleActivity called in directly:")
+                        rescheduleActivity(activity)
+                    },
+                    isActiveQueue: requestedActivities.contains(where: { $0.id == activity.id })
                 )
                 .padding(.horizontal, 20)
             }
