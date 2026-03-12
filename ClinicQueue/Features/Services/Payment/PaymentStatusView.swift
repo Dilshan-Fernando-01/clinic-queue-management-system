@@ -83,24 +83,18 @@ struct PaymentStatusView<NextDestination: View>: View {
 
                         let currentServiceType = session.currentService
 
-                            // 2️⃣ Find the selected activity for this service
+            
                             if let selectedActivityIndex = session.activities.firstIndex(where: { activity in
                                 activity.service == currentServiceType && activity.isSelected
                             }) {
-                                // 3️⃣ Update only this activity
+                            
                                 session.activities[selectedActivityIndex].queueStage = .wait
                                 session.activities[selectedActivityIndex].stage = .inQueue
 
-                                // Optional debug
-                                print("✅ Updated selected activity for service \(currentServiceType):")
+                           
+                              
                                 let updatedActivity = session.activities[selectedActivityIndex]
-                                print("""
-                                    - id: \(updatedActivity.id)
-                                    - service: \(updatedActivity.service)
-                                    - queueStage: \(updatedActivity.queueStage)
-                                    - stage: \(updatedActivity.stage)
-                                    - selected: \(updatedActivity.isSelected)
-                                """)
+                              
                             }
 
                         session.printAllActivities()

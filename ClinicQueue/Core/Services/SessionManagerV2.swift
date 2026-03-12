@@ -8,6 +8,16 @@
 import SwiftUI
 import Combine
 
+struct UpcomingAppointment: Identifiable {
+    let id: UUID
+    let date: Date
+    let patientName: String
+    let age: Int
+    let gender: String
+    let activities: [Activity]
+    let totalFee: Double
+}
+
 class SessionManagerV2: ObservableObject {
     
  
@@ -16,6 +26,7 @@ class SessionManagerV2: ObservableObject {
     @Published var symptoms: [Symptom] = []
     @Published var scheduledLab: [Activity] = []
     @Published var scheduledTest: [Activity] = []
+    @Published var upcomingAppointments: [UpcomingAppointment] = []
     
  
     private var cancellables = Set<AnyCancellable>()
@@ -101,6 +112,37 @@ class SessionManagerV2: ObservableObject {
         return activities.last
     }
     
+    
+
+    func saveUpcomingAppointment(patientName: String, age: Int, gender: String, activities: [Activity]) {
+        let totalActivityFee = activities.reduce(0.0) { partialResult, activity in
+            let fee = Double(activity.selectedDoctor?.price?.replacingOccurrences(of: "$", with: "") ?? "0") ?? 0
+            return partialResult + fee
+        }
+        
+        let total = totalActivityFee + PaymentConfig.adminFee
+        
+        let appointment = UpcomingAppointment(
+            id: UUID(),
+            date: Date(),
+            patientName: patientName,
+            age: age,
+            gender: gender,
+            activities: activities,
+            totalFee: total
+        )
+        
+        upcomingAppointments.append(appointment)
+        
+        print("✅ Saved new appointment with all activities:")
+        print(" - id: \(appointment.id)")
+        print(" - patient: \(appointment.patientName), age: \(appointment.age), gender: \(appointment.gender)")
+        print(" - activities count: \(appointment.activities.count)")
+        for act in appointment.activities {
+            print("   - Activity \(act.id) | service: \(act.service) | testName: \(act.testName ?? "-") | doctor: \(act.selectedDoctor?.heading ?? "-")")
+        }
+    }
+    
     func resetFlow() {
         currentService = .unknown
         activities.removeAll()
@@ -180,7 +222,7 @@ struct Activity: Identifiable {
     var labStep: ClinicStep?
     var imagingStep: ClinicStep?
     var pharmacyStep: ClinicStep?
-    var appointmentDate: String?
+    var appointmentDate: Date?
     var patientName: String?
     var patientAge: Int?
     var patientGender: String?

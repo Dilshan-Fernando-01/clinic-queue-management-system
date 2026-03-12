@@ -31,11 +31,11 @@ struct RadioOptionRow: View {
                         icon
                             .resizable()
                             .scaledToFit()
-                            .frame(width: 20, height: 20)
+                            .frame(width: 15, height: 15)
                     }
 
                     Text(title)
-                        .font(.system(size: 15, weight: .medium))
+                        .font(.system(size: 12, weight: .medium))
                         .foregroundColor(AppColors.textdark)
                 }
 
@@ -44,7 +44,7 @@ struct RadioOptionRow: View {
 
                 if let subtitle = subtitle {
                     Text(subtitle)
-                        .font(.system(size: 14))
+                        .font(.system(size: 12))
                         .foregroundColor(AppColors.text)
                 }
 

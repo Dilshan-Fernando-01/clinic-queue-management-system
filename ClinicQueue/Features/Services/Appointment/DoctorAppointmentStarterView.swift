@@ -7,108 +7,211 @@
 
 import SwiftUI
 
-private let paymentDetailsData: [PaymentDetailRow] = [
-    PaymentDetailRow(label: "Consultation", value: "$59.00"),
-    PaymentDetailRow(label: "Admin Fee", value: "$01.00"),
-    PaymentDetailRow(label: "Additional Discount", value: "-"),
-    PaymentDetailRow(label: "Total", value: "$70.00")
-]
-private let paymentOptionsData: [CheckboxItem] = [
-    CheckboxItem(
-        key: "card",
-        label: "Card Payment",
-        icon: Image("Card")
-    ),
-    CheckboxItem(key: "cash", label: "Cash Payment", icon: Image("Cash"))
-]
-
 struct DoctorAppointmentStarterView: View {
+
+    @EnvironmentObject var sessionManager: SessionManager
+    @EnvironmentObject var session: SessionManagerV2
+
     let doctor: InfoCardData
 
     @State private var selectedQueue: UUID? = nil
-    @State private var selectedPaymentOption: String? = "card"
     @State private var navigateToPaymentView = false
-    
+    @State private var selectedPaymentOption: String? = "card"
+
+
+    private var availableQueues: [QueueOption] {
+
+        guard let queueString = doctor.activeQueueCount else { return [] }
+
+        let currentQueue = Int(queueString
+            .components(separatedBy: " ")
+            .first ?? "0") ?? 0
+
+        let start = min(currentQueue + 1, 20)
+
+        return (start...20).map { index in
+            QueueOption(
+                heading: String(format: "%02d", index),
+                subText: "~15 min"
+            )
+        }
+    }
+
+
+    private var paymentDetailsData: [PaymentDetailRow] {
+
+        let consultationFee = Double(
+            doctor.price?.replacingOccurrences(of: "$", with: "") ?? "0"
+        ) ?? 0
+
+        let adminFee = PaymentConfig.adminFee
+        let total = consultationFee + adminFee - PaymentConfig.additionalDiscount
+
+        return [
+            PaymentDetailRow(label: "Consultation", value: "$\(String(format: "%.2f", consultationFee))"),
+            PaymentDetailRow(label: "Admin Fee", value: "$\(String(format: "%.2f", adminFee))"),
+            PaymentDetailRow(label: "Additional Discount", value: "$\(String(format: "%.2f", PaymentConfig.additionalDiscount))"),
+            PaymentDetailRow(label: "Total", value: "$\(String(format: "%.2f", total))")
+        ]
+    }
+
+    private let paymentOptionsData: [CheckboxItem] = [
+        CheckboxItem(key: "card", label: "Card Payment", icon: Image("Card")),
+        CheckboxItem(key: "cash", label: "Cash Payment", icon: Image("Cash"))
+    ]
+
     var body: some View {
+
         NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    
-                    Text("Your Clinic Queue")
-                        .font(.system(size: 20, weight: .bold))
-                        .frame(maxWidth: .infinity, alignment: .center)
-                        .padding(.horizontal)
-                    
-                    InfoCard(data: doctor)
-                        .padding(.top, Spacing.section)
-                    
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Available Queues")
-                            .font(.system(size: 16, weight: .semibold))
+
+            ZStack {
+
+                ScrollView {
+
+                    VStack(alignment: .leading, spacing: 20) {
+
+                        Text("Your Appointment")
+                            .font(.system(size: 20, weight: .bold))
                             .frame(maxWidth: .infinity, alignment: .center)
-                        
-                        QueueButtonGroup(
-                            queues: doctor.availableDates?.map { date in
-                                QueueOption(heading: formattedQueueHeading(for: date), subText: formattedQueueTime(for: date))
-                            } ?? [],
-                            selectedId: $selectedQueue
-                        )
-                    }
-                    .padding(.horizontal)
-                    .padding(.top, Spacing.section)
-                    
-                    
-                    PaymentDetails(rows: paymentDetailsData)
+                            .padding(.horizontal)
+
+                        InfoCard(data: doctor)
+                            .padding(.horizontal)
+                            .padding(.top, Spacing.section)
+
+
+                        VStack(alignment: .leading, spacing: 12) {
+
+                            Text("Available Queues")
+                                .font(.system(size: 16, weight: .semibold))
+                                .frame(maxWidth: .infinity, alignment: .center)
+
+                            QueueButtonGroup(
+                                queues: availableQueues,
+                                selectedId: $selectedQueue
+                            )
+                            .padding(.horizontal)
+
+                        }
                         .padding(.top, Spacing.section)
-                    
-                    PaymentOptions(
-                        items: paymentOptionsData,
-                        selectedKey: $selectedPaymentOption
-                    )
-                    
-                    .padding(.top, Spacing.section)
-                    
-                    
-                    PrimaryButton(title: "Book Appointment") {
-                        navigateToPaymentView = true
+
+                        PaymentDetails(rows: paymentDetailsData)
+                            .padding(.horizontal)
+                            .padding(.top, Spacing.section)
+
+
+                        PaymentOptions(
+                            items: paymentOptionsData,
+                            selectedKey: $selectedPaymentOption
+                        )
+                        .padding(.horizontal)
+                        .padding(.top, Spacing.section)
+                        .padding(.bottom, 80)
+
                     }
-                    .padding(.horizontal)
-                    .padding(.top, Spacing.section)
+                    .padding(.vertical, 20)
                 }
-                .padding()
-                .navigationDestination(isPresented: $navigateToPaymentView) {
+
+                VStack {
+
+                    Spacer()
+
+                    VStack {
+
+                        PrimaryButton(title: "Book Appointment") {
+                            let fee = Double(doctor.price?.replacingOccurrences(of: "$", with: "") ?? "0") ?? 0
+
+                            if sessionManager.currentClinicVisit == nil {
+                                var newVisit = ClinicVisit(
+                                    patientName: "John Doe",
+                                    age: 28,
+                                    gender: "Male"
+                                )
+                                newVisit.consultationFee = fee
+                                newVisit.adminFee = PaymentConfig.adminFee
+                                sessionManager.currentClinicVisit = newVisit
+                            } else {
+                                var visit = sessionManager.currentClinicVisit!
+                                visit.consultationFee = fee
+                                visit.adminFee = PaymentConfig.adminFee
+                                sessionManager.currentClinicVisit = visit
+                            }
+
                   
-                        Text("Please select a queue")
+                            let newActivity = Activity(
+                                service: .clinic,
+                                stage: .planning,
+                                selectedDoctor: doctor,
+                                patientName: sessionManager.currentClinicVisit?.patientName,
+                                patientAge: sessionManager.currentClinicVisit?.age,
+                                patientGender: sessionManager.currentClinicVisit?.gender
+                            )
+
+                            session.activities.append(newActivity)
+
+                            session.printAllActivities()
+                         
+                            let activitiesToSave = session.activities.filter { $0.service == .clinic || $0.service == .appointment }
+
+                            session.saveUpcomingAppointment(
+                                patientName: sessionManager.currentClinicVisit?.patientName ?? "",
+                                age: sessionManager.currentClinicVisit?.age ?? 0,
+                                gender: sessionManager.currentClinicVisit?.gender ?? "",
+                                activities: activitiesToSave
+                            )
+
+                            navigateToPaymentView = true
+                        }
+
                     }
+                    .padding(20)
+                    .background(Color(UIColor.systemBackground))
+                    .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: -5)
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+
+            }
+
+            .navigationDestination(isPresented: $navigateToPaymentView) {
+
+                if selectedPaymentOption == "card" {
+
+                    if let currentVisit = sessionManager.currentClinicVisit {
+
+                        PaymentView(
+                            onPaymentSuccess: {
+                                PaymentStatusView(
+                                    isSuccess: true,
+                                    doctor: doctor,
+                                    queue: availableQueues.first(where: { $0.id == selectedQueue }),
+                                    onContinue: { AppointmentHistoryView() },
+                                    currentVisit: sessionManager.currentClinicVisit
+                                )
+                            },
+                            currentVisit: Binding(
+                                get: { currentVisit },
+                                set: { sessionManager.currentClinicVisit = $0 }
+                            )
+                        )
+    
+                    } else {
+                        Text("No current visit found")
+                    }
+
+                } else {
+
+                    PaymentThroughCashView()
+
+                }
+
             }
         }
     }
-    
-    private func formattedQueueHeading(for date: DoctorAvailability) -> String {
-        return date.queueLabel
-    }
-    
-    private func formattedQueueTime(for date: DoctorAvailability) -> String {
-        let formatter = DateFormatter()
-        formatter.timeStyle = .short
-        return formatter.string(from: date.date)
-    }
-
-
-extension InfoCardData {
-    static let mock = InfoCardData(
-        image: Image("doctor_placeholder"),
-        heading: "Dr. John Doe",
-        subheading: "Cardiologist",
-        price: "$50",
-        availableDates: []
-    )
 }
 
 
-#Preview {
-    NavigationStack {
-        DoctorAppointmentStarterView(doctor: .mock)
-    }
-}
+//#Preview {
+//    NavigationStack {
+//        DoctorAppointmentStarterView(doctor: .mock)
+//    }
+//}

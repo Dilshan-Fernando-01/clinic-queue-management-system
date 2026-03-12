@@ -196,22 +196,29 @@ func generateDates(days: Int) -> [DoctorAvailability] {
     let today = Date()
 
     for i in 0..<days {
-        if let date = calendar.date(byAdding: .day, value: i, to: today) {
-            let weekday = formatter.string(from: date)
-            let timeRange = "17:30 pm - 20:30 pm"
-            let icon = Image(systemName: "calendar")
-            let queueLabel = "\(i + 1)"
+        guard let date = calendar.date(byAdding: .day, value: i, to: today) else { continue }
 
-            items.append(
-                DoctorAvailability(
-                    weekday: weekday,
-                    timeRange: timeRange,
-                    icon: icon,
-                    queueLabel: queueLabel,
-                    date: date
-                )
-            )
+        let weekday: String
+        if calendar.isDateInToday(date) {
+            weekday = "Today" 
+        } else {
+            weekday = formatter.string(from: date)
         }
+
+        let timeRange = "17:30 pm - 20:30 pm"
+        let icon = Image(systemName: "calendar")
+        let queueLabel = "\(i + 1)"
+
+        let availability = DoctorAvailability(
+            weekday: weekday,
+            timeRange: timeRange,
+            icon: icon,
+            queueLabel: queueLabel,
+            date: date
+        )
+
+        items.append(availability)
     }
+
     return items
 }
