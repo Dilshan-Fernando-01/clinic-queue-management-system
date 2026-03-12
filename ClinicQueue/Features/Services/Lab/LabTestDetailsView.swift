@@ -29,7 +29,7 @@ struct LabTestDetailsView: View {
         totalPrice + adminFee - PaymentConfig.additionalDiscount
     }
 
-    // ✅ Dynamic payment details from actual selected tests
+
     private var paymentDetailsData: [PaymentDetailRow] {
         [
             PaymentDetailRow(label: "Lab Tests",           value: "$ \(String(format: "%.2f", totalPrice))"),
@@ -63,7 +63,7 @@ struct LabTestDetailsView: View {
                 ForEach(Array(selectedTests.enumerated()), id: \.element.id) { index, test in
                     VStack(alignment: .leading, spacing: 16) {
 
-                        // ✅ Same card style as TestHistoryView / ImagingDetailsView
+                      
                         BloodTestCard(
                             image: test.icon,
                             title: test.title,
@@ -114,7 +114,7 @@ struct LabTestDetailsView: View {
             .padding(.horizontal, 2)
         }
 
-        // ✅ Card → PaymentView → PaymentStatusView → Queue
+     
         .navigationDestination(isPresented: $navigateToPaymentView) {
             if selectedPaymentOption == "card" {
                 PaymentView(
@@ -123,7 +123,7 @@ struct LabTestDetailsView: View {
                             isSuccess: true,
                             doctor: nil,
                             queue: nil,
-                            onContinue: { Queue() },   // ✅ Queue after success
+                            onContinue: { Queue() },
                             currentVisit: sessionManager.currentClinicVisit
                         )
                     },

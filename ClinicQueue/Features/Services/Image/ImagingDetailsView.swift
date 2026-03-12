@@ -56,7 +56,7 @@ struct ImagingDetailsView: View {
         else                                                   { return "cross.fill" }
     }
 
-    // A computed binding that always returns a valid ClinicVisit
+
     private var visitBinding: Binding<ClinicVisit> {
         Binding(
             get: { sessionManager.currentClinicVisit ?? ClinicVisit(patientName: "", age: 0, gender: "") },
@@ -108,7 +108,7 @@ struct ImagingDetailsView: View {
 
                 HStack {
                     PrimaryButton(title: "Booking", maxWidth: 220) {
-                        // Write totals into the visit before navigating
+                        
                         if var visit = sessionManager.currentClinicVisit {
                             visit.consultationFee = totalPrice
                             visit.adminFee        = adminFee

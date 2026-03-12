@@ -313,15 +313,7 @@ struct PharmacyView: View {
                         .font(.system(size: 18, weight: .bold))
                         .foregroundColor(Color(hex: "1A2E44"))
                 }
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button {
-                        // Back
-                    } label: {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 16, weight: .semibold))
-                            .foregroundColor(Color(hex: "1A2E44"))
-                    }
-                }
+                
                 ToolbarItem(placement: .navigationBarTrailing) {
                     ZStack(alignment: .topTrailing) {
                         Button {

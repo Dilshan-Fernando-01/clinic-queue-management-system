@@ -64,7 +64,7 @@ struct ImageList: View {
                         .padding(.top, 32)
                         .padding(.horizontal, 10)
 
-                    // Single-select: tapping a new button removes highlight from previous
+        
                     CategoryGrid(
                         items: specialties,
                         selectedCategories: Binding(
@@ -80,7 +80,7 @@ struct ImageList: View {
                                         // New button tapped → deselect old, select new
                                         selectedCategory = newlyTapped
                                     } else {
-                                        // Same button tapped again → deselect
+                                    
                                         selectedCategory = nil
                                     }
                                 }
@@ -89,7 +89,7 @@ struct ImageList: View {
                     )
                     .padding(.top, 20)
 
-                    // Selected imaging tests section
+                 
                     if !selectedTests.isEmpty {
                         Text("Selected Tests")
                             .font(.app(.heading))
@@ -121,7 +121,7 @@ struct ImageList: View {
                         .padding(.top, 20)
                     }
 
-                    // Available imaging tests section
+               
                     if !availableImagingCards.isEmpty {
                         Text("Choose Your Imaging Test")
                             .font(.app(.heading))
@@ -161,7 +161,7 @@ struct ImageList: View {
                         .environmentObject(sessionManager)
                 }
 
-                // Sticky Next Button
+         
                 VStack(spacing: 0) {
                     LinearGradient(
                         colors: [Color(.systemBackground).opacity(0), Color(.systemBackground)],
