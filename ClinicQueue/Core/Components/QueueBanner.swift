@@ -19,7 +19,7 @@ struct QueueBanner: View {
             Image("welcome_bg")
                 .resizable()
                 .scaledToFill()
-                .frame(width:450,  height: 600)
+                .frame(width:450,  height: 470)
                 .ignoresSafeArea(edges: .top)
      
             VStack(spacing: 20) {

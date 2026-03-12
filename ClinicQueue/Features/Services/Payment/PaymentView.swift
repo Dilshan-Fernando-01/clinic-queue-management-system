@@ -220,7 +220,7 @@ struct PaymentView<SuccessDestination: View>: View {
                         FloatingNavItem(icon: "map.fill", label: "Map", destination: AnyView(Text("Map View"))),
                         FloatingNavItem(icon: "gearshape.fill", label: "Settings", destination: AnyView(SettingsView()))
                     ]
-                )
+                ).padding(.top, 280)
             }
             
             

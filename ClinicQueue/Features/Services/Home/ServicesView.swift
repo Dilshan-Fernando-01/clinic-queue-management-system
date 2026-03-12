@@ -177,7 +177,7 @@ struct ServicesView: View {
                 FloatingNav(
                     mainIcon: "plus",
                     items: [
-                        FloatingNavItem(icon: "house.fill", label: "Home", destination: AnyView(EmptyView())),
+                        FloatingNavItem(icon: "house.fill", label: "Home", destination: AnyView(ServicesView())),
                         FloatingNavItem(icon: "map.fill", label: "Map", destination: AnyView(Text("Map View"))),
                         FloatingNavItem(icon: "gearshape.fill", label: "Settings", destination: AnyView(ProfileView()))
                     ]
