@@ -8,7 +8,6 @@
 
 import SwiftUI
 
-// MARK: - Cart Item Model
 
 struct CartItem: Identifiable {
     let id = UUID()
@@ -20,15 +19,13 @@ struct CartItem: Identifiable {
     var quantity: Int
 }
 
-// MARK: - Quantity Stepper
-
 struct QuantityStepper: View {
     @Binding var quantity: Int
 
     var body: some View {
         HStack(spacing: 0) {
             Button {
-                if quantity > 0 { quantity -= 1 }
+                if quantity > 1 { quantity -= 1 }
             } label: {
                 Text("−")
                     .font(.system(size: 18, weight: .medium))
@@ -36,7 +33,7 @@ struct QuantityStepper: View {
                     .frame(width: 34, height: 36)
             }
 
-            Text(String(format: "%02d", quantity))
+            Text(String(format: "1", quantity))
                 .font(.system(size: 14, weight: .bold))
                 .foregroundColor(.white)
                 .frame(width: 36, height: 36)
@@ -55,14 +52,13 @@ struct QuantityStepper: View {
     }
 }
 
-// MARK: - Cart Item Row
 
 struct CartItemRow: View {
     @Binding var item: CartItem
 
     var body: some View {
         HStack(spacing: 14) {
-            // Drug image
+          
             AsyncImage(url: URL(string: item.imageURL)) { phase in
                 switch phase {
                 case .success(let img):
@@ -93,7 +89,7 @@ struct CartItemRow: View {
                     .lineLimit(2)
 
                 HStack {
-                    Text(String(format: "$%05.2f", item.price))
+                    Text(String(format: "$25.00", item.price))
                         .font(.system(size: 14, weight: .bold))
                         .foregroundColor(Color(hex: "1A2E44"))
 
@@ -111,7 +107,6 @@ struct CartItemRow: View {
     }
 }
 
-// MARK: - Prescription File Row
 
 struct PrescriptionFileRow: View {
     let image: UIImage?
@@ -153,8 +148,6 @@ struct PrescriptionFileRow: View {
         )
     }
 }
-
-// MARK: - My Cart View
 
 struct MyCartView: View {
     let prescriptionImage: UIImage?
@@ -219,7 +212,7 @@ struct MyCartView: View {
                     .padding(.horizontal, 16)
                     .padding(.top, 16)
 
-                    // ── Cart Items ───────────────────────────────
+                 
                     VStack(spacing: 14) {
                         ForEach($cartItems) { $item in
                             CartItemRow(item: $item)
@@ -227,12 +220,12 @@ struct MyCartView: View {
                     }
                     .padding(.horizontal, 16)
 
-                    // Bottom spacer for checkout button
+                
                     Spacer().frame(height: 90)
                 }
             }
 
-            // ── Checkout Button ──────────────────────────────────
+      
             VStack(spacing: 0) {
                 Button {
                     // Handle checkout

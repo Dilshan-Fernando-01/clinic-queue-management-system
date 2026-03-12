@@ -9,70 +9,86 @@ import SwiftUI
 
 struct PrescriptionBanner: View {
     @State private var showUploadModal = false
+    @State private var navigateToCart = false          // ← drives NavigationLink
+    @State private var prescriptionImage: UIImage? = nil
 
     var body: some View {
-        HStack(spacing: 0) {
-            VStack(alignment: .leading, spacing: 12) {
-                Text("Order quickly with\nprescription")
-                    .font(.system(size: 17, weight: .bold))
-                    .foregroundColor(Color(hex: "1A2E44"))
-                    .lineSpacing(3)
+        ZStack {
+            // Hidden NavigationLink — lives inside NavigationView context ✓
+            NavigationLink(
+                destination: MyCartView(prescriptionImage: prescriptionImage),
+                isActive: $navigateToCart
+            ) { EmptyView() }
 
-                Button {
-                    withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-                        showUploadModal = true
+            HStack(spacing: 0) {
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Order quickly with\nprescription")
+                        .font(.system(size: 17, weight: .bold))
+                        .foregroundColor(Color(hex: "1A2E44"))
+                        .lineSpacing(3)
+
+                    Button {
+                        withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                            showUploadModal = true
+                        }
+                    } label: {
+                        Text("Upload Prescription")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 18)
+                            .padding(.vertical, 10)
+                            .background(Color(hex: "0DC8A4"))
+                            .cornerRadius(25)
                     }
-                } label: {
-                    Text("Upload Prescription")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 18)
-                        .padding(.vertical, 10)
-                        .background(Color(hex: "0DC8A4"))
-                        .cornerRadius(25)
                 }
-            }
-            .padding(.leading, 20)
-            .padding(.vertical, 22)
+                .padding(.leading, 20)
+                .padding(.vertical, 22)
 
-            Spacer()
+                Spacer()
 
-            ZStack {
-                Circle()
-                    .fill(Color(hex: "0DC8A4").opacity(0.15))
-                    .frame(width: 90, height: 90)
-                    .offset(x: 10, y: -10)
+                ZStack {
+                    Circle()
+                        .fill(Color(hex: "0DC8A4").opacity(0.15))
+                        .frame(width: 90, height: 90)
+                        .offset(x: 10, y: -10)
 
-                VStack(spacing: -8) {
-                    Image(systemName: "cross.fill")
-                        .font(.system(size: 24, weight: .bold))
-                        .foregroundColor(.red)
-                        .offset(x: 10, y: 0)
+                    VStack(spacing: -8) {
+                        Image(systemName: "cross.fill")
+                            .font(.system(size: 24, weight: .bold))
+                            .foregroundColor(.red)
+                            .offset(x: 10, y: 0)
 
-                    Image(systemName: "doc.text.fill")
-                        .font(.system(size: 42))
-                        .foregroundColor(Color(hex: "C8E6FF"))
+                        Image(systemName: "doc.text.fill")
+                            .font(.system(size: 42))
+                            .foregroundColor(Color(hex: "C8E6FF"))
 
-                    Image(systemName: "pills.fill")
-                        .font(.system(size: 22))
-                        .foregroundColor(Color(hex: "FFD700"))
-                        .offset(x: -5, y: -8)
+                        Image(systemName: "pills.fill")
+                            .font(.system(size: 22))
+                            .foregroundColor(Color(hex: "FFD700"))
+                            .offset(x: -5, y: -8)
+                    }
                 }
+                .padding(.trailing, 10)
             }
-            .padding(.trailing, 10)
-        }
-        .background(
-            LinearGradient(
-                colors: [Color(hex: "E6F9F5"), Color(hex: "D0F0FF")],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
+            .background(
+                LinearGradient(
+                    colors: [Color(hex: "E6F9F5"), Color(hex: "D0F0FF")],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
             )
-        )
-        .cornerRadius(18)
-        .shadow(color: Color(hex: "0DC8A4").opacity(0.1), radius: 10, x: 0, y: 4)
+            .cornerRadius(18)
+            .shadow(color: Color(hex: "0DC8A4").opacity(0.1), radius: 10, x: 0, y: 4)
+        }
         .fullScreenCover(isPresented: $showUploadModal) {
-            PrescriptionUploadModal(isPresented: $showUploadModal)
-                .background(BackgroundClearView())
+            PrescriptionUploadModal(
+                isPresented: $showUploadModal,
+                onNext: { image in
+                    prescriptionImage = image      // ← store image
+                    navigateToCart = true           // ← trigger NavigationLink
+                }
+            )
+            .background(BackgroundClearView())
         }
     }
 }

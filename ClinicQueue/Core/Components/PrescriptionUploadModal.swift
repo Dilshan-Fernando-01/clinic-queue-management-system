@@ -5,18 +5,17 @@
 //  Created by Roshan on 2026-03-12.
 //
 
-
-
 import SwiftUI
 import PhotosUI
 
 struct PrescriptionUploadModal: View {
     @Binding var isPresented: Bool
+    var onNext: (UIImage?) -> Void          // ← passes image back to parent
+
     @State private var selectedImage: UIImage? = nil
     @State private var isPickerPresented = false
     @State private var photosPickerItem: PhotosPickerItem? = nil
-    @State private var navigateToCart = false
-    
+
     var body: some View {
         ZStack {
             // Dimmed background
@@ -25,16 +24,10 @@ struct PrescriptionUploadModal: View {
                 .onTapGesture {
                     withAnimation(.spring()) { isPresented = false }
                 }
-            
-            // Hidden NavigationLink to MyCartView
-            NavigationLink(
-                destination: MyCartView(prescriptionImage: selectedImage),
-                isActive: $navigateToCart
-            ) { EmptyView() }
-            
+
             // Modal card
             VStack(spacing: 0) {
-                
+
                 // ── Drop Zone ────────────────────────────────────
                 ZStack {
                     RoundedRectangle(cornerRadius: 16)
@@ -47,7 +40,7 @@ struct PrescriptionUploadModal: View {
                                 )
                         )
                         .frame(height: 170)
-                    
+
                     if let image = selectedImage {
                         ZStack(alignment: .topTrailing) {
                             Image(uiImage: image)
@@ -55,7 +48,7 @@ struct PrescriptionUploadModal: View {
                                 .scaledToFill()
                                 .frame(height: 170)
                                 .clipShape(RoundedRectangle(cornerRadius: 16))
-                            
+
                             Button {
                                 withAnimation { selectedImage = nil }
                             } label: {
@@ -76,11 +69,11 @@ struct PrescriptionUploadModal: View {
                                     .font(.system(size: 26, weight: .medium))
                                     .foregroundColor(Color(hex: "1A2E44"))
                             }
-                            
+
                             Text("Drag & drop files here")
                                 .font(.system(size: 15, weight: .semibold))
                                 .foregroundColor(Color(hex: "1A2E44"))
-                            
+
                             Text("or Select Browse")
                                 .font(.system(size: 13))
                                 .foregroundColor(.gray)
@@ -90,7 +83,7 @@ struct PrescriptionUploadModal: View {
                 .padding(.horizontal, 20)
                 .padding(.top, 24)
                 .onTapGesture { isPickerPresented = true }
-                
+
                 // ── Buttons ──────────────────────────────────────
                 HStack(spacing: 14) {
                     Button {
@@ -110,12 +103,12 @@ struct PrescriptionUploadModal: View {
                                     .stroke(Color(.systemGray4), lineWidth: 1.5)
                             )
                     }
-                    
+
                     Button {
-                        // Close modal then navigate to cart
                         isPresented = false
+                        // Small delay so dismiss animates first, then parent navigates
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
-                            navigateToCart = true
+                            onNext(selectedImage)
                         }
                     } label: {
                         Text("Next")
@@ -143,6 +136,42 @@ struct PrescriptionUploadModal: View {
                 if let data = try? await newItem?.loadTransferable(type: Data.self),
                    let uiImage = UIImage(data: data) {
                     withAnimation { selectedImage = uiImage }
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Preview
+
+#Preview {
+    PrescriptionUploadModalPreviewWrapper()
+}
+
+private struct PrescriptionUploadModalPreviewWrapper: View {
+    @State private var isPresented = true
+
+    var body: some View {
+        NavigationView {
+            ZStack {
+                Color(.systemGroupedBackground).ignoresSafeArea()
+
+                Text("Pharmacy Screen")
+                    .font(.system(size: 18, weight: .bold))
+                    .foregroundColor(.gray.opacity(0.4))
+
+                if isPresented {
+                    PrescriptionUploadModal(isPresented: $isPresented) { _ in }
+                } else {
+                    Button("Show Modal Again") {
+                        isPresented = true
+                    }
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 12)
+                    .background(Color(hex: "0DC8A4"))
+                    .cornerRadius(24)
                 }
             }
         }
