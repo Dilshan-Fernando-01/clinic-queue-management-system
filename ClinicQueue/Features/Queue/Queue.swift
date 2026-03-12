@@ -18,11 +18,13 @@ struct Queue: View {
 
     @EnvironmentObject var sessionManager: SessionManager
     @EnvironmentObject var session: SessionManagerV2
+    
+    @State private var hasRechecked = false
 
     @State private var simulatedStatus: StepStatus = .waiting
     @State private var navigateToAppointment = false
 
-  
+
     private var activeActivity: Activity? {
         session.activities.first(where: {
             $0.service == session.currentService &&
@@ -39,7 +41,7 @@ struct Queue: View {
         }
     }
 
- 
+  
     private var completedActivities: [Activity] {
         session.activities.filter {
             $0.service == session.currentService &&
@@ -48,6 +50,18 @@ struct Queue: View {
     }
 
  
+    private var canRecheckWithDoctor: Bool {
+        guard session.currentService == .clinic || session.currentService == .appointment else { return false }
+
+        if hasRechecked { return false }
+
+        let serviceActivities = session.activities.filter { $0.service == session.currentService }
+        let hasCompletedTests = serviceActivities.contains { $0.queueStage == .completed }
+        let allCompletedOrCancelled = serviceActivities.allSatisfy { $0.queueStage == .completed || $0.queueStage == .cancel }
+
+        return hasCompletedTests && allCompletedOrCancelled
+    }
+
     private func getQueueNumber(for activity: Activity) -> Int {
         if let doctor = activity.selectedDoctor,
            let countString = doctor.activeQueueCount,
@@ -95,15 +109,35 @@ struct Queue: View {
         }
 
         let serviceType = session.activities[tappedIndex].service
-     
+  
         for index in session.activities.indices where session.activities[index].service == serviceType {
             session.activities[index].isSelected = false
         }
 
-   
+ 
         session.activities[tappedIndex].isSelected = true
         session.activities[tappedIndex].queueStage = .unknown
         navigateToAppointment = true
+    }
+
+   
+    private func recheckWithDoctor() {
+        guard let doctorActivity = session.activities.first(where: {
+            $0.service == session.currentService && $0.selectedDoctor != nil
+        }) else { return }
+
+        if let index = session.activities.firstIndex(where: { $0.id == doctorActivity.id }) {
+            session.activities[index].isSelected = true
+            session.activities[index].queueStage = .wait
+        }
+
+        for index in session.activities.indices where session.activities[index].id != doctorActivity.id {
+            session.activities[index].isSelected = false
+        }
+
+        simulatedStatus = .waiting
+        hasRechecked = true           
+        startQueueSimulation()
     }
 
   
@@ -112,7 +146,7 @@ struct Queue: View {
             ScrollView {
                 VStack(spacing: 24) {
 
-                    
+                  
                     if let activity = activeActivity {
                         let qNumber = getQueueNumber(for: activity)
                         let nowServing = getNowServingNumber(for: qNumber)
@@ -128,7 +162,7 @@ struct Queue: View {
 
                     VStack(alignment: .leading, spacing: 24) {
 
-                      
+                       
                         if simulatedStatus == .completed {
 
                           
@@ -144,7 +178,7 @@ struct Queue: View {
                                 }
                             }
 
-                            
+                          
                             if !requestedActivities.isEmpty {
                                 VStack(alignment: .leading, spacing: 16) {
                                     Text("Requested Services")
@@ -157,8 +191,44 @@ struct Queue: View {
                                 }
                             }
 
+                            
+                            if canRecheckWithDoctor {
+                                VStack(spacing: 16) {
+                                    // Recheck with Doctor
+                                    Button(action: {
+                                        recheckWithDoctor()
+                                    }) {
+                                        Text("Recheck with Doctor")
+                                            .font(.system(size: 16, weight: .medium))
+                                            .foregroundColor(.white)
+                                            .padding(.vertical, 12)
+                                            .padding(.horizontal, 24)
+                                            .background(Color(red: 0.28, green: 0.58, blue: 0.53))
+                                            .cornerRadius(25)
+                                    }
+                                    .buttonStyle(.plain)
+
+                                    Button(action: {
+                                        print("Leave Clinic tapped")
+                                    }) {
+                                        Text("Leave Clinic")
+                                            .font(.system(size: 16, weight: .medium))
+                                            .foregroundColor(Color(red: 0.28, green: 0.58, blue: 0.53))
+                                            .padding(.vertical, 12)
+                                            .padding(.horizontal, 24)
+                                            .background(
+                                                RoundedRectangle(cornerRadius: 25)
+                                                    .stroke(Color(red: 0.28, green: 0.58, blue: 0.53), lineWidth: 1)
+                                            )
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                                .frame(maxWidth: .infinity)
+                                .padding(.horizontal, 30)
+                                .multilineTextAlignment(.center)
+                            }
                         } else {
-                           
+                            
                             if let activity = activeActivity {
                                 activityCard(activity, showHeader: true)
                             }
@@ -180,7 +250,7 @@ struct Queue: View {
         }
     }
 
-  
+ 
     @ViewBuilder
     private func activityCard(_ activity: Activity, showHeader: Bool = false) -> some View {
 
