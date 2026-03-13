@@ -7,15 +7,17 @@
 
 import SwiftUI
 
+
+
 struct CartItem: Identifiable {
     let id = UUID()
     let name: String
     let description: String
     let price: Double
-    let imageURL: String
-    let fallbackIcon: String
+    let imageName: String
     var quantity: Int
 }
+
 
 
 struct QuantityStepper: View {
@@ -52,30 +54,17 @@ struct QuantityStepper: View {
 }
 
 
+
 struct CartItemRow: View {
     @Binding var item: CartItem
 
     var body: some View {
         HStack(spacing: 14) {
-            // Drug image
-            AsyncImage(url: URL(string: item.imageURL)) { phase in
-                switch phase {
-                case .success(let img):
-                    img.resizable()
-                        .scaledToFit()
-                        .frame(width: 72, height: 72)
-                        .clipShape(RoundedRectangle(cornerRadius: 10))
-                case .empty, .failure:
-                    Image(systemName: item.fallbackIcon)
-                        .font(.system(size: 28))
-                        .foregroundColor(.gray)
-                        .frame(width: 72, height: 72)
-                        .background(Color(.systemGray6))
-                        .clipShape(RoundedRectangle(cornerRadius: 10))
-                @unknown default:
-                    EmptyView()
-                }
-            }
+            Image(item.imageName)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 72, height: 72)
+                .clipShape(RoundedRectangle(cornerRadius: 10))
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(item.name)
@@ -107,13 +96,13 @@ struct CartItemRow: View {
 }
 
 
+
 struct PrescriptionFileRow: View {
     let image: UIImage?
     let fileName: String
 
     var body: some View {
         HStack(spacing: 12) {
-            // Thumbnail
             if let img = image {
                 Image(uiImage: img)
                     .resizable()
@@ -149,7 +138,6 @@ struct PrescriptionFileRow: View {
 }
 
 
-
 struct MyCartView: View {
     let prescriptionImage: UIImage?
 
@@ -157,25 +145,22 @@ struct MyCartView: View {
         CartItem(
             name: "Lipitor Atorvastatin",
             description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
-            price: 0.00,
-            imageURL: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/31/Lipitor_tablets.jpg/320px-Lipitor_tablets.jpg",
-            fallbackIcon: "cross.case.fill",
+            price: 10.00,
+            imageName: "Lipitor",
             quantity: 1
         ),
         CartItem(
             name: "levothyroxine",
             description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
-            price: 0.00,
-            imageURL: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Synthroid_levothyroxine_sodium_tablets.jpg/320px-Synthroid_levothyroxine_sodium_tablets.jpg",
-            fallbackIcon: "pills.fill",
+            price: 10.00,
+            imageName: "levothyroxine",
             quantity: 1
         ),
         CartItem(
             name: "Ibuprofen",
             description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
-            price: 0.00,
-            imageURL: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Ibuprofen_200mg_Tablets.jpg/320px-Ibuprofen_200mg_Tablets.jpg",
-            fallbackIcon: "capsule.fill",
+            price: 10.00,
+            imageName: "Ibuprofen",
             quantity: 1
         )
     ]
@@ -199,7 +184,6 @@ struct MyCartView: View {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 20) {
 
-                  
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Prescription")
                             .font(.system(size: 18, weight: .bold))
@@ -213,24 +197,19 @@ struct MyCartView: View {
                     .padding(.horizontal, 16)
                     .padding(.top, 16)
 
-               
                     VStack(spacing: 14) {
-                        ForEach($cartItems) { $item in
-                            CartItemRow(item: $item)
+                        ForEach(cartItems.indices, id: \.self) { index in
+                            CartItemRow(item: $cartItems[index])
                         }
                     }
                     .padding(.horizontal, 16)
 
-             
                     Spacer().frame(height: 90)
                 }
             }
 
-         
             VStack(spacing: 0) {
-
-                NavigationLink(destination:
-                                PharPayment()) {
+                NavigationLink(destination: PharPayment()) {
                     Text("Check Out")
                         .font(.system(size: 17, weight: .bold))
                         .foregroundColor(.white)
@@ -241,7 +220,6 @@ struct MyCartView: View {
                 }
                 .padding(.horizontal, 40)
                 .padding(.vertical, 16)
-
             }
             .background(
                 Color.white
@@ -280,8 +258,10 @@ struct MyCartView: View {
     }
 }
 
+
+
 #Preview {
-    NavigationView {
+    NavigationStack {
         MyCartView(prescriptionImage: nil)
     }
 }

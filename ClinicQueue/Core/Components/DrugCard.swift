@@ -5,30 +5,30 @@
 //  Created by Roshan on 2026-03-12.
 //
 
-
-
 import SwiftUI
 
 struct DrugCard: View {
     let drug: Drug
-    @State private var addedToCart = false
+    @State private var quantity: Int = 0
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // Image area
+
+            // ── Image Area ───────────────────────────────────────
             ZStack {
                 RoundedRectangle(cornerRadius: 12)
                     .fill(drug.color.opacity(0.12))
                     .frame(height: 110)
 
-                Image(systemName: drug.imageName)
+                Image(drug.imageName)
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 60, height: 60)
-                    .foregroundColor(drug.color)
+                    .frame(width: 80, height: 80)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
             }
             .padding(.bottom, 10)
 
+            // ── Name & Subtitle ──────────────────────────────────
             Text(drug.name)
                 .font(.system(size: 14, weight: .bold))
                 .foregroundColor(.black)
@@ -39,6 +39,7 @@ struct DrugCard: View {
                 .foregroundColor(.gray)
                 .padding(.top, 2)
 
+            // ── Price + Add / Stepper ────────────────────────────
             HStack {
                 Text(String(format: "$%.2f", drug.price))
                     .font(.system(size: 15, weight: .bold))
@@ -46,20 +47,51 @@ struct DrugCard: View {
 
                 Spacer()
 
-                Button {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-                        addedToCart = true
+                if quantity == 0 {
+                    Button {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                            quantity = 1
+                        }
+                    } label: {
+                        Image(systemName: "plus")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundColor(.white)
+                            .frame(width: 30, height: 30)
+                            .background(Color(hex: "1A2E44"))
+                            .cornerRadius(6)
                     }
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                        withAnimation { addedToCart = false }
+                } else {
+                    HStack(spacing: 0) {
+                        Button {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                                if quantity > 1 { quantity -= 1 } else { quantity = 0 }
+                            }
+                        } label: {
+                            Text("−")
+                                .font(.system(size: 18, weight: .medium))
+                                .foregroundColor(.white)
+                                .frame(width: 28, height: 30)
+                        }
+
+                        Text(String(format: "%02d", quantity))
+                            .font(.system(size: 13, weight: .bold))
+                            .foregroundColor(.white)
+                            .frame(width: 28, height: 30)
+
+                        Button {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                                quantity += 1
+                            }
+                        } label: {
+                            Text("+")
+                                .font(.system(size: 18, weight: .medium))
+                                .foregroundColor(.white)
+                                .frame(width: 28, height: 30)
+                        }
                     }
-                } label: {
-                    Image(systemName: addedToCart ? "checkmark" : "plus")
-                        .font(.system(size: 14, weight: .bold))
-                        .foregroundColor(.white)
-                        .frame(width: 30, height: 30)
-                        .background(addedToCart ? Color.green : Color(hex: "1A2E44"))
-                        .cornerRadius(6)
+                    .background(Color(hex: "1A2E44"))
+                    .cornerRadius(6)
+                    .transition(.scale.combined(with: .opacity))
                 }
             }
             .padding(.top, 8)
