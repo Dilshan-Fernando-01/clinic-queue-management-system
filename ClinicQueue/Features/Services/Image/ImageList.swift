@@ -166,7 +166,7 @@ struct ImageList: View {
                     .frame(height: 24)
 
                     HStack {
-                        PrimaryButton(title: "Next", maxWidth: 160) {
+                        PrimaryButton(title: "Next", maxWidth: 320) {
                             navigateToNext = true
                         }
                         .disabled(selectedTests.isEmpty)

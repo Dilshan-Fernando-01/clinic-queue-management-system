@@ -19,7 +19,6 @@ struct LabList: View {
     @State private var searchText = ""
     @State private var navigateToNext = false
 
-    // Title shown at the top — updates when a category is tapped
     private var pageTitle: String {
         selectedCategory ?? "Your Clinic Queue"
     }
@@ -36,6 +35,11 @@ struct LabList: View {
         filteredLabTests.filter { selectedTests.contains($0.id) }
     }
 
+ 
+    private var allSelectedLabCards: [LabCardData] {
+        labTests.filter { selectedTests.contains($0.id) }
+    }
+
     private var availableLabCards: [LabCardData] {
         filteredLabTests.filter { !selectedTests.contains($0.id) }
     }
@@ -45,7 +49,6 @@ struct LabList: View {
             ZStack(alignment: .bottom) {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 20) {
-                        // Title updates to selected category name
                         Text(pageTitle)
                             .font(.system(size: 20, weight: .bold))
                             .frame(maxWidth: .infinity, alignment: .center)
@@ -69,25 +72,20 @@ struct LabList: View {
                         .padding(.top, 32)
                         .padding(.horizontal, 10)
 
-                   
                     CategoryGrid(
                         items: specialties,
                         selectedCategories: Binding(
                             get: {
-                                // CategoryGrid reads: only the currently selected one
                                 selectedCategory.map { [$0] } ?? []
                             },
                             set: { newValue in
-                                // CategoryGrid writes: find the newly tapped item
                                 let current: Set<String> = selectedCategory.map { [$0] } ?? []
                                 let added = newValue.subtracting(current)
 
                                 withAnimation(.easeInOut(duration: 0.25)) {
                                     if let newlyTapped = added.first {
-                                        // User tapped a NEW button → select it, deselect old
                                         selectedCategory = newlyTapped
                                     } else {
-                                        // User tapped the SAME button again → deselect
                                         selectedCategory = nil
                                     }
                                 }
@@ -155,18 +153,17 @@ struct LabList: View {
                                 )
                             }
                         }
-                        .padding(.top, 20).onAppear{
+                        .padding(.top, 20)
+                        .onAppear {
                             session.currentService = .lab
                         }
                     }
-
                 }
                 .padding(.horizontal, 2)
                 .padding(.bottom, 100)
                 .animation(.spring(), value: selectedTests.isEmpty)
 
                 VStack(spacing: 0) {
-                    // Fade gradient above button
                     LinearGradient(
                         colors: [Color(.systemBackground).opacity(0), Color(.systemBackground)],
                         startPoint: .top,
@@ -175,7 +172,7 @@ struct LabList: View {
                     .frame(height: 24)
 
                     HStack {
-                        PrimaryButton(title: "Next", maxWidth: 220) {
+                        PrimaryButton(title: "Next", maxWidth: 320) {
                             navigateToNext = true
                         }
                         .disabled(selectedTests.isEmpty)
@@ -187,8 +184,10 @@ struct LabList: View {
                 }
                 .animation(.spring(), value: selectedTests.isEmpty)
             }
+         
             .navigationDestination(isPresented: $navigateToNext) {
-                LabTestDetailsView()
+                LabTestDetailsView(selectedLabCards: allSelectedLabCards)
+                    .environmentObject(session)
             }
         }
     }

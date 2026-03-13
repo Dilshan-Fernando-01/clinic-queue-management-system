@@ -14,6 +14,8 @@ enum AppColors {
     static let cardBackground = Color(hex: "F2F9F7")
     static let lightBakcground = Color(hex: "ffffff")
     static let dark = Color(hex: "000000")
+    static let pink = Color(hex: "FE8382")
+  
     static let textdark = Color(hex: "1E1E1E")
     static let categoryHighlight = Color(hex: "169A8F").opacity(0.29)
 }
