@@ -53,15 +53,35 @@ struct Queue: View {
 
  
     private var canRecheckWithDoctor: Bool {
-        guard session.currentService == .clinic || session.currentService == .appointment else { return false }
+        
+        guard session.currentService == .clinic || session.currentService == .appointment else {
+            return false
+        }
 
-        if hasRechecked { return false }
+        if hasRechecked {
+            return false
+        }
 
-        let serviceActivities = session.activities.filter { $0.service == session.currentService }
-        let hasCompletedTests = serviceActivities.contains { $0.queueStage == .completed }
-        let allCompletedOrCancelled = serviceActivities.allSatisfy { $0.queueStage == .completed || $0.queueStage == .cancel }
+        let serviceActivities = session.activities.filter {
+            $0.service == session.currentService
+        }
 
-        return hasCompletedTests && allCompletedOrCancelled
+       
+        let nonDoctorActivities = serviceActivities.filter {
+            $0.selectedDoctor == nil
+        }
+
+       
+        let hasCompletedNonDoctor = nonDoctorActivities.contains {
+            $0.queueStage == .completed
+        }
+
+        
+        let allNonDoctorFinished = nonDoctorActivities.allSatisfy {
+            $0.queueStage == .completed || $0.queueStage == .cancel
+        }
+
+        return hasCompletedNonDoctor && allNonDoctorFinished
     }
 
     private func getQueueNumber(for activity: Activity) -> Int {
@@ -169,6 +189,27 @@ struct Queue: View {
         simulatedStatus = .waiting
         hasRechecked = true           
         startQueueSimulation()
+    }
+    
+    
+    private func debugActivities(_ title: String) {
+        print("\n==============================")
+        print("DEBUG: \(title)")
+        print("Current Service: \(session.currentService)")
+        print("Total Activities: \(session.activities.count)")
+        
+        for (index, act) in session.activities.enumerated() {
+            print("""
+            [\(index)]
+            Test: \(act.testName ?? "Doctor Service")
+            Service: \(act.service)
+            QueueStage: \(act.queueStage)
+            Selected: \(act.isSelected)
+            Doctor: \(act.selectedDoctor?.heading ?? "None")
+            """)
+        }
+        
+        print("==============================\n")
     }
 
   
@@ -280,9 +321,10 @@ struct Queue: View {
                     .onAppear {
                         startQueueSimulation()
                     }
-            .onAppear {
-                startQueueSimulation()
-            }
+                    .onAppear {
+                        debugActivities("Queue Appeared")
+                        startQueueSimulation()
+                    }
             .navigationDestination(isPresented: $navigateToAppointment) {
                 
                 

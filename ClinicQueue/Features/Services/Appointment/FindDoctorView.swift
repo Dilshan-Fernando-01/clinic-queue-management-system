@@ -268,7 +268,6 @@ struct FindDoctorView: View {
                     }
                 }
                 
-                // MARK: - Navigation
                 if let doctor = selectedDoctor {
                     NavigationLink(
                         destination: DoctorAppointmentStarterView(doctor: doctor),

@@ -24,14 +24,12 @@ struct QueueButtonGroup: View {
     var body: some View {
         Group {
             if queues.count == 1 {
-               
                 HStack {
                     Spacer()
                     queueButton(for: queues.first!)
                     Spacer()
                 }
             } else {
-               
                 LazyVGrid(columns: columns, spacing: 10) {
                     ForEach(queues) { queue in
                         queueButton(for: queue)
@@ -41,13 +39,13 @@ struct QueueButtonGroup: View {
         }
         .animation(.easeInOut, value: selectedId)
         .onAppear {
-            if queues.count == 1 {
+
+            if selectedId == nil {
                 selectedId = queues.first?.id
             }
         }
     }
 
-    // Extracted button view
     private func queueButton(for queue: QueueOption) -> some View {
         let isSelected = selectedId == queue.id
 

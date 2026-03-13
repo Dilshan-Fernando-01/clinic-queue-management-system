@@ -18,49 +18,46 @@ struct MenuItem: Identifiable {
 
 struct ProfileView: View {
     
+    @State private var showLogoutConfirmation = false
+    @State private var navigateToLanding = false
+    
     let menuItems: [MenuItem] = [
         MenuItem(
             title: "My Profile",
             iconName: "person.fill",
             gradientColors: [Color(hex: "4FC3F7"), Color(hex: "0288D1")],
-            destination: AnyView(SettingsView())
+            destination: AnyView(MyProfileView())
         ),
-        
+//        MenuItem(
+//            title: "Settings",
+//            iconName: "gearshape.fill",
+//            gradientColors: [Color(hex: "4DB6AC"), Color(hex: "00796B")],
+//            destination: AnyView(SettingsView())
+//        ),
         MenuItem(
-            title: "Settings",
-            iconName: "gearshape.fill",
-            gradientColors: [Color(hex: "4DB6AC"), Color(hex: "00796B")],
-            destination: AnyView(SettingsView())
-        ),
-        
-        MenuItem(
-            title: "Notifications",
+            title: "My Notifications",
             iconName: "bell.fill",
             gradientColors: [Color(hex: "7986CB"), Color(hex: "3949AB")],
             destination: AnyView(NotificationView())
         ),
-        
         MenuItem(
-            title: "Transaction History",
+            title: "My Transactions",
             iconName: "envelope.fill",
             gradientColors: [Color(hex: "66BB6A"), Color(hex: "2E7D32")],
             destination: AnyView(TransactionHistory())
         ),
-        
         MenuItem(
-            title: "Test History",
+            title: "My Tests",
             iconName: "clipboard.fill",
             gradientColors: [Color(hex: "EF5350"), Color(hex: "B71C1C")],
             destination: AnyView(TestHistoryView())
         ),
-        
         MenuItem(
-            title: "Channeling History",
+            title: "My Channeling",
             iconName: "stethoscope",
             gradientColors: [Color(hex: "FFA726"), Color(hex: "E65100")],
             destination: AnyView(ChannelingHistoryView())
         ),
-        
         MenuItem(
             title: "Logout",
             iconName: "rectangle.portrait.and.arrow.right.fill",
@@ -82,10 +79,7 @@ struct ProfileView: View {
                             .frame(width: 58, height: 58)
                             .foregroundColor(.gray)
                             .clipShape(Circle())
-                            .overlay(
-                                Circle()
-                                    .stroke(Color.white, lineWidth: 2)
-                            )
+                            .overlay(Circle().stroke(Color.white, lineWidth: 2))
                             .shadow(color: .black.opacity(0.12), radius: 6, x: 0, y: 3)
                         
                         VStack(alignment: .leading, spacing: 3) {
@@ -105,7 +99,12 @@ struct ProfileView: View {
                     
                     VStack(spacing: 4) {
                         ForEach(menuItems) { item in
-                            MenuRowView(item: item)
+                            MenuRowView(item: item) {
+                                // Logout action
+                                if item.isLogout {
+                                    showLogoutConfirmation = true
+                                }
+                            }
                         }
                     }
                     .padding(.horizontal, 12)
@@ -114,16 +113,33 @@ struct ProfileView: View {
             .background(Color(.systemGroupedBackground).ignoresSafeArea())
             .navigationTitle("Profile")
             .navigationBarTitleDisplayMode(.inline)
+            
+            .alert("Are you Logging out", isPresented: $showLogoutConfirmation) {
+                Button("Cancel", role: .cancel) { }
+                Button("Logout", role: .destructive) {
+                    navigateToLanding = true
+                }
+            } message: {
+                Text("Your saved check-in details will remain on this device.")
+                    .multilineTextAlignment(.center)
+            }
+         
+            .background(
+                NavigationLink(
+                    destination: LandingView(),
+                    isActive: $navigateToLanding,
+                    label: { EmptyView() }
+                )
+            )
         }
     }
 }
 
 struct MenuRowView: View {
     let item: MenuItem
-    @State private var isPressed = false
+    var action: (() -> Void)? = nil
     
     var body: some View {
-        
         if let destination = item.destination {
             NavigationLink(destination: destination) {
                 rowContent
@@ -131,7 +147,7 @@ struct MenuRowView: View {
             .buttonStyle(PlainButtonStyle())
         } else {
             Button(action: {
-                print("Logout tapped")
+                action?()
             }) {
                 rowContent
             }
@@ -141,7 +157,6 @@ struct MenuRowView: View {
     
     var rowContent: some View {
         HStack(spacing: 16) {
-            
             ZStack {
                 LinearGradient(
                     colors: item.gradientColors,
@@ -164,13 +179,5 @@ struct MenuRowView: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 14)
-    }
-}
-
-
-
-struct ProfileView_Previews: PreviewProvider {
-    static var previews: some View {
-        ProfileView()
     }
 }

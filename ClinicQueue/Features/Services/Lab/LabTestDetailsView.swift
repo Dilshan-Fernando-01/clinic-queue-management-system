@@ -76,7 +76,6 @@ struct LabTestDetailsView: View {
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.horizontal)
 
-                // Display LabStepDisplay
                 ForEach(Array(labStepsDisplay.enumerated()), id: \.element.step.id) { index, display in
                     VStack(alignment: .leading, spacing: 16) {
 

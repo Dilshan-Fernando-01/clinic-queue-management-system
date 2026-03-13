@@ -19,7 +19,6 @@ struct LabList: View {
     @State private var searchText = ""
     @State private var navigateToNext = false
 
-    // Title shown at the top — updates when a category is tapped
     private var pageTitle: String {
         selectedCategory ?? "Your Clinic Queue"
     }
@@ -52,7 +51,6 @@ struct LabList: View {
                             .padding(.horizontal)
                             .animation(.easeInOut(duration: 0.25), value: pageTitle)
                     }
-
                     VStack(alignment: .center) {
                         IconInputField(
                             iconName: "SearchIcon",
@@ -74,20 +72,17 @@ struct LabList: View {
                         items: specialties,
                         selectedCategories: Binding(
                             get: {
-                                // CategoryGrid reads: only the currently selected one
                                 selectedCategory.map { [$0] } ?? []
                             },
                             set: { newValue in
-                                // CategoryGrid writes: find the newly tapped item
                                 let current: Set<String> = selectedCategory.map { [$0] } ?? []
                                 let added = newValue.subtracting(current)
 
                                 withAnimation(.easeInOut(duration: 0.25)) {
                                     if let newlyTapped = added.first {
-                                        // User tapped a NEW button → select it, deselect old
                                         selectedCategory = newlyTapped
                                     } else {
-                                        // User tapped the SAME button again → deselect
+
                                         selectedCategory = nil
                                     }
                                 }
@@ -95,7 +90,6 @@ struct LabList: View {
                         )
                     )
                     .padding(.top, 20)
-
                     if !selectedTests.isEmpty {
                         Text("Selected Tests")
                             .font(.app(.heading))
@@ -166,7 +160,6 @@ struct LabList: View {
                 .animation(.spring(), value: selectedTests.isEmpty)
 
                 VStack(spacing: 0) {
-                    // Fade gradient above button
                     LinearGradient(
                         colors: [Color(.systemBackground).opacity(0), Color(.systemBackground)],
                         startPoint: .top,
@@ -184,6 +177,7 @@ struct LabList: View {
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.vertical, 16)
                     .background(Color(.systemBackground))
+                    .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: -5)
                 }
                 .animation(.spring(), value: selectedTests.isEmpty)
             }

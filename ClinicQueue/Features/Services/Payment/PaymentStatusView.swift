@@ -108,7 +108,7 @@ struct PaymentStatusView<NextDestination: View>: View {
                         FloatingNavItem(icon: "map.fill", label: "Map", destination: AnyView(Text("Map View"))),
                         FloatingNavItem(icon: "gearshape.fill", label: "Settings", destination: AnyView(SettingsView()))
                     ]
-                )
+                ).padding(.top, 320)
             }
             .navigationDestination(isPresented: $navigateNext) {
                 onContinue()
