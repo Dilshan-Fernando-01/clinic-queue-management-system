@@ -41,22 +41,6 @@ struct ImagingDetailsView: View {
         CheckboxItem(key: "cash", label: "Cash Payment", icon: Image("Cash"))
     ]
 
-    private func icon(for name: String) -> String {
-        let lower = name.lowercased()
-        if lower.contains("chest")                              { return "lungs.fill" }
-        else if lower.contains("ct scan") || lower.contains("abdomen") { return "cross.case.fill" }
-        else if lower.contains("mri brain")                    { return "brain.head.profile" }
-        else if lower.contains("ultrasound")                   { return "waveform.path.ecg" }
-        else if lower.contains("mammography")                  { return "figure.stand" }
-        else if lower.contains("bone") || lower.contains("dxa") { return "staroflife.fill" }
-        else if lower.contains("coronary")                     { return "heart.fill" }
-        else if lower.contains("knee") || lower.contains("x-ray") { return "figure.walk" }
-        else if lower.contains("spine") || lower.contains("lumbar") { return "person.fill" }
-        else if lower.contains("head") || lower.contains("emergency") { return "exclamationmark.triangle.fill" }
-        else                                                   { return "cross.fill" }
-    }
-
-    // A computed binding that always returns a valid ClinicVisit
     private var visitBinding: Binding<ClinicVisit> {
         Binding(
             get: { sessionManager.currentClinicVisit ?? ClinicVisit(patientName: "", age: 0, gender: "") },
@@ -82,9 +66,7 @@ struct ImagingDetailsView: View {
                             specialText: "Available Now",
                             detailLine1: "Location: \(test.location ?? "")",
                             detailLine2: "Wait: \(test.estimatedWait ?? "")",
-                           
-                         
-                          showExtraSection: false,
+                            showExtraSection: false,
                             fee: "LKR \(test.price ?? 0)",
                             isCheckboxSelectable: false
                         )
@@ -130,7 +112,8 @@ struct ImagingDetailsView: View {
                             isSuccess: true,
                             doctor: nil,
                             queue: nil,
-                            onContinue: { Queue() },
+                         
+                            onContinue: { LabQueueTrackerView(steps: selectedTests) },
                             currentVisit: sessionManager.currentClinicVisit
                         )
                     },
@@ -138,14 +121,15 @@ struct ImagingDetailsView: View {
                 )
             } else {
                 PaymentThroughCashView {
-                      PaymentStatusView(
-                          isSuccess: true,
-                          doctor: nil,
-                          queue: nil,
-                          onContinue: { Queue() },
-                          currentVisit: sessionManager.currentClinicVisit
-                      )
-                  }
+                    PaymentStatusView(
+                        isSuccess: true,
+                        doctor: nil,
+                        queue: nil,
+                     
+                        onContinue: { LabQueueTrackerView(steps: selectedTests) },
+                        currentVisit: sessionManager.currentClinicVisit
+                    )
+                }
             }
         }
     }

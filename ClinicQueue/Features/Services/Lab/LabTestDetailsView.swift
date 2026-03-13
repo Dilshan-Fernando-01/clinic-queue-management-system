@@ -20,10 +20,8 @@ struct LabTestDetailsView: View {
         PaymentConfig.adminFee
     }
 
-  
     private var totalPrice: Double {
         selectedLabCards.reduce(0.0) { sum, card in
-        
             let cleaned = card.buttonText
                 .replacingOccurrences(of: "$", with: "")
                 .trimmingCharacters(in: .whitespaces)
@@ -49,6 +47,26 @@ struct LabTestDetailsView: View {
         CheckboxItem(key: "cash", label: "Cash Payment", icon: Image("Cash"))
     ]
 
+    // ✅ Convert LabCardData → ClinicStep for LabQueueTrackerView
+    private var labSteps: [ClinicStep] {
+        selectedLabCards.map { card in
+            let price = Double(
+                card.buttonText
+                    .replacingOccurrences(of: "$", with: "")
+                    .trimmingCharacters(in: .whitespaces)
+            ) ?? 0
+            return ClinicStep(
+                type: .labTest,
+                name: card.title,
+                description: card.label2Text,
+                estimatedWait: card.label1Text,
+                price: price,
+                location: card.label2Text,
+                requirements: ["No special preparation needed", "Bring your lab request form"]
+            )
+        }
+    }
+
     private var visitBinding: Binding<ClinicVisit> {
         Binding(
             get: {
@@ -67,7 +85,6 @@ struct LabTestDetailsView: View {
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.horizontal)
 
-                
                 ForEach(Array(selectedLabCards.enumerated()), id: \.element.id) { index, card in
                     VStack(alignment: .leading, spacing: 16) {
 
@@ -127,7 +144,8 @@ struct LabTestDetailsView: View {
                             isSuccess: true,
                             doctor: nil,
                             queue: nil,
-                            onContinue: { Queue() },
+                            // ✅ Go to queue tracker after card payment
+                            onContinue: { LabQueueTrackerView(steps: labSteps) },
                             currentVisit: sessionManager.currentClinicVisit
                         )
                     },
@@ -140,7 +158,8 @@ struct LabTestDetailsView: View {
                         isSuccess: true,
                         doctor: nil,
                         queue: nil,
-                        onContinue: { ServicesView() },
+                        // ✅ Go to queue tracker after cash payment
+                        onContinue: { LabQueueTrackerView(steps: labSteps) },
                         currentVisit: sessionManager.currentClinicVisit
                     )
                 }
