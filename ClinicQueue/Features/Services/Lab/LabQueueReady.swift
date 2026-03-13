@@ -34,14 +34,14 @@ struct LabQueueReady: View {
 //        .navigationDestination(isPresented: $navigateToCompleted) {
 //            QueueCompletedView(steps: steps)
 //        }
-//        .safeAreaInset(edge: .bottom) {
-//            PrimaryButton(title: "Mark as Completed", maxWidth: 260) {
-//                navigateToCompleted = true
-//            }
-//            .padding(.horizontal, 16)
-//            .padding(.vertical, 12)
-//            .background(Color(.systemBackground))
-//        }
+        .safeAreaInset(edge: .bottom) {
+            PrimaryButton(title: "Mark as Completed", maxWidth: 260) {
+                navigateToCompleted = true
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .background(Color(.systemBackground))
+        }
     }
 }
 
