@@ -159,9 +159,9 @@ struct LabDetails: View {
             .padding(.horizontal, 2)
             .padding(.bottom, 100)
             .animation(.spring(), value: selectedTests.isEmpty)
-            .navigationDestination(isPresented: $navigateToNext) {
-                LabTestDetailsView()
-            }
+//            .navigationDestination(isPresented: $navigateToNext) {
+//                LabTestDetailsView()
+//            }
 
             VStack(spacing: 0) {
                 LinearGradient(

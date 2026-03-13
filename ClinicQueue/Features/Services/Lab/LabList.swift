@@ -35,6 +35,11 @@ struct LabList: View {
         filteredLabTests.filter { selectedTests.contains($0.id) }
     }
 
+ 
+    private var allSelectedLabCards: [LabCardData] {
+        labTests.filter { selectedTests.contains($0.id) }
+    }
+
     private var availableLabCards: [LabCardData] {
         filteredLabTests.filter { !selectedTests.contains($0.id) }
     }
@@ -44,7 +49,6 @@ struct LabList: View {
             ZStack(alignment: .bottom) {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 20) {
-                        // Title updates to selected category name
                         Text(pageTitle)
                             .font(.system(size: 20, weight: .bold))
                             .frame(maxWidth: .infinity, alignment: .center)
@@ -67,7 +71,6 @@ struct LabList: View {
                         .padding(.top, 32)
                         .padding(.horizontal, 10)
 
-                   
                     CategoryGrid(
                         items: specialties,
                         selectedCategories: Binding(
@@ -149,11 +152,11 @@ struct LabList: View {
                                 )
                             }
                         }
-                        .padding(.top, 20).onAppear{
+                        .padding(.top, 20)
+                        .onAppear {
                             session.currentService = .lab
                         }
                     }
-
                 }
                 .padding(.horizontal, 2)
                 .padding(.bottom, 100)
@@ -168,7 +171,7 @@ struct LabList: View {
                     .frame(height: 24)
 
                     HStack {
-                        PrimaryButton(title: "Next", maxWidth: 220) {
+                        PrimaryButton(title: "Next", maxWidth: 320) {
                             navigateToNext = true
                         }
                         .disabled(selectedTests.isEmpty)
@@ -181,8 +184,10 @@ struct LabList: View {
                 }
                 .animation(.spring(), value: selectedTests.isEmpty)
             }
+         
             .navigationDestination(isPresented: $navigateToNext) {
-                LabTestDetailsView()
+                LabTestDetailsView(selectedLabCards: allSelectedLabCards)
+                    .environmentObject(session)
             }
         }
     }
