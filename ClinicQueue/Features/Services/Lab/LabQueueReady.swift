@@ -5,8 +5,6 @@
 //  Created by Keshana Liyanaarachchi on 2026-03-13.
 //
 
-
-
 import SwiftUI
 import MapKit
 
@@ -16,6 +14,8 @@ struct LabQueueReady: View {
 
     var body: some View {
         ScrollView {
+            QueueReady()
+            
             VStack(alignment: .leading, spacing: 0) {
                 ForEach(Array(steps.enumerated()), id: \.element.id) { index, step in
                     ReadyStepRow(
@@ -24,24 +24,28 @@ struct LabQueueReady: View {
                         isLast: index == steps.count - 1
                     )
                 }
+
+        
             }
-            .padding(.horizontal, 16)
+            .padding(.horizontal, 30)
             .padding(.top, 24)
             .padding(.bottom, 40)
         }
-        .navigationTitle("Your Queue")
         .navigationBarTitleDisplayMode(.inline)
-//        .navigationDestination(isPresented: $navigateToCompleted) {
-//            QueueCompletedView(steps: steps)
-//        }
-        .safeAreaInset(edge: .bottom) {
-            PrimaryButton(title: "Mark as Completed", maxWidth: 260) {
+
+        .onAppear {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
                 navigateToCompleted = true
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
-            .background(Color(.systemBackground))
         }
+
+       
+        .navigationDestination(isPresented: $navigateToCompleted) {
+            LabQueueDone(steps: steps)
+        }
+        
+
+        .ignoresSafeArea()
     }
 }
 
@@ -56,16 +60,19 @@ private struct ReadyStepRow: View {
             VStack(spacing: 0) {
                 ZStack {
                     Circle()
-                        .fill(AppColors.primary)           // ← changed
+                        .fill(AppColors.pink)
                         .frame(width: 38, height: 38)
+
                     Circle()
                         .fill(Color.white)
                         .frame(width: 14, height: 14)
                 }
 
                 DashedLineReady()
-                    .stroke(AppColors.primary,             // ← changed
-                            style: StrokeStyle(lineWidth: 2, dash: [6, 5]))
+                    .stroke(
+                        AppColors.pink,
+                        style: StrokeStyle(lineWidth: 2, dash: [6, 5])
+                    )
                     .frame(width: 2)
                     .frame(maxHeight: .infinity)
                     .padding(.vertical, 4)
@@ -77,18 +84,17 @@ private struct ReadyStepRow: View {
                 VStack(alignment: .leading, spacing: 6) {
                     Text("Step \(String(format: "%02d", stepNumber))")
                         .font(.system(size: 20, weight: .bold))
-                        .foregroundColor(.primary)
 
                     Text(step.location ?? "Lab Test")
                         .font(.system(size: 14))
                         .foregroundColor(.secondary)
 
-                    Text("Ready")                           // ← changed
+                    Text("Ready")
                         .font(.system(size: 12, weight: .semibold))
                         .foregroundColor(.white)
                         .padding(.horizontal, 14)
                         .padding(.vertical, 5)
-                        .background(AppColors.primary)     // ← changed
+                        .background(AppColors.pink)
                         .cornerRadius(20)
                 }
                 .padding(.top, 6)
@@ -116,6 +122,7 @@ private struct ReadyServiceCard: View {
 
     var body: some View {
         HStack(spacing: 14) {
+
             Image(TestDataset.imageName(for: step.name))
                 .resizable()
                 .scaledToFill()
@@ -125,13 +132,14 @@ private struct ReadyServiceCard: View {
                 .cornerRadius(12)
 
             VStack(alignment: .leading, spacing: 4) {
+
                 Text(step.name)
                     .font(.system(size: 15, weight: .semibold))
                     .lineLimit(2)
 
-                Text("Your turn is ready!")               // ← changed
+                Text("Your turn is ready!")
                     .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(AppColors.primary)   // ← changed
+                    .foregroundColor(AppColors.pink)
 
                 Text("Estimated wait: \(step.estimatedWait ?? "~25 min")")
                     .font(.system(size: 12))
@@ -153,31 +161,58 @@ private struct ReadyServiceCard: View {
 }
 
 private struct ReadyMapView: View {
+
     @State private var region = MKCoordinateRegion(
-        center: CLLocationCoordinate2D(latitude: 6.9271, longitude: 79.8612),
-        span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
+        center: CLLocationCoordinate2D(
+            latitude: 6.9271,
+            longitude: 79.8612
+        ),
+        span: MKCoordinateSpan(
+            latitudeDelta: 0.05,
+            longitudeDelta: 0.05
+        )
     )
+
     var body: some View {
-        Map(coordinateRegion: $region).disabled(true)
+        Map(coordinateRegion: $region)
+            .disabled(true)
     }
 }
 
 private struct DashedLineReady: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
+
         path.move(to: CGPoint(x: rect.midX, y: rect.minY))
         path.addLine(to: CGPoint(x: rect.midX, y: rect.maxY))
+
         return path
     }
 }
 
 #Preview {
     NavigationStack {
-        LabQueueReady(steps: [
-            ClinicStep(type: .imaging, name: "Complete Blood Count", description: "Blood Test at Lab 02",
-                       estimatedWait: "~25 min", price: 35, location: "Room 02 – Consultation Wing", requirements: []),
-            ClinicStep(type: .imaging, name: "ESR", description: "Blood Test at Lab 02",
-                       estimatedWait: "~25 min", price: 20, location: "Room 02 – Consultation Wing", requirements: [])
-        ])
+        LabQueueReady(
+            steps: [
+                ClinicStep(
+                    type: .imaging,
+                    name: "Complete Blood Count",
+                    description: "Blood Test at Lab 02",
+                    estimatedWait: "~25 min",
+                    price: 35,
+                    location: "Room 02 – Consultation Wing",
+                    requirements: []
+                ),
+                ClinicStep(
+                    type: .imaging,
+                    name: "ESR",
+                    description: "Blood Test at Lab 02",
+                    estimatedWait: "~25 min",
+                    price: 20,
+                    location: "Room 02 – Consultation Wing",
+                    requirements: []
+                )
+            ]
+        )
     }
 }
