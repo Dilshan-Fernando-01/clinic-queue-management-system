@@ -46,7 +46,7 @@ struct SymptomsSelection: View {
 
 
             VStack {
-                PrimaryButton(title: "Proceed to Queue") {
+                PrimaryButton(title: "Proceed to Queue",  backgroundColor: !selectedSymptoms.isEmpty ? AppColors.primary : AppColors.primary.opacity(0.5)) {
                     let selectedKeysArray = Array(selectedSymptoms)
                     
                     if let firstSymptomKey = selectedKeysArray.first,
