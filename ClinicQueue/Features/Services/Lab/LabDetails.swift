@@ -160,7 +160,7 @@ struct LabDetails: View {
             .padding(.bottom, 100)
             .animation(.spring(), value: selectedTests.isEmpty)
             .navigationDestination(isPresented: $navigateToNext) {
-                LabTestDetailsView()
+                LabTestDetailsView(selectedLabCards: selectedLabCards)
             }
 
             VStack(spacing: 0) {
