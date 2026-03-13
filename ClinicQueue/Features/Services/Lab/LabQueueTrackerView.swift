@@ -38,7 +38,7 @@ struct LabQueueTrackerView: View {
 
       
         .onAppear {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
                 navigateToReady = true
             }
         }
@@ -106,16 +106,16 @@ private struct QueueStepRow: View {
                     .font(.system(size: 17, weight: .bold))
                     .padding(.top, 4)
 
-                QueueMapView()
-                    .frame(height: 180)
-                    .cornerRadius(14)
+                LabDirectionMiniMap(targetRoomName: step.location ?? "Laboratory")
+                    .frame(height: 200)
                     .padding(.bottom, 24)
+
             }
         }
     }
 }
 
-// MARK: - Service Card
+
 
 private struct QueueServiceCard: View {
     let step: ClinicStep
@@ -158,7 +158,7 @@ private struct QueueServiceCard: View {
     }
 }
 
-// MARK: - Map View
+
 
 private struct QueueMapView: View {
     @State private var region = MKCoordinateRegion(
@@ -172,7 +172,7 @@ private struct QueueMapView: View {
     }
 }
 
-// MARK: - Dashed Line
+
 
 private struct DashedLine: Shape {
     func path(in rect: CGRect) -> Path {
@@ -183,7 +183,6 @@ private struct DashedLine: Shape {
     }
 }
 
-// MARK: - Preview
 
 #Preview {
     NavigationStack {

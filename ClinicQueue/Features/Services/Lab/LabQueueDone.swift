@@ -63,7 +63,7 @@ private struct ReadyStepRow: View {
             VStack(spacing: 0) {
                 ZStack {
                     Circle()
-                        .fill(AppColors.pink)
+                        .fill(Color.green)
                         .frame(width: 38, height: 38)
 
                     Circle()
@@ -73,7 +73,7 @@ private struct ReadyStepRow: View {
 
                 DashedLineReady()
                     .stroke(
-                        AppColors.pink,
+                        Color.green,
                         style: StrokeStyle(lineWidth: 2, dash: [6, 5])
                     )
                     .frame(width: 2)
@@ -92,12 +92,12 @@ private struct ReadyStepRow: View {
                         .font(.system(size: 14))
                         .foregroundColor(.secondary)
 
-                    Text("Ready")
+                    Text("completed")
                         .font(.system(size: 12, weight: .semibold))
                         .foregroundColor(.white)
                         .padding(.horizontal, 14)
                         .padding(.vertical, 5)
-                        .background(AppColors.pink)
+                        .background( Color.green)
                         .cornerRadius(20)
                 }
                 .padding(.top, 6)
@@ -111,9 +111,8 @@ private struct ReadyStepRow: View {
                     .font(.system(size: 17, weight: .bold))
                     .padding(.top, 4)
 
-                ReadyMapView()
-                    .frame(height: 180)
-                    .cornerRadius(14)
+                LabDirectionMiniMap(targetRoomName: step.location ?? "Laboratory")
+                    .frame(height: 200)
                     .padding(.bottom, 24)
             }
         }
