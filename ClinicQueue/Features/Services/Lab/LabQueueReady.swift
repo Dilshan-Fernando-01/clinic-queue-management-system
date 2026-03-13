@@ -34,7 +34,7 @@ struct LabQueueReady: View {
         .navigationBarTitleDisplayMode(.inline)
 
         .onAppear {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
                 navigateToCompleted = true
             }
         }

@@ -115,7 +115,7 @@ private struct QueueStepRow: View {
     }
 }
 
-// MARK: - Service Card
+
 
 private struct QueueServiceCard: View {
     let step: ClinicStep
@@ -158,7 +158,7 @@ private struct QueueServiceCard: View {
     }
 }
 
-// MARK: - Map View
+
 
 private struct QueueMapView: View {
     @State private var region = MKCoordinateRegion(
@@ -172,7 +172,7 @@ private struct QueueMapView: View {
     }
 }
 
-// MARK: - Dashed Line
+
 
 private struct DashedLine: Shape {
     func path(in rect: CGRect) -> Path {
@@ -183,7 +183,6 @@ private struct DashedLine: Shape {
     }
 }
 
-// MARK: - Preview
 
 #Preview {
     NavigationStack {
