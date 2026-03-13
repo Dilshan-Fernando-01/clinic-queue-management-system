@@ -11,13 +11,13 @@ import Foundation
 struct LabCategoriesData {
     static let categories: [CategoryItem] = [
         CategoryItem(title: "Clin Biochem", icon: "GeneralIcon"),
-        CategoryItem(title: "Blood Tests", icon: "CardiologyIcon"),
-        CategoryItem(title: "Microbiology", icon: "NeurologyIcon"),
-        CategoryItem(title: "Serology", icon: "OrthoIcon"),
-        CategoryItem(title: "Urine Analysis", icon: "PediatricsIcon"),
-        CategoryItem(title: "Hormone Tests", icon: "OBGYNIcon"),
-        CategoryItem(title: "Genetic Tests", icon: "DermatologyIcon"),
-        CategoryItem(title: "Special Tests", icon: "ENTIcon"),
+        CategoryItem(title: "Blood Tests", icon: "blood-test"),
+        CategoryItem(title: "Microbiology", icon: "microbiology"),
+        CategoryItem(title: "Serology", icon: "Serology"),
+        CategoryItem(title: "Urine Analysis", icon: "urine-test"),
+        CategoryItem(title: "Hormone Tests", icon: "Hormone"),
+        CategoryItem(title: "Genetic Tests", icon: "Genetic"),
+        CategoryItem(title: "Special Tests", icon: "specialtest2"),
         
     ]
 }
