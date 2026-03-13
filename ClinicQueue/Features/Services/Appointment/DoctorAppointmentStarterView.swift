@@ -200,7 +200,15 @@ struct DoctorAppointmentStarterView: View {
 
                 } else {
 
-                    PaymentThroughCashView()
+                    PaymentThroughCashView {
+                        PaymentStatusView(
+                            isSuccess: true,
+                            doctor: doctor,
+                            queue: availableQueues.first(where: { $0.id == selectedQueue }),
+                            onContinue: { AppointmentHistoryView() },
+                            currentVisit: sessionManager.currentClinicVisit
+                        )
+                      }
 
                 }
 

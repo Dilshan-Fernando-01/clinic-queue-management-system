@@ -64,7 +64,6 @@ struct ImageList: View {
                         .padding(.top, 32)
                         .padding(.horizontal, 10)
 
-                    // Single-select: tapping a new button removes highlight from previous
                     CategoryGrid(
                         items: specialties,
                         selectedCategories: Binding(
@@ -77,10 +76,8 @@ struct ImageList: View {
 
                                 withAnimation(.easeInOut(duration: 0.25)) {
                                     if let newlyTapped = added.first {
-                                        // New button tapped → deselect old, select new
                                         selectedCategory = newlyTapped
                                     } else {
-                                        // Same button tapped again → deselect
                                         selectedCategory = nil
                                     }
                                 }
@@ -89,7 +86,6 @@ struct ImageList: View {
                     )
                     .padding(.top, 20)
 
-                    // Selected imaging tests section
                     if !selectedTests.isEmpty {
                         Text("Selected Tests")
                             .font(.app(.heading))
@@ -100,7 +96,7 @@ struct ImageList: View {
                         VStack(spacing: 12) {
                             ForEach(selectedImagingCards) { test in
                                 BloodTestCard(
-                                    image: "ImagingIcon",
+                                    image: TestDataset.imageName(for: test.name),
                                     title: test.name,
                                     specialText: "Available Now",
                                     detailLine1: "Location: \(test.location)",
@@ -132,7 +128,7 @@ struct ImageList: View {
                         VStack(spacing: 12) {
                             ForEach(availableImagingCards) { test in
                                 BloodTestCard(
-                                    image: "ImagingIcon",
+                                    image: TestDataset.imageName(for: test.name),
                                     title: test.name,
                                     specialText: "Available Now",
                                     detailLine1: "Location: \(test.location)",
@@ -161,7 +157,6 @@ struct ImageList: View {
                         .environmentObject(sessionManager)
                 }
 
-                // Sticky Next Button
                 VStack(spacing: 0) {
                     LinearGradient(
                         colors: [Color(.systemBackground).opacity(0), Color(.systemBackground)],
@@ -171,7 +166,7 @@ struct ImageList: View {
                     .frame(height: 24)
 
                     HStack {
-                        PrimaryButton(title: "Next", maxWidth: 160) {
+                        PrimaryButton(title: "Next", maxWidth: 320) {
                             navigateToNext = true
                         }
                         .disabled(selectedTests.isEmpty)

@@ -202,6 +202,7 @@ struct Queue: View {
                                     Text("Completed Services")
                                         .font(.system(size: 22, weight: .bold))
                                         .padding(.horizontal, 30)
+                                        .padding(.top, 40)
 
                                     ForEach(completedActivities, id: \.id) { activity in
                                         activityCard(activity)
@@ -287,7 +288,21 @@ struct Queue: View {
                 
                 AppointmentStarterView()
             }
-        }
+            
+            
+        }.overlay(
+            FloatingNav(
+                mainIcon: "plus",
+                items: [
+                    FloatingNavItem(icon: "house.fill", label: "Home", destination: AnyView(ServicesView())),
+                    FloatingNavItem(icon: "map.fill", label: "Map", destination: AnyView(Text("Map View"))),
+                    FloatingNavItem(icon: "gearshape.fill", label: "Settings", destination: AnyView(ProfileView()))
+                ]
+            )
+            .padding(.trailing, 30)
+            .padding(.bottom, 30),
+            alignment: .bottomTrailing
+        )
     }
 
  
@@ -300,6 +315,7 @@ struct Queue: View {
                 Text("Service")
                     .font(.system(size: 22, weight: .bold))
                     .padding(.horizontal, 30)
+                    .padding(.top, 40)
             }
 
             if let doctor = activity.selectedDoctor {
@@ -307,7 +323,7 @@ struct Queue: View {
                     .padding(.horizontal, 30)
             } else {
                 BloodTestCard(
-                    image: "testPlaceholder",
+                    image: TestDataset.imageName(for: activity.testName ?? ""),
                     title: activity.testName ?? "Test",
                     specialText: "",
                     detailLine1: "Location: \(activity.labStep?.location ?? "N/A")",

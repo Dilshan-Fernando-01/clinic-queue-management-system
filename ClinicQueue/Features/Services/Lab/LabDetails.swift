@@ -104,7 +104,7 @@ struct LabDetails: View {
                     VStack(spacing: 12) {
                         ForEach(selectedLabCards) { test in
                             BloodTestCard(
-                                image: test.icon,
+                                image: TestDataset.imageName(for: test.title),
                                 title: test.title,
                                 specialText: "Available Now",
                                 detailLine1: "\(test.label1)\(test.label1Text)",
@@ -135,7 +135,7 @@ struct LabDetails: View {
                     VStack(spacing: 12) {
                         ForEach(availableLabCards) { test in
                             BloodTestCard(
-                                image: test.icon,
+                                image: TestDataset.imageName(for: test.title),
                                 title: test.title,
                                 specialText: "Available Now",
                                 detailLine1: "\(test.label1)\(test.label1Text)",
@@ -160,10 +160,9 @@ struct LabDetails: View {
             .padding(.bottom, 100)
             .animation(.spring(), value: selectedTests.isEmpty)
 //            .navigationDestination(isPresented: $navigateToNext) {
-//                LabTestDetailsView(selectedTests: selectedLabCards)
+//                LabTestDetailsView()
 //            }
 
-            // Sticky Next Button
             VStack(spacing: 0) {
                 LinearGradient(
                     colors: [Color(.systemBackground).opacity(0), Color(.systemBackground)],

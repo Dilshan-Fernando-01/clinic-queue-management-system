@@ -8,7 +8,9 @@
 import SwiftUI
 import CoreImage.CIFilterBuiltins
 
-struct PaymentThroughCashView: View {
+struct PaymentThroughCashView<SuccessDestination: View>: View {
+    
+    @EnvironmentObject var sessionManager: SessionManager
     
     @State private var navigateToStatus = false
     private let paymentSuccess = true
@@ -20,49 +22,69 @@ struct PaymentThroughCashView: View {
     let context = CIContext()
     let filter = CIFilter.qrCodeGenerator()
     
+    // This closure provides the destination PaymentStatusView with the proper values
+    let onPaymentSuccess: () -> SuccessDestination
+    
     var body: some View {
-        ZStack {
-            ScrollView {
-                VStack(spacing: 20) {
-                    
-                    Text("Pay at Counter")
-                        .font(.system(size: 20, weight: .bold))
-                        .frame(maxWidth: .infinity, alignment: .center)
-                        .padding(.horizontal)
-                    
-                    Text("Please present this QR code at the payment counter to complete your payment.")
-                        .foregroundColor(AppColors.lableColor)
-                        .frame(maxWidth: .infinity, alignment: .center)
-                        .padding(.top, Spacing.section).multilineTextAlignment(.center)
-                    
-                    Text("Our staff will scan the code and assist you.")
-                        .foregroundColor(AppColors.lableColor)
-                        .frame(maxWidth: .infinity, alignment: .center).multilineTextAlignment(.center)
-                    
-                    if let qrImage = generateQRCode() {
-                        Image(uiImage: qrImage)
-                            .interpolation(.none)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 200, height: 200)
-                            .padding(.top, Spacing.section)
+        NavigationStack {
+            ZStack {
+                ScrollView {
+                    VStack(spacing: 20) {
+                        
+                        Text("Pay at Counter")
+                            .font(.system(size: 20, weight: .bold))
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .padding(.horizontal)
+                        
+                        Text("Please present this QR code at the payment counter to complete your payment.")
+                            .foregroundColor(AppColors.lableColor)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .padding(.top, 16)
+                            .multilineTextAlignment(.center)
+                        
+                        Text("Our staff will scan the code and assist you.")
+                            .foregroundColor(AppColors.lableColor)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .multilineTextAlignment(.center)
+                        
+                        if let qrImage = generateQRCode() {
+                            Image(uiImage: qrImage)
+                                .interpolation(.none)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 200, height: 200)
+                                .padding(.top, 16)
+                        }
+                        
+                        Text("\(patientName) | \(billingId) | \(amount)")
+                            .font(.footnote)
+                            .foregroundColor(.gray)
                     }
-                    
-                    Text("\(patientName) | \(billingId) | \(amount)")
-                        .font(.footnote)
-                        .foregroundColor(.gray)
+                    .padding()
                 }
-                .padding()
+                
+                FloatingNav(
+                    mainIcon: "plus",
+                    items: [
+                        FloatingNavItem(icon: "house.fill", label: "Home", destination: AnyView(ServicesView())),
+                        FloatingNavItem(icon: "map.fill", label: "Map", destination: AnyView(Text("Map View"))),
+                        FloatingNavItem(icon: "gearshape.fill", label: "Settings", destination: AnyView(SettingsView()))
+                    ]
+                )
             }
             
-            FloatingNav(
-                mainIcon: "plus",
-                items: [
-                    FloatingNavItem(icon: "house.fill", label: "Home", destination: AnyView(ServicesView())),
-                    FloatingNavItem(icon: "map.fill", label: "Map", destination: AnyView(Text("Map View"))),
-                    FloatingNavItem(icon: "gearshape.fill", label: "Settings", destination: AnyView(SettingsView()))
-                ]
+            // NavigationLink to PaymentStatusView, activated automatically
+            NavigationLink(
+                destination: onPaymentSuccess(),
+                isActive: $navigateToStatus,
+                label: { EmptyView() }
             )
+        }
+        .onAppear {
+            // Mimic QR scan delay: automatically navigate after 3 seconds
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                navigateToStatus = true
+            }
         }
     }
     
@@ -79,11 +101,5 @@ struct PaymentThroughCashView: View {
             }
         }
         return nil
-    }
-}
-
-#Preview {
-    NavigationStack {
-        PaymentThroughCashView()
     }
 }

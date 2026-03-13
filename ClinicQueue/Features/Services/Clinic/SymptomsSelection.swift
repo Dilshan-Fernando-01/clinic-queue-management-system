@@ -104,7 +104,6 @@ struct SymptomsSelection: View {
                                     testName: test.name
                                 )
                                 testActivities.append(testActivity)
-                                print("➕ Added test activity: \(test.name) for symptom \(symptomKey)")
                             }
                         }
                         
