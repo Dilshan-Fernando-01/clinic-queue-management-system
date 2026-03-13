@@ -111,9 +111,8 @@ private struct ReadyStepRow: View {
                     .font(.system(size: 17, weight: .bold))
                     .padding(.top, 4)
 
-                ReadyMapView()
-                    .frame(height: 180)
-                    .cornerRadius(14)
+                LabDirectionMiniMap(targetRoomName: step.location ?? "Laboratory")
+                    .frame(height: 200)
                     .padding(.bottom, 24)
             }
         }
