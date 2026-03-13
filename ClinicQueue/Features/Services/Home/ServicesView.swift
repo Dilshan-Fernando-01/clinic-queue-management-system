@@ -1,8 +1,22 @@
 import SwiftUI
 
+//enum ServiceDestination {
+//    case consultation
+//    case laboratory
+//    case imaging
+//    case pharmacy
+//    case appointment
+//}
+
 struct ServicesView: View {
     @EnvironmentObject var sessionManager: SessionManager
     @EnvironmentObject var session: SessionManagerV2
+    
+    private func clearSession() {
+        session.activities.removeAll()
+    }
+    
+    
     private let services: [Service] = [
         Service(
             icon: "stethoscope",
@@ -123,7 +137,6 @@ struct ServicesView: View {
                                 queueNumber: "\(queueNumber)",
                                 progress: progress,
                                 onNavTap: {
-                                    // ✅ Set the activity's service as the current active service
                                     session.addActivity(service: activity.service)
                                 }
                             )
@@ -183,7 +196,9 @@ struct ServicesView: View {
                                 NavigationLink(destination: destinationView(for: service)) {
                                     ServiceCard(service: service)
                                         .frame(height: 190)
-                                }
+                                } .simultaneousGesture(TapGesture().onEnded {
+                                    clearSession()
+                                })
                             }
                         }
                         

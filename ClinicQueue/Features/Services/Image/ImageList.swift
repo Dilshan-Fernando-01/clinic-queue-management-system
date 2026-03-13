@@ -117,7 +117,7 @@ struct ImageList: View {
                         .padding(.top, 20)
                     }
 
-                    // Available imaging tests section
+              
                     if !availableImagingCards.isEmpty {
                         Text("Choose Your Imaging Test")
                             .font(.app(.heading))
@@ -171,10 +171,12 @@ struct ImageList: View {
                         }
                         .disabled(selectedTests.isEmpty)
                         .opacity(selectedTests.isEmpty ? 0.5 : 1.0)
+                        
                     }
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.vertical, 16)
                     .background(Color(.systemBackground))
+                    .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: -5)
                 }
                 .animation(.spring(), value: selectedTests.isEmpty)
             }

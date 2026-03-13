@@ -89,7 +89,7 @@ struct TestHistoryView: View {
                 .padding(.top, 8)
             }
             .background(Color(white: 0.96))
-            .navigationTitle("Test History")
+            .navigationTitle("My Tests")
             .navigationBarTitleDisplayMode(.inline)
             
         }

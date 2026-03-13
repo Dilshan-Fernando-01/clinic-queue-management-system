@@ -101,17 +101,13 @@ struct AppointmentHistoryView: View {
 
     private func goToQueuePage(_ appointment: UpcomingAppointment) {
 
-        print("➡️ Opening queue for: \(appointment.patientName)")
-
-
         session.activities = appointment.activities
         
         if !session.activities.isEmpty {
             session.activities[0].isSelected = true
             session.activities[0].queueStage = .wait
-            session.currentService = session.activities[0].service
         }
-
+        session.currentService = .appointment
         navigateToQueue = true
     }
     

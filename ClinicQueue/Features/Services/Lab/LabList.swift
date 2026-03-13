@@ -55,7 +55,6 @@ struct LabList: View {
                             .padding(.horizontal)
                             .animation(.easeInOut(duration: 0.25), value: pageTitle)
                     }
-
                     VStack(alignment: .center) {
                         IconInputField(
                             iconName: "SearchIcon",
@@ -86,6 +85,7 @@ struct LabList: View {
                                     if let newlyTapped = added.first {
                                         selectedCategory = newlyTapped
                                     } else {
+
                                         selectedCategory = nil
                                     }
                                 }
@@ -93,7 +93,6 @@ struct LabList: View {
                         )
                     )
                     .padding(.top, 20)
-
                     if !selectedTests.isEmpty {
                         Text("Selected Tests")
                             .font(.app(.heading))
@@ -181,6 +180,7 @@ struct LabList: View {
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.vertical, 16)
                     .background(Color(.systemBackground))
+                    .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: -5)
                 }
                 .animation(.spring(), value: selectedTests.isEmpty)
             }

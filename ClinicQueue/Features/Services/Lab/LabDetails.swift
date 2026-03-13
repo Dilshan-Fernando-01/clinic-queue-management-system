@@ -181,6 +181,7 @@ struct LabDetails: View {
                 .frame(maxWidth: .infinity, alignment: .center)
                 .padding(.vertical, 16)
                 .background(Color(.systemBackground))
+                
             }
             .animation(.spring(), value: selectedTests.isEmpty)
         }

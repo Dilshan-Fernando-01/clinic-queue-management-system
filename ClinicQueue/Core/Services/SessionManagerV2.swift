@@ -21,7 +21,17 @@ struct UpcomingAppointment: Identifiable {
 class SessionManagerV2: ObservableObject {
     
  
-    @Published var currentService: ServiceType = .unknown
+    @Published var currentService: ServiceType = .unknown {
+        didSet {
+            print("currentService CHANGED")
+            print("Old:", oldValue.rawValue)
+            print("New:", currentService.rawValue)
+
+            print("CALL STACK ↓")
+            print(Thread.callStackSymbols.joined(separator: "\n"))
+            print("---------------")
+        }
+    }
     @Published var activities: [Activity] = []
     @Published var symptoms: [Symptom] = []
     @Published var scheduledLab: [Activity] = []
