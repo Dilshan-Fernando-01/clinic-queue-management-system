@@ -18,14 +18,14 @@ struct Queue: View {
 
     @EnvironmentObject var sessionManager: SessionManager
     @EnvironmentObject var session: SessionManagerV2
-    
-    @State private var showRescheduleAlert = false
-    
-    @State private var hasRechecked = false
 
+    @State private var showRescheduleAlert = false
+    @State private var showRefundConfirm = false
+    @State private var showCashRefundQR = false
     @State private var simulatedStatus: StepStatus = .waiting
     @State private var navigateToAppointment = false
-
+    @State private var navigateToServices = false
+    @State private var navigateToChanneling = false
 
     private var activeActivity: Activity? {
         session.activities.first(where: {
@@ -35,15 +35,14 @@ struct Queue: View {
         })
     }
 
-  
     private var requestedActivities: [Activity] {
         session.activities.filter {
             $0.service == session.currentService &&
-            $0.queueStage == .unknown
+            $0.queueStage == .unknown &&
+            !$0.isSelected
         }
     }
 
-  
     private var completedActivities: [Activity] {
         session.activities.filter {
             $0.service == session.currentService &&
@@ -51,37 +50,34 @@ struct Queue: View {
         }
     }
 
- 
+
     private var canRecheckWithDoctor: Bool {
-        
-        guard session.currentService == .clinic || session.currentService == .appointment else {
-            return false
-        }
+        guard session.currentService == .clinic else { return false }
+        guard !session.hasRejoinedDoctor else { return false }
 
-        if hasRechecked {
-            return false
-        }
+        let serviceActivities = session.activities.filter { $0.service == .clinic }
+        let nonDoctorActivities = serviceActivities.filter { $0.selectedDoctor == nil }
 
-        let serviceActivities = session.activities.filter {
-            $0.service == session.currentService
-        }
-
-       
-        let nonDoctorActivities = serviceActivities.filter {
-            $0.selectedDoctor == nil
-        }
-
-       
-        let hasCompletedNonDoctor = nonDoctorActivities.contains {
-            $0.queueStage == .completed
-        }
-
-        
+        let hasCompletedNonDoctor = nonDoctorActivities.contains { $0.queueStage == .completed }
         let allNonDoctorFinished = nonDoctorActivities.allSatisfy {
             $0.queueStage == .completed || $0.queueStage == .cancel
         }
 
         return hasCompletedNonDoctor && allNonDoctorFinished
+    }
+
+  
+    private var canLeaveSession: Bool {
+        simulatedStatus == .completed && requestedActivities.isEmpty && !canRecheckWithDoctor
+    }
+
+  
+    private var canRefund: Bool {
+        simulatedStatus == .waiting && activeActivity != nil
+    }
+
+    private var leaveButtonTitle: String {
+        session.currentService == .appointment ? "Done" : "Leave Clinic"
     }
 
     private func getQueueNumber(for activity: Activity) -> Int {
@@ -114,6 +110,33 @@ struct Queue: View {
         }
     }
 
+    private func resumeSimulation() {
+        guard let activity = activeActivity else {
+           
+            simulatedStatus = .completed
+            return
+        }
+
+        switch activity.queueStage {
+        case .wait, .unknown:
+            simulatedStatus = .waiting
+            startQueueSimulation()
+        case .next:
+            simulatedStatus = .next
+            scheduleRemainingStages(from: 1)
+        case .ready:
+            simulatedStatus = .ready
+            scheduleRemainingStages(from: 2)
+        case .inProgress:
+            simulatedStatus = .inProgress
+            scheduleRemainingStages(from: 3)
+        case .completed:
+            simulatedStatus = .completed
+        case .cancel:
+            break
+        }
+    }
+
     private func startQueueSimulation() {
         let steps: [StepStatus] = [.next, .ready, .inProgress, .completed]
         for (i, status) in steps.enumerated() {
@@ -124,54 +147,49 @@ struct Queue: View {
         }
     }
 
+    private func scheduleRemainingStages(from startIndex: Int) {
+        let steps: [StepStatus] = [.next, .ready, .inProgress, .completed]
+        for i in startIndex..<steps.count {
+            let delay = Double((i - startIndex + 1) * 5)
+            let status = steps[i]
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                simulatedStatus = status
+                updateActiveActivityQueue()
+            }
+        }
+    }
+
     private func startRequestedActivity(_ activity: Activity) {
         guard simulatedStatus == .completed else { return }
-        guard let tappedIndex = session.activities.firstIndex(where: { $0.id == activity.id }) else {
-            return
-        }
+        guard let tappedIndex = session.activities.firstIndex(where: { $0.id == activity.id }) else { return }
 
         let serviceType = session.activities[tappedIndex].service
-  
+
         for index in session.activities.indices where session.activities[index].service == serviceType {
             session.activities[index].isSelected = false
         }
 
- 
         session.activities[tappedIndex].isSelected = true
         session.activities[tappedIndex].queueStage = .unknown
         navigateToAppointment = true
     }
-    
+
     private func rescheduleActivity(_ activity: Activity) {
-
-        guard let index = session.activities.firstIndex(where: { $0.id == activity.id }) else {
-     
-            return
-        }
-
+        guard let index = session.activities.firstIndex(where: { $0.id == activity.id }) else { return }
         let removed = session.activities.remove(at: index)
 
         switch removed.service {
         case .lab:
             session.scheduledLab.append(removed)
-         
         case .imaging:
             session.scheduledTest.append(removed)
-           
         default:
-            print("No scheduled array for this service")
+            break
         }
-        
+
         showRescheduleAlert = true
-
-        session.activities = session.activities
-
-        for act in session.activities {
-            print(" - \(act.testName ?? "Unknown") [\(act.queueStage.rawValue)]")
-        }
     }
 
-   
     private func recheckWithDoctor() {
         guard let doctorActivity = session.activities.first(where: {
             $0.service == session.currentService && $0.selectedDoctor != nil
@@ -187,38 +205,47 @@ struct Queue: View {
         }
 
         simulatedStatus = .waiting
-        hasRechecked = true           
+        session.hasRejoinedDoctor = true
         startQueueSimulation()
     }
-    
-    
+
+
+    private func leaveCurrentSession() {
+        let service = session.currentService
+        session.activities.removeAll { $0.service == service }
+        session.hasRejoinedDoctor = false
+        session.currentAppointmentId = nil
+    }
+
+ 
+    private func performRefund() {
+        let service = session.currentService
+        if service == .appointment {
+            session.refundCurrentAppointment()
+            session.activities.removeAll { $0.service == .appointment }
+            session.currentAppointmentId = nil
+        } else {
+            session.activities.removeAll { $0.service == .clinic }
+            session.hasRejoinedDoctor = false
+        }
+    }
+
     private func debugActivities(_ title: String) {
         print("\n==============================")
         print("DEBUG: \(title)")
         print("Current Service: \(session.currentService)")
         print("Total Activities: \(session.activities.count)")
-        
         for (index, act) in session.activities.enumerated() {
-            print("""
-            [\(index)]
-            Test: \(act.testName ?? "Doctor Service")
-            Service: \(act.service)
-            QueueStage: \(act.queueStage)
-            Selected: \(act.isSelected)
-            Doctor: \(act.selectedDoctor?.heading ?? "None")
-            """)
+            print("[\(index)] \(act.testName ?? "Doctor") | stage: \(act.queueStage) | selected: \(act.isSelected)")
         }
-        
         print("==============================\n")
     }
 
-  
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 24) {
 
-                  
                     if let activity = activeActivity {
                         let qNumber = getQueueNumber(for: activity)
                         let nowServing = getNowServingNumber(for: qNumber)
@@ -234,10 +261,8 @@ struct Queue: View {
 
                     VStack(alignment: .leading, spacing: 24) {
 
-                       
                         if simulatedStatus == .completed {
 
-                          
                             if !completedActivities.isEmpty {
                                 VStack(alignment: .leading, spacing: 16) {
                                     Text("Completed Services")
@@ -251,7 +276,6 @@ struct Queue: View {
                                 }
                             }
 
-                          
                             if !requestedActivities.isEmpty {
                                 VStack(alignment: .leading, spacing: 16) {
                                     Text("Requested Services")
@@ -264,12 +288,10 @@ struct Queue: View {
                                 }
                             }
 
-                            
+                          
                             if canRecheckWithDoctor {
                                 VStack(spacing: 16) {
-                                    Button(action: {
-                                        recheckWithDoctor()
-                                    }) {
+                                    Button(action: { recheckWithDoctor() }) {
                                         Text("Recheck with Doctor")
                                             .font(.system(size: 16, weight: .medium))
                                             .foregroundColor(.white)
@@ -279,11 +301,19 @@ struct Queue: View {
                                             .cornerRadius(25)
                                     }
                                     .buttonStyle(.plain)
+                                }
+                                .frame(maxWidth: .infinity)
+                                .padding(.horizontal, 30)
+                            }
 
+                           
+                            if canLeaveSession {
+                                VStack(spacing: 16) {
                                     Button(action: {
-                                        ServicesView()
+                                        leaveCurrentSession()
+                                        navigateToServices = true
                                     }) {
-                                        Text("Leave Clinic")
+                                        Text(leaveButtonTitle)
                                             .font(.system(size: 16, weight: .medium))
                                             .foregroundColor(Color(red: 0.28, green: 0.58, blue: 0.53))
                                             .padding(.vertical, 12)
@@ -299,13 +329,31 @@ struct Queue: View {
                                 .padding(.horizontal, 30)
                                 .multilineTextAlignment(.center)
                             }
+
                         } else {
-                            
                             if let activity = activeActivity {
                                 activityCard(activity, showHeader: true)
                             }
-                        }
 
+                            
+                            if canRefund {
+                                Button(action: { showRefundConfirm = true }) {
+                                    Text("Request Refund")
+                                        .font(.system(size: 14, weight: .medium))
+                                        .foregroundColor(.red)
+                                        .padding(.vertical, 10)
+                                        .padding(.horizontal, 20)
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 20)
+                                                .stroke(Color.red.opacity(0.6), lineWidth: 1)
+                                        )
+                                }
+                                .buttonStyle(.plain)
+                                .frame(maxWidth: .infinity)
+                                .padding(.horizontal, 30)
+                                .padding(.top, 8)
+                            }
+                        }
                     }
                     .padding(.horizontal, 20)
                 }
@@ -314,24 +362,93 @@ struct Queue: View {
             }
             .background(Color(white: 0.95))
             .alert("Rescheduled Successfully", isPresented: $showRescheduleAlert) {
-                        Button("OK", role: .cancel) { }
-                    } message: {
-                        Text("You can check your scheduled activities in the settings page.")
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text("You can check your scheduled activities in the settings page.")
+            }
+            .onAppear {
+ 
+                for index in session.activities.indices {
+                    let act = session.activities[index]
+                    if act.service == session.currentService &&
+                       act.isSelected &&
+                       act.queueStage == .unknown &&
+                       act.testName != nil {
+                        session.activities[index].isSelected = false
                     }
-                    .onAppear {
-                        startQueueSimulation()
-                    }
-                    .onAppear {
-                        debugActivities("Queue Appeared")
-                        startQueueSimulation()
-                    }
-            .navigationDestination(isPresented: $navigateToAppointment) {
-                
-                
-                AppointmentStarterView()
+                }
+                debugActivities("Queue Appeared")
+                resumeSimulation()
             }
             
+            .overlay {
+                if showRefundConfirm {
+                    CustomModal(isPresented: $showRefundConfirm) {
+                        VStack(spacing: 20) {
+                            Image(systemName: "arrow.uturn.backward.circle")
+                                .font(.system(size: 48))
+                                .foregroundColor(.red)
+
+                            Text("Request Refund")
+                                .font(.system(size: 18, weight: .bold))
+
+                            Text("Are you sure you want to cancel your queue and request a refund? This action cannot be undone.")
+                                .font(.system(size: 14))
+                                .foregroundColor(.secondary)
+                                .multilineTextAlignment(.center)
+
+                            HStack(spacing: 12) {
+                                Button(action: { showRefundConfirm = false }) {
+                                    Text("Cancel")
+                                        .font(.system(size: 15, weight: .medium))
+                                        .foregroundColor(Color(red: 0.28, green: 0.58, blue: 0.53))
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.vertical, 12)
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 12)
+                                                .stroke(Color(red: 0.28, green: 0.58, blue: 0.53), lineWidth: 1)
+                                        )
+                                }
+                                .buttonStyle(.plain)
+
+                                Button(action: {
+                                    showRefundConfirm = false
+                                    performRefund()
+                                    showCashRefundQR = true
+                                }) {
+                                    Text("Confirm Refund")
+                                        .font(.system(size: 15, weight: .semibold))
+                                        .foregroundColor(.white)
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.vertical, 12)
+                                        .background(Color.red)
+                                        .cornerRadius(12)
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                        .padding()
+                    }
+                }
+            }
             
+            .overlay {
+                if showCashRefundQR {
+                    CashRefundSheet(isPresented: $showCashRefundQR) {
+                        navigateToChanneling = true
+                    }
+                }
+            }
+            .navigationDestination(isPresented: $navigateToAppointment) {
+                AppointmentStarterView()
+            }
+            .navigationDestination(isPresented: $navigateToServices) {
+                ServicesView()
+            }
+            .navigationDestination(isPresented: $navigateToChanneling) {
+                ChannelingHistoryView()
+            }
+
         }.overlay(
             FloatingNav(
                 mainIcon: "plus",
@@ -347,10 +464,8 @@ struct Queue: View {
         )
     }
 
- 
     @ViewBuilder
     private func activityCard(_ activity: Activity, showHeader: Bool = false) -> some View {
-
         VStack(alignment: .leading, spacing: 10) {
 
             if showHeader {
@@ -368,19 +483,23 @@ struct Queue: View {
                     image: TestDataset.imageName(for: activity.testName ?? ""),
                     title: activity.testName ?? "Test",
                     specialText: "",
-                    detailLine1: "Location: \(activity.labStep?.location ?? "N/A")",
+                    detailLine1: "Location: \(activity.labStep?.location ?? activity.imagingStep?.location ?? "Main Lab - Level 2")",
                     detailLine2: "",
                     showExtraSection: true,
                     bottomTitleLeft: "Requirements",
-                    listItems: activity.labStep?.requirements ?? [],
+                    listItems: activity.labStep?.requirements ?? activity.imagingStep?.requirements ?? ["N/A"],
                     bottomTitleRight: "Approximate Time",
-                    bottomSubTextRight: activity.labStep?.estimatedWait ?? "",
-                    fee: activity.labStep?.price != nil ? "$\(Int(activity.labStep!.price!))" : "Free",
+                    bottomSubTextRight: activity.labStep?.estimatedWait ?? activity.imagingStep?.estimatedWait ?? "~30 min",
+                    fee: {
+                        if let price = activity.labStep?.price ?? activity.imagingStep?.price {
+                            return "$\(Int(price))"
+                        }
+                        return "Free"
+                    }(),
                     onButtonTap: {
                         startRequestedActivity(activity)
                     },
                     onRescheduleTap: {
-                        print("rescheduleActivity called in directly:")
                         rescheduleActivity(activity)
                     },
                     isActiveQueue: requestedActivities.contains(where: { $0.id == activity.id })

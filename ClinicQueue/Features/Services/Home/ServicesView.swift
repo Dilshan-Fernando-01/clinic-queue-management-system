@@ -1,22 +1,9 @@
 import SwiftUI
 
-//enum ServiceDestination {
-//    case consultation
-//    case laboratory
-//    case imaging
-//    case pharmacy
-//    case appointment
-//}
-
 struct ServicesView: View {
     @EnvironmentObject var sessionManager: SessionManager
     @EnvironmentObject var session: SessionManagerV2
-    
-    private func clearSession() {
-        session.activities.removeAll()
-    }
-    
-    
+
     private let services: [Service] = [
         Service(
             icon: "stethoscope",
@@ -47,7 +34,7 @@ struct ServicesView: View {
             destination: .pharmacy
         )
     ]
-    
+
     @ViewBuilder
     private func destinationView(for service: Service) -> some View {
         switch service.destination {
@@ -57,121 +44,118 @@ struct ServicesView: View {
             LabList()
         case .imaging:
             ImageList()
-         
         case .pharmacy:
-           PharmacyView()
+            PharmacyView()
         case .appointment:
             FindDoctorView()
         @unknown default:
             EmptyView()
         }
     }
-    
-    private let doctorAppointmentService = Service(
-          icon: "calendar",
-          title: "Doctor Appointment",
-          subtitle: "Book and manage doctor appointments.",
-          background: Color(red: 247/255, green: 246/255, blue: 255/255),
-          destination: .appointment
-      )
-    
-    
+
     private func activitiesJSON() -> String {
-            let grouped = Dictionary(grouping: session.activities) { $0.service.rawValue }
-            
-            var result: [String: [[String: Any]]] = [:]
-            
-            for (service, acts) in grouped {
-                result[service] = acts.map { activity in
-                    var dict: [String: Any] = [
-                        "id": activity.id.uuidString,
-                        "stage": activity.stage.rawValue,
-                        "queueStage": activity.queueStage.rawValue,
-                        "isSelected": activity.isSelected,
-                        "patientName": activity.patientName ?? "",
-                        "patientAge": activity.patientAge ?? 0,
-                        "patientGender": activity.patientGender ?? "",
-                        "symptoms": activity.symptoms,
-                        "testName": activity.testName ?? ""
-                    ]
-                    
-                    if let doc = activity.selectedDoctor {
-                        dict["doctor"] = ["heading": doc.heading, "subheading": doc.subheading]
-                    } else {
-                        dict["doctor"] = nil
-                    }
-                    
-                    return dict
+        let grouped = Dictionary(grouping: session.activities) { $0.service.rawValue }
+
+        var result: [String: [[String: Any]]] = [:]
+
+        for (service, acts) in grouped {
+            result[service] = acts.map { activity in
+                var dict: [String: Any] = [
+                    "id": activity.id.uuidString,
+                    "stage": activity.stage.rawValue,
+                    "queueStage": activity.queueStage.rawValue,
+                    "isSelected": activity.isSelected,
+                    "patientName": activity.patientName ?? "",
+                    "patientAge": activity.patientAge ?? 0,
+                    "patientGender": activity.patientGender ?? "",
+                    "symptoms": activity.symptoms,
+                    "testName": activity.testName ?? ""
+                ]
+
+                if let doc = activity.selectedDoctor {
+                    dict["doctor"] = ["heading": doc.heading, "subheading": doc.subheading]
+                } else {
+                    dict["doctor"] = nil
                 }
+
+                return dict
             }
-            
-            if let jsonData = try? JSONSerialization.data(withJSONObject: result, options: .prettyPrinted),
-               let jsonString = String(data: jsonData, encoding: .utf8) {
-                return jsonString
-            }
-            
-            return "{}"
         }
-    
-    
+
+        if let jsonData = try? JSONSerialization.data(withJSONObject: result, options: .prettyPrinted),
+           let jsonString = String(data: jsonData, encoding: .utf8) {
+            return jsonString
+        }
+
+        return "{}"
+    }
 
     var body: some View {
         NavigationStack {
-                if let activity = session.activities.first(where: { activity in
-                    switch activity.queueStage {
-                    case .unknown, .completed, .cancel:
-                        return false
-                    default:
-                        return true
-                    }
-                }) {
-                    let queueNumber = activity.queueNumber ?? 12
-                    let progress = min(max(queueNumber * 10, 0), 20)
-
-                    NavigationLink(
-                        destination: Queue(),
-                        label: {
-                            ActiveQueueBanner(
-                                title: "Your Queue: \(activity.selectedDoctor?.heading ?? "Doctor")",
-                                description: "Patient: \(activity.patientName ?? "--"), Queue Number: \(queueNumber)",
-                                queueNumber: "\(queueNumber)",
-                                progress: progress,
-                                onNavTap: {
-                                    session.addActivity(service: activity.service)
-                                }
-                            )
-                            .padding(.bottom, 10)
-                        }
-                    )
+            // Active queue banner — also shows when there are pending tests waiting to be started
+            let queuedActivity = session.activities.first(where: {
+                switch $0.queueStage {
+                case .wait, .next, .ready, .inProgress: return true
+                default: return false
                 }
+            })
+            let pendingTestActivity = session.activities.first(where: {
+                $0.testName != nil && $0.queueStage == .unknown
+            })
+            let bannerActivity = queuedActivity ?? pendingTestActivity
+
+            if let activity = bannerActivity {
+                let isPendingTests = queuedActivity == nil
+                let queueNumber = activity.queueNumber ?? 12
+                let progress = min(max(queueNumber * 10, 0), 20)
+
+                NavigationLink(
+                    destination: Queue(),
+                    label: {
+                        ActiveQueueBanner(
+                            title: isPendingTests
+                                ? "Pending Tests"
+                                : "Your Queue: \(activity.selectedDoctor?.heading ?? "Doctor")",
+                            description: isPendingTests
+                                ? "You have pending tests — tap to continue"
+                                : "Patient: \(activity.patientName ?? "--"), Queue Number: \(queueNumber)",
+                            queueNumber: isPendingTests ? "--" : "\(queueNumber)",
+                            progress: isPendingTests ? 0 : progress,
+                            onNavTap: {
+                                session.currentService = activity.service
+                            }
+                        )
+                        .padding(.bottom, 10)
+                    }
+                )
+            }
             ZStack {
                 Color(.white)
                     .ignoresSafeArea()
-                
+
                 ScrollView {
                     VStack(alignment: .leading, spacing: 24) {
-                        
-                        
+
                         HStack(alignment: .top) {
                             VStack(alignment: .leading, spacing: 8) {
                                 Text("Find your desire")
                                     .font(.system(size: 26, weight: .bold))
-                                
+
                                 Text("health solution")
                                     .font(.system(size: 26, weight: .bold))
                             }
-                            
+
                             Spacer()
-                            
+
                             HStack(spacing: 16) {
-                                
+
                                 NavigationLink(destination: NotificationView()) {
                                     Image(systemName: "bell")
                                         .font(.system(size: 20))
                                         .foregroundColor(.black)
                                 }
 
-                                NavigationLink(destination: ProfileView()) {   
+                                NavigationLink(destination: ProfileView()) {
                                     Circle()
                                         .fill(Color.gray.opacity(0.3))
                                         .frame(width: 36, height: 36)
@@ -183,8 +167,7 @@ struct ServicesView: View {
                                 }
                             }
                         }
-                        
-                        
+
                         LazyVGrid(
                             columns: [
                                 GridItem(.flexible(), spacing: 16),
@@ -196,25 +179,21 @@ struct ServicesView: View {
                                 NavigationLink(destination: destinationView(for: service)) {
                                     ServiceCard(service: service)
                                         .frame(height: 190)
-                                } .simultaneousGesture(TapGesture().onEnded {
-                                    clearSession()
-                                })
+                                }
                             }
                         }
-                        
-                        
+
                         VStack(alignment: .leading, spacing: 8) {
                             Text("Doctor Channeling")
                                 .font(.title2.weight(.bold))
-                            
+
                             Text("Reserve your appointment with a doctor at your preferred date and time.")
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
                         .padding(.top, 8)
-                        
-                        
+
                         NavigationLink(destination: FindDoctorView()) {
                             CenteredServiceCard(
                                 service: Service(
@@ -233,8 +212,7 @@ struct ServicesView: View {
                     .padding(.top, 4)
                     .padding(.bottom, 32)
                 }
-                
-                
+
                 FloatingNav(
                     mainIcon: "plus",
                     items: [

@@ -8,17 +8,29 @@
 
 import SwiftUI
 
+// MARK: - Filter
+
+enum ChannelingFilter: String, CaseIterable {
+    case all       = "All"
+    case upcoming  = "Upcoming"
+    case refunded  = "Refunded"
+    case completed = "Completed"
+}
+
+
 
 enum ChannelingStatus {
     case completed
     case cancelled
     case upcoming
+    case refunded
 
     var label: String {
         switch self {
         case .completed: return "Completed"
         case .cancelled: return "Cancelled"
         case .upcoming:  return "Upcoming"
+        case .refunded:  return "Refunded"
         }
     }
 
@@ -27,10 +39,12 @@ enum ChannelingStatus {
         case .completed: return .green
         case .cancelled: return .red
         case .upcoming:  return .blue
+        case .refunded:  return .orange
         }
     }
 }
 
+// MARK: - Model
 
 struct ChannelingHistory: Identifiable {
     let id = UUID()
@@ -39,34 +53,66 @@ struct ChannelingHistory: Identifiable {
     let date: String
     let total: String
     let status: ChannelingStatus
+    let tests: [String]
 }
 
 
+
 struct ChannelingHistoryRow: View {
+
     let item: ChannelingHistory
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
 
-            HStack(alignment: .top) {
+        VStack(alignment: .leading, spacing: 10) {
+
+            VStack(alignment: .leading, spacing: 4) {
+
+                Text(item.doctorName)
+                    .font(.system(size: 15, weight: .bold))
+
+                Text(item.specialization)
+                    .font(.system(size: 13))
+                    .foregroundColor(.blue)
+
+                Text(item.date)
+                    .font(.system(size: 12))
+                    .foregroundColor(.gray)
+
+                Text(item.total)
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(.primary)
+            }
+
+            if item.status == .refunded {
+                HStack(spacing: 6) {
+                    Image(systemName: "arrow.uturn.backward.circle.fill")
+                        .foregroundColor(.orange)
+                        .font(.system(size: 14))
+                    Text("Payment refunded to original method")
+                        .font(.system(size: 13))
+                        .foregroundColor(.orange)
+                }
+                .padding(.vertical, 6)
+                .padding(.horizontal, 10)
+                .background(Color.orange.opacity(0.1))
+                .cornerRadius(8)
+            }
+
+            if item.status == .completed && !item.tests.isEmpty {
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(item.doctorName)
-                        .font(.system(size: 15, weight: .bold))
 
-                    Text(item.specialization)
-                        .font(.system(size: 13))
-                        .foregroundColor(.blue)
+                    Text("Tests Done")
+                        .font(.system(size: 13, weight: .bold))
 
-                    Text(item.date)
-                        .font(.system(size: 12))
-                        .foregroundColor(.gray)
+                    ForEach(item.tests, id: \.self) { test in
+                        Text("• \(test)")
+                            .font(.system(size: 12))
+                            .foregroundColor(.gray)
+                    }
                 }
-
-                Spacer()
-
-                Text("Total: \(item.total)")
-                    .font(.system(size: 13, weight: .semibold))
+                .padding(.top, 4)
             }
 
             Text(item.status.label)
@@ -77,129 +123,208 @@ struct ChannelingHistoryRow: View {
                 .background(item.status.color)
                 .cornerRadius(20)
         }
-        .padding(.horizontal)
-        .padding(.vertical, 14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(16)
     }
 }
 
 
+
 struct ChannelingHistoryView: View {
 
-    @StateObject private var session = SessionManagerV2()
+    @EnvironmentObject var session: SessionManagerV2
     @State private var navigateToQueue = false
+    @State private var selectedFilter: ChannelingFilter = .all
 
     var body: some View {
+
         NavigationStack {
 
-            ScrollView {
+            VStack(spacing: 0) {
 
-                VStack(spacing: 30) {
-
-
-                    let todayAppointments = session.upcomingAppointments.filter {
-                        Calendar.current.isDateInToday($0.date)
-                    }
-
-                    if !todayAppointments.isEmpty {
-
-                        VStack(alignment: .leading, spacing: 12) {
-
-                            Text("Today")
-                                .font(.system(size: 20, weight: .bold))
-                                .padding(.horizontal)
-
-                            ForEach(todayAppointments) { appointment in
-                                ChannelingHistoryRow(
-                                    item: mapAppointment(appointment)
-                                )
-                                .background(Color.blue.opacity(0.08))
-                                .cornerRadius(8)
-                                .padding(.horizontal)
-                                .onTapGesture {
-                                    goToQueuePage(appointment)
-                                }
-                            }
-                        }
-
-                    } else {
-
-                        Text("No appointments today")
-                            .foregroundColor(.gray)
-                            .padding()
-                    }
-
-                    let futureAppointments = session.upcomingAppointments.filter {
-                        $0.date > Date() &&
-                        !Calendar.current.isDateInToday($0.date)
-                    }
-
-                    if !futureAppointments.isEmpty {
-
-                        VStack(alignment: .leading, spacing: 12) {
-
-                            Text("Upcoming")
-                                .font(.system(size: 20, weight: .bold))
-                                .padding(.horizontal)
-
-                            ForEach(futureAppointments) { appointment in
-                                ChannelingHistoryRow(
-                                    item: mapAppointment(appointment)
-                                )
-                                .opacity(0.6)
-                                .padding(.horizontal)
-                            }
-                        }
-                    }
-
-
-                    let completedAppointments = session.upcomingAppointments.filter {
-                        $0.date < Date()
-                    }
-
-                    if !completedAppointments.isEmpty {
-
-                        VStack(alignment: .leading, spacing: 12) {
-
-                            Text("Completed")
-                                .font(.system(size: 20, weight: .bold))
-                                .padding(.horizontal)
-
-                            ForEach(completedAppointments) { appointment in
-                                ChannelingHistoryRow(
-                                    item: mapAppointment(appointment)
-                                )
-                                .opacity(0.6)
-                                .padding(.horizontal)
-                            }
-                        }
+             
+                Picker("Filter", selection: $selectedFilter) {
+                    ForEach(ChannelingFilter.allCases, id: \.self) { filter in
+                        Text(filter.rawValue).tag(filter)
                     }
                 }
-                .padding(.vertical)
+                .pickerStyle(.segmented)
+                .padding(.horizontal)
+                .padding(.vertical, 12)
+                .background(Color(white: 0.96))
+
+                ScrollView {
+
+                    VStack(spacing: 25) {
+
+                        if selectedFilter == .all || selectedFilter == .upcoming {
+                            sectionView(
+                                title: "Today",
+                                appointments: todayAppointments(),
+                                isTodaySection: true
+                            )
+
+                            sectionView(
+                                title: "Upcoming",
+                                appointments: upcomingAppointments(),
+                                isTodaySection: false
+                            )
+                        }
+
+                        if selectedFilter == .all || selectedFilter == .completed {
+                            sectionView(
+                                title: "Completed",
+                                appointments: completedAppointments(),
+                                isTodaySection: false
+                            )
+                        }
+
+                        if selectedFilter == .all || selectedFilter == .refunded {
+                            sectionView(
+                                title: "Refunded",
+                                appointments: refundedAppointments(),
+                                isTodaySection: false
+                            )
+                        }
+                    }
+                    .padding(.vertical)
+                }
             }
             .background(Color(white: 0.96))
             .navigationTitle("My Channelings")
             .navigationBarTitleDisplayMode(.inline)
             .onAppear {
-                session.upcomingAppointments = DummyAppointments.generate()
+               
+                if session.upcomingAppointments.isEmpty {
+                    session.upcomingAppointments = DummyAppointments.generate()
+                }
             }
             .navigationDestination(isPresented: $navigateToQueue) {
                 Queue()
-                    .environmentObject(session)
             }
         }
     }
 
+ 
 
-    private func mapAppointment(_ appointment: UpcomingAppointment) -> ChannelingHistory {
+    @ViewBuilder
+    private func sectionView(
+        title: String,
+        appointments: [UpcomingAppointment],
+        isTodaySection: Bool
+    ) -> some View {
+
+        if !appointments.isEmpty {
+
+            VStack(alignment: .leading, spacing: 12) {
+
+                Text(title)
+                    .font(.system(size: 20, weight: .bold))
+                    .padding(.horizontal)
+
+                VStack(spacing: 0) {
+
+                    ForEach(appointments) { appointment in
+
+                        ChannelingHistoryRow(
+                            item: mapAppointment(appointment)
+                        )
+                        .background(Color.white)
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+
+                            guard isTodaySection else { return }
+
+                            prepareQueue(from: appointment)
+                            navigateToQueue = true
+                        }
+
+                        if appointment.id != appointments.last?.id {
+                            Divider().padding(.leading, 16)
+                        }
+                    }
+                }
+                .background(Color.white)
+                .cornerRadius(10)
+                .padding(.horizontal)
+            }
+        }
+    }
+
+    
+
+    private func prepareQueue(from appointment: UpcomingAppointment) {
+
+        session.currentService = .appointment
+        session.activities.removeAll { $0.service == .appointment }
+
+        for var activity in appointment.activities {
+
+            if activity.selectedDoctor != nil {
+                activity.isSelected = true
+                activity.queueStage = .wait
+            }
+
+            session.activities.append(activity)
+        }
+    }
+
+   
+
+    private func todayAppointments() -> [UpcomingAppointment] {
+        session.upcomingAppointments.filter {
+            !$0.isRefunded && Calendar.current.isDateInToday($0.date)
+        }
+    }
+
+    private func upcomingAppointments() -> [UpcomingAppointment] {
+        session.upcomingAppointments.filter {
+            !$0.isRefunded &&
+            $0.date > Date() &&
+            !Calendar.current.isDateInToday($0.date)
+        }
+    }
+
+    private func completedAppointments() -> [UpcomingAppointment] {
+        session.upcomingAppointments.filter {
+            !$0.isRefunded &&
+            $0.date < Date() &&
+            !Calendar.current.isDateInToday($0.date)
+        }
+    }
+
+    private func refundedAppointments() -> [UpcomingAppointment] {
+        session.upcomingAppointments.filter { $0.isRefunded }
+    }
+
+    
+
+    private func mapAppointment(
+        _ appointment: UpcomingAppointment
+    ) -> ChannelingHistory {
 
         let doctor = appointment.activities.first?.selectedDoctor
 
         let status: ChannelingStatus
 
-        if appointment.date > Date() {
-            status = .upcoming
-        } else {
+        if appointment.isRefunded {
+            status = .refunded
+        } else if appointment.date < Date() && !Calendar.current.isDateInToday(appointment.date) {
             status = .completed
+        } else {
+            status = .upcoming
+        }
+
+        let tests: [String]
+        if status == .completed {
+            let labTests = appointment.activities.compactMap { $0.labStep?.name }
+            let imagingTests = appointment.activities.compactMap { $0.imagingStep?.name }
+            let allTests = labTests + imagingTests
+            tests = allTests.isEmpty
+                ? ["Complete Blood Count (CBC)", "Chest X-Ray (PA & Lateral)"]
+                : allTests
+        } else {
+            tests = []
         }
 
         return ChannelingHistory(
@@ -207,7 +332,8 @@ struct ChannelingHistoryView: View {
             specialization: doctor?.subheading ?? "-",
             date: formattedDate(appointment.date),
             total: "$\(String(format: "%.2f", appointment.totalFee))",
-            status: status
+            status: status,
+            tests: tests
         )
     }
 
@@ -216,22 +342,4 @@ struct ChannelingHistoryView: View {
         formatter.dateFormat = "yyyy/MM/dd 'at' hh:mm a"
         return formatter.string(from: date)
     }
-
-
-    private func goToQueuePage(_ appointment: UpcomingAppointment) {
-
-        session.activities = appointment.activities
-
-        if !session.activities.isEmpty {
-            session.activities[0].isSelected = true
-            session.activities[0].queueStage = .wait
-        }
-
-        session.currentService = .appointment
-        navigateToQueue = true
-    }
-}
-
-#Preview {
-    ChannelingHistoryView()
 }
