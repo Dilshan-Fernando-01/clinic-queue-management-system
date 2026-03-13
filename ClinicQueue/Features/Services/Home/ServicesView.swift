@@ -45,7 +45,7 @@ struct ServicesView: View {
             ImageList()
          
         case .pharmacy:
-        
+           PharmacyView()
         case .appointment:
             FindDoctorView()
         @unknown default:
