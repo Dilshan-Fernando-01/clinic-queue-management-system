@@ -39,7 +39,6 @@ struct QueueButtonGroup: View {
         }
         .animation(.easeInOut, value: selectedId)
         .onAppear {
-
             if selectedId == nil {
                 selectedId = queues.first?.id
             }
@@ -58,7 +57,7 @@ struct QueueButtonGroup: View {
                     .foregroundColor(isSelected ? .white : .black)
 
                 Text(queue.subText)
-                    .font(.system(size: 8))
+                    .font(.system(size: 12))
                     .foregroundColor(isSelected ? .white : AppColors.text)
             }
             .frame(minWidth: 96, minHeight: 76)

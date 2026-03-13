@@ -51,7 +51,8 @@ struct AppointmentStarterView: View {
 
             return QueueOption(
                 heading: String(format: "%02d", nextSlotIndex),
-                subText: doctor.availableDates?.first?.timeRange ?? "~15 min"
+                subText:  "~15 min",
+                
             )
         }
 

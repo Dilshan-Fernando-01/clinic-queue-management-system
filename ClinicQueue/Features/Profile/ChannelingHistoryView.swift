@@ -122,9 +122,12 @@ struct ChannelingHistoryRow: View {
                 .padding(.vertical, 5)
                 .background(item.status.color)
                 .cornerRadius(20)
+            
+        
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
+        
     }
 }
 
@@ -202,7 +205,21 @@ struct ChannelingHistoryView: View {
             .navigationDestination(isPresented: $navigateToQueue) {
                 Queue()
             }
+            
+            
         }
+        
+        .overlay(
+            FloatingNav(
+                mainIcon: "plus",
+                items: [
+                    FloatingNavItem(icon: "house.fill", label: "Home", destination: AnyView(ServicesView())),
+                    FloatingNavItem(icon: "map.fill", label: "Map", destination: AnyView(Text("Map View"))),
+                    FloatingNavItem(icon: "gearshape.fill", label: "Settings", destination: AnyView(ProfileView()))
+                ]
+            ),
+            alignment: .bottomTrailing
+            )
     }
 
  
