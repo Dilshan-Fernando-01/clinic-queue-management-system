@@ -8,6 +8,7 @@
 import SwiftUI
 import Combine
 
+// Tracks whether an appointment was refunded so ChannelingHistoryView can display a refund card
 struct UpcomingAppointment: Identifiable {
     let id: UUID
     let date: Date
@@ -16,123 +17,98 @@ struct UpcomingAppointment: Identifiable {
     let gender: String
     let activities: [Activity]
     let totalFee: Double
+    var isRefunded: Bool
+
+    init(
+        id: UUID,
+        date: Date,
+        patientName: String,
+        age: Int,
+        gender: String,
+        activities: [Activity],
+        totalFee: Double,
+        isRefunded: Bool = false
+    ) {
+        self.id = id
+        self.date = date
+        self.patientName = patientName
+        self.age = age
+        self.gender = gender
+        self.activities = activities
+        self.totalFee = totalFee
+        self.isRefunded = isRefunded
+    }
 }
 
 class SessionManagerV2: ObservableObject {
-    
- 
-    @Published var currentService: ServiceType = .unknown {
-        didSet {
-            print("currentService CHANGED")
-            print("Old:", oldValue.rawValue)
-            print("New:", currentService.rawValue)
 
-            print("CALL STACK ↓")
-            print(Thread.callStackSymbols.joined(separator: "\n"))
-            print("---------------")
-        }
-    }
+    @Published var currentService: ServiceType = .unknown
     @Published var activities: [Activity] = []
     @Published var symptoms: [Symptom] = []
     @Published var scheduledLab: [Activity] = []
     @Published var scheduledTest: [Activity] = []
     @Published var upcomingAppointments: [UpcomingAppointment] = []
     @Published var currentClinicVisit: ClinicVisit? = nil
-    
+
  
+    @Published var hasRejoinedDoctor: Bool = false
+
+
+    @Published var currentAppointmentId: UUID? = nil
+
     private var cancellables = Set<AnyCancellable>()
-    
 
     init() {
-        observeChanges()
-    }
-    
-
-    private func observeChanges() {
-
         $currentService
             .sink { newValue in
                 print("currentService changed to:", newValue.rawValue)
             }
             .store(in: &cancellables)
-        
-
-//        $activities
-//            .sink { newValue in
-//               
-//                for activity in newValue {
-//                    print("-------------------")
-//                    print("""
-//                        - Activity \(activity.id)
-//                          service: \(activity.service.rawValue)
-//                          stage: \(activity.stage.rawValue)
-//                          queueStage: \(activity.queueStage.rawValue)
-//                          selected: \(activity.isSelected)
-//                          patientName: \(activity.patientName ?? "-")
-//                          patientAge: \(activity.patientAge ?? -1)
-//                          patientGender: \(activity.patientGender ?? "-")
-//                          symptoms: \(activity.symptoms)
-//                          testName: \(activity.testName ?? "-")
-//                    """)
-//                    print("-------------------")
-//                }
-//            }
-//            .store(in: &cancellables)
-//        
- 
-//        $symptoms
-//            .sink { newValue in
-//                print("Symptoms updated:", newValue)
-//            }
-//            .store(in: &cancellables)
     }
-    
 
     func addActivity(service: ServiceType) {
         let activity = Activity(service: service)
         activities.append(activity)
         currentService = service
     }
-    
+
     func updateQueue(activityId: UUID, number: Int, stage: QueueStages = .wait) {
         guard let index = activities.firstIndex(where: { $0.id == activityId }) else { return }
         activities[index].queueNumber = number
         activities[index].queueStage = stage
         activities[index].stage = .inQueue
     }
-    
+
     func updateDoctor(activityId: UUID, doctor: DoctorCategoryGroup) {
         guard let index = activities.firstIndex(where: { $0.id == activityId }) else { return }
         activities[index].doctor = doctor
         activities[index].stage = .planning
     }
-    
+
     func completeActivity(activityId: UUID) {
         guard let index = activities.firstIndex(where: { $0.id == activityId }) else { return }
         activities[index].stage = .completed
         activities[index].queueStage = .completed
     }
-    
+
     func cancelActivity(activityId: UUID) {
         guard let index = activities.firstIndex(where: { $0.id == activityId }) else { return }
         activities[index].stage = .canceled
         activities[index].queueStage = .cancel
     }
-    
+
     func currentActivity() -> Activity? {
         return activities.last
     }
-    
-    
 
     func saveUpcomingAppointment(patientName: String, age: Int, gender: String, activities: [Activity]) {
         let totalActivityFee = activities.reduce(0.0) { partialResult, activity in
             let fee = Double(activity.selectedDoctor?.price?.replacingOccurrences(of: "$", with: "") ?? "0") ?? 0
             return partialResult + fee
         }
-        
+
         let total = totalActivityFee + PaymentConfig.adminFee
-        
+
         let appointment = UpcomingAppointment(
             id: UUID(),
             date: Date(),
@@ -142,28 +118,36 @@ class SessionManagerV2: ObservableObject {
             activities: activities,
             totalFee: total
         )
-        
+
         upcomingAppointments.append(appointment)
- 
     }
-    
+
     func resetFlow() {
         currentService = .unknown
         activities.removeAll()
         symptoms.removeAll()
+        hasRejoinedDoctor = false
+        currentAppointmentId = nil
     }
-    
 
     func selectActivity(activityId: UUID) {
         for index in activities.indices {
             activities[index].isSelected = activities[index].id == activityId
         }
     }
-    
+
     func activity(for service: ServiceType) -> Activity? {
         return activities.first(where: { $0.service == service })
     }
-    
+
+
+    func refundCurrentAppointment() {
+        guard let apptId = currentAppointmentId else { return }
+        if let index = upcomingAppointments.firstIndex(where: { $0.id == apptId }) {
+            upcomingAppointments[index].isRefunded = true
+        }
+    }
+
     func printAllActivities() {
         for activity in activities {
             print("Activity \(activity.id)")
@@ -182,7 +166,6 @@ class SessionManagerV2: ObservableObject {
             }
         }
     }
-    
 }
 
 

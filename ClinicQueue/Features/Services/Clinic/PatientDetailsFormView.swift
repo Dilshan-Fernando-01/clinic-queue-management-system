@@ -87,18 +87,21 @@ struct PatientDetailsFormView: View {
                 Spacer()
 
                 PrimaryButton(title: "Proceed to Queue") {
-                    
+
+                   
+                    session.activities.removeAll { $0.service == .clinic }
+                    session.hasRejoinedDoctor = false
+
                     sessionManager.currentClinicVisit = ClinicVisit(
-                          patientName: name,
-                          age: Int(age) ?? 0,
-                          gender: gender ?? "",
-                          symptomStrings: []
-                      )
-                    
+                        patientName: name,
+                        age: Int(age) ?? 0,
+                        gender: gender ?? "",
+                        symptomStrings: []
+                    )
+
                     session.currentService = .clinic
-                    if session.activity(for: .clinic) == nil {
-                          session.addActivity(service: .clinic)
-                      }
+                    session.addActivity(service: .clinic)
+
                     if let activity = session.activity(for: .clinic) {
                         if let index = session.activities.firstIndex(where: { $0.id == activity.id }) {
                             session.activities[index].patientName = name
@@ -106,11 +109,10 @@ struct PatientDetailsFormView: View {
                             session.activities[index].patientGender = gender ?? ""
                             session.activities[index].isSelected = true
                             session.activities = session.activities
-                            session.printAllActivities() 
+                            session.printAllActivities()
                         }
                     }
 
-                
                     navigateToSymptoms = true
 
                 }

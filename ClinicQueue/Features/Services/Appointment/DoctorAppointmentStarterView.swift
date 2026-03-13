@@ -121,11 +121,12 @@ struct DoctorAppointmentStarterView: View {
                         PrimaryButton(title: "Book Appointment") {
                             let fee = Double(doctor.price?.replacingOccurrences(of: "$", with: "") ?? "0") ?? 0
 
+                            
                             if sessionManager.currentClinicVisit == nil {
                                 var newVisit = ClinicVisit(
-                                    patientName: "John Doe",
-                                    age: 28,
-                                    gender: "Male"
+                                    patientName: "Patient",
+                                    age: 0,
+                                    gender: ""
                                 )
                                 newVisit.consultationFee = fee
                                 newVisit.adminFee = PaymentConfig.adminFee
@@ -137,28 +138,12 @@ struct DoctorAppointmentStarterView: View {
                                 sessionManager.currentClinicVisit = visit
                             }
 
-                  
-                            let newActivity = Activity(
-                                service: .clinic,
-                                stage: .planning,
-                                selectedDoctor: doctor,
-                                patientName: sessionManager.currentClinicVisit?.patientName,
-                                patientAge: sessionManager.currentClinicVisit?.age,
-                                patientGender: sessionManager.currentClinicVisit?.gender
-                            )
-
-                            session.activities.append(newActivity)
-
-                            session.printAllActivities()
-                         
-                            let activitiesToSave = session.activities.filter { $0.service == .clinic || $0.service == .appointment }
-
-                            session.saveUpcomingAppointment(
-                                patientName: sessionManager.currentClinicVisit?.patientName ?? "",
-                                age: sessionManager.currentClinicVisit?.age ?? 0,
-                                gender: sessionManager.currentClinicVisit?.gender ?? "",
-                                activities: activitiesToSave
-                            )
+                   
+                            if let index = session.activities.firstIndex(where: {
+                                $0.service == .appointment && $0.isSelected
+                            }) {
+                                session.activities[index].stage = .planning
+                            }
 
                             navigateToPaymentView = true
                         }
@@ -184,7 +169,7 @@ struct DoctorAppointmentStarterView: View {
                                     isSuccess: true,
                                     doctor: doctor,
                                     queue: availableQueues.first(where: { $0.id == selectedQueue }),
-                                    onContinue: { AppointmentHistoryView() },
+                                    onContinue: { ChannelingHistoryView() },
                                     currentVisit: sessionManager.currentClinicVisit
                                 )
                             },
@@ -193,7 +178,7 @@ struct DoctorAppointmentStarterView: View {
                                 set: { sessionManager.currentClinicVisit = $0 }
                             )
                         )
-    
+
                     } else {
                         Text("No current visit found")
                     }
@@ -205,10 +190,10 @@ struct DoctorAppointmentStarterView: View {
                             isSuccess: true,
                             doctor: doctor,
                             queue: availableQueues.first(where: { $0.id == selectedQueue }),
-                            onContinue: { AppointmentHistoryView() },
+                            onContinue: { ChannelingHistoryView() },
                             currentVisit: sessionManager.currentClinicVisit
                         )
-                      }
+                    }
 
                 }
 
@@ -216,10 +201,3 @@ struct DoctorAppointmentStarterView: View {
         }
     }
 }
-
-
-//#Preview {
-//    NavigationStack {
-//        DoctorAppointmentStarterView(doctor: .mock)
-//    }
-//}

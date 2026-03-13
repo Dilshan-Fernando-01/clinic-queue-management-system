@@ -83,8 +83,8 @@ struct PharPayment: View {
                 PharPayemntForm()
                     .environmentObject(sessionManager)
             } else {
-                PaymentThroughCashView()
-                    .environmentObject(sessionManager)
+//                PaymentThroughCashView()
+//                    .environmentObject(sessionManager)
             }
         }
         

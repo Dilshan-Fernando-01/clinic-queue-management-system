@@ -13,9 +13,11 @@ struct AppointmentStarterView: View {
     @State private var selectedQueue: UUID? = nil
     @State private var navigateToPaymentView = false
 
+    
     private var activeActivity: Activity? {
-        guard let index = session.activities.firstIndex(where: { $0.isSelected && $0.queueStage != .cancel }) else { return nil }
-        return session.activities[index]
+        session.activities.first(where: {
+            $0.service == session.currentService && $0.isSelected && $0.queueStage != .cancel
+        })
     }
 
     private var doctorInfo: InfoCardData? {
@@ -157,9 +159,7 @@ struct AppointmentStarterView: View {
                                     bottomTitleRight: "Approximate Time",
                                     bottomSubTextRight: activity.labStep?.estimatedWait ?? "",
                                     fee: activity.labStep?.price != nil ? "$\(Int(activity.labStep!.price!))" : "Free",
-                                    isActiveQueue: false,
-                                    
-                                    
+                                    isActiveQueue: false
                                 )
                                 .padding(.horizontal)
                             }
@@ -208,9 +208,8 @@ struct AppointmentStarterView: View {
                     }
                     .padding(.vertical, 20)
                     .onAppear {
-
                         if activeActivity == nil {
-                            session.addActivity(service: .clinic)
+                            session.addActivity(service: session.currentService)
                         }
                     }
                 }
@@ -260,14 +259,21 @@ struct AppointmentStarterView: View {
                     VStack {
                         PrimaryButton(title: "Book Appointment") {
 
+                            
+                            if sessionManager.currentClinicVisit == nil {
+                                var tempVisit = ClinicVisit(patientName: "Patient", age: 0, gender: "")
+                                if let lab = activeActivity?.labStep { tempVisit.consultationFee = lab.price ?? 0 }
+                                if let imaging = activeActivity?.imagingStep { tempVisit.consultationFee = imaging.price ?? 0 }
+                                tempVisit.adminFee = PaymentConfig.adminFee
+                                sessionManager.currentClinicVisit = tempVisit
+                            }
+
                             if var visit = sessionManager.currentClinicVisit {
 
                                 if let doctor = activeActivity?.selectedDoctor {
-
                                     let fee = Double(
                                         doctor.price?.replacingOccurrences(of: "$", with: "") ?? "0"
                                     ) ?? 0
-
                                     visit.consultationFee = fee
                                 }
 
