@@ -89,7 +89,7 @@ struct ImagingDetailsView: View {
                 .padding(.horizontal, 10)
 
                 HStack {
-                    PrimaryButton(title: "Booking", maxWidth: 220) {
+                    PrimaryButton(title: "Booking", maxWidth: 320) {
                         if var visit = sessionManager.currentClinicVisit {
                             visit.consultationFee = totalPrice
                             visit.adminFee        = adminFee

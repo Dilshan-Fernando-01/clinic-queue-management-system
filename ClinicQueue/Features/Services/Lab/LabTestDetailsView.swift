@@ -47,7 +47,7 @@ struct LabTestDetailsView: View {
         CheckboxItem(key: "cash", label: "Cash Payment", icon: Image("Cash"))
     ]
 
-    // ✅ Convert LabCardData → ClinicStep for LabQueueTrackerView
+   
     private var labSteps: [ClinicStep] {
         selectedLabCards.map { card in
             let price = Double(
@@ -121,7 +121,7 @@ struct LabTestDetailsView: View {
                 .padding(.horizontal, 10)
 
                 HStack {
-                    PrimaryButton(title: "Booking", maxWidth: 220) {
+                    PrimaryButton(title: "Booking", maxWidth: 320) {
                         if var visit = sessionManager.currentClinicVisit {
                             visit.consultationFee = totalPrice
                             visit.adminFee = adminFee
@@ -144,7 +144,7 @@ struct LabTestDetailsView: View {
                             isSuccess: true,
                             doctor: nil,
                             queue: nil,
-                            // ✅ Go to queue tracker after card payment
+                        
                             onContinue: { LabQueueTrackerView(steps: labSteps) },
                             currentVisit: sessionManager.currentClinicVisit
                         )
@@ -158,7 +158,7 @@ struct LabTestDetailsView: View {
                         isSuccess: true,
                         doctor: nil,
                         queue: nil,
-                        // ✅ Go to queue tracker after cash payment
+                      
                         onContinue: { LabQueueTrackerView(steps: labSteps) },
                         currentVisit: sessionManager.currentClinicVisit
                     )

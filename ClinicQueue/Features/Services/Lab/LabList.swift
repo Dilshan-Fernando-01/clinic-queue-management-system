@@ -172,7 +172,7 @@ struct LabList: View {
                     .frame(height: 24)
 
                     HStack {
-                        PrimaryButton(title: "Next", maxWidth: 220) {
+                        PrimaryButton(title: "Next", maxWidth: 320) {
                             navigateToNext = true
                         }
                         .disabled(selectedTests.isEmpty)
